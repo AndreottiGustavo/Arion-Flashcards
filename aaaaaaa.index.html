@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Árion Flashcards</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0a3d3a">
+    <link rel="apple-touch-icon" href="LOGO ÁRION.png">
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js')
+          .then(() => console.log("Árion PWA Ativo!"))
+          .catch(err => console.log("Erro no PWA:", err));
+      }
+    </script>
+
+    <style>
+        :root {
+            --primary-green: #0a3d3a;
+            --accent-gold: #f4e9c1;
+            --premium-gold: #FFD700;
+            --white: #ffffff;
+            --text-dark: #333333;
+            --danger: #ff4d4d;
+            --font-main: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body, html {
+            margin: 0; padding: 0;
+            font-family: var(--font-main);
+            background-color: var(--primary-green);
+            color: var(--white);
+            height: 100%; width: 100%;
+            overflow: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* BARRA DE NAVEGAÇÃO SUPERIOR */
+        .top-nav {
+            display: none; justify-content: center; gap: 8px; padding: 10px;
+            background: rgba(0,0,0,0.2); border-bottom: 1px solid rgba(244, 233, 193, 0.2);
+            position: sticky; top: 0; z-index: 1000;
+        }
+        .nav-btn {
+            background: none; border: 1px solid var(--accent-gold); color: var(--accent-gold);
+            padding: 8px 12px; border-radius: 20px; font-size: 0.75rem; cursor: pointer;
+            font-weight: bold; text-transform: uppercase; transition: 0.3s;
+            font-family: var(--font-main);
+        }
+        .nav-btn.active-nav { background: var(--accent-gold); color: var(--primary-green); }
+
+        /* SPLASH SCREEN */
+        #splash-screen {
+            position: fixed; inset: 0; background: var(--primary-green);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 30000; transition: opacity 0.5s;
+        }
+        .logo-container { width: 300px; fill: var(--accent-gold); }
+
+        /* TELAS */
+        .screen { display: none; height: calc(100vh - 60px); flex-direction: column; padding: 20px; box-sizing: border-box; max-width: 600px; margin: 0 auto; }
+        .active { display: flex !important; }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-top: 10px; }
+        h1 { color: var(--accent-gold); margin: 0; font-size: 1.4rem; letter-spacing: 2px; text-transform: uppercase; }
+
+        /* LISTA DE BARALHOS */
+        .deck-list { overflow-y: auto; flex-grow: 1; }
+        .deck-item {
+            background: rgba(255,255,255,0.08); border: 1px solid rgba(244, 233, 193, 0.3);
+            padding: 20px; border-radius: 18px; margin-bottom: 12px; 
+            display: flex; justify-content: space-between; align-items: center; position: relative;
+        }
+
+        .deck-item.premium {
+            border: 2px solid var(--premium-gold);
+            background: linear-gradient(145deg, rgba(255, 215, 0, 0.1), rgba(0, 0, 0, 0.2));
+        }
+        .premium-badge {
+            background: var(--premium-gold); color: black; font-size: 0.6rem;
+            padding: 2px 8px; border-radius: 10px; font-weight: bold;
+            position: absolute; top: -10px; left: 20px;
+        }
+
+        .deck-options-btn { padding: 10px; font-size: 1.5rem; color: var(--accent-gold); cursor: pointer; }
+        .options-menu {
+            display: none; position: absolute; right: 10px; top: 50px;
+            background: var(--white); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3); z-index: 100; min-width: 140px;
+        }
+        .options-menu button { display: block; width: 100%; padding: 12px; border: none; background: none; text-align: left; color: var(--text-dark); cursor: pointer; font-family: var(--font-main); }
+
+        /* LOJA */
+        .store-card {
+            background: white; color: var(--text-dark); border-radius: 20px;
+            padding: 20px; margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px;
+        }
+        .price-tag { color: #2e7d32; font-weight: bold; font-size: 1.2rem; }
+
+        /* PAINEL / BROWSE */
+        .tabs-container { display: flex; gap: 10px; margin-bottom: 15px; }
+        .tab-btn { flex: 1; padding: 10px; border-radius: 10px; border: 1px solid var(--accent-gold); background: none; color: var(--accent-gold); font-weight: bold; cursor: pointer; font-size: 0.8rem; }
+        .tab-btn.active-tab { background: var(--accent-gold); color: var(--primary-green); }
+
+        .search-container { margin-bottom: 15px; }
+        .search-input { width: 100%; padding: 12px 15px; border-radius: 10px; border: none; font-size: 0.9rem; outline: none; box-sizing: border-box; }
+        .browse-table { width: 100%; border-collapse: collapse; background: white; color: var(--text-dark); border-radius: 15px; overflow: hidden; font-size: 0.85rem; }
+        .browse-table th, .browse-table td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+        .browse-table th { background: #f5f5f5; color: #666; text-transform: uppercase; font-size: 0.7rem; }
+        
+        /* GERENCIADOR PREMIUM ESTILIZADO */
+        .premium-manager-container { display: flex; flex-direction: column; gap: 10px; position: relative; }
+        .module-header { background: #444; color: var(--accent-gold); padding: 10px 15px; font-weight: bold; text-transform: uppercase; font-size: 0.8rem; border-radius: 8px; margin-top: 10px; }
+        .submodule-row { 
+            background: white; color: var(--text-dark); padding: 15px; border-radius: 12px; 
+            display: flex; justify-content: space-between; align-items: center; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .onboarding-balloon {
+            background: var(--accent-gold); color: var(--primary-green); padding: 15px; border-radius: 15px;
+            margin-bottom: 15px; font-size: 0.85rem; line-height: 1.4; font-weight: 500;
+            position: relative; animation: fadeIn 0.5s ease-out;
+        }
+        .onboarding-balloon::after {
+            content: ''; position: absolute; bottom: -10px; left: 20px;
+            border-left: 10px solid transparent; border-right: 10px solid transparent;
+            border-top: 10px solid var(--accent-gold);
+        }
+
+        /* TOOLBAR EDITOR */
+        .toolbar { 
+            display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 10px; 
+            background: #eee; padding: 6px; border-radius: 12px; align-items: center;
+        }
+        .tool-btn { 
+            background: white; border: 1px solid #ddd; border-radius: 6px; 
+            cursor: pointer; color: #444; font-weight: bold; font-family: var(--font-main);
+            min-width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 14px;
+        }
+        .tool-btn.active-tool { background: var(--accent-gold); border-color: orange; }
+        
+        .color-split-btn { display: flex; align-items: center; border: 1px solid #ddd; border-radius: 6px; overflow: hidden; background: white; height: 32px; }
+        .color-main-btn { border: none; background: white; padding: 0 8px; cursor: pointer; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .color-select-btn { border: none; background: #fafafa; border-left: 1px solid #ddd; padding: 0 4px; cursor: pointer; height: 100%; font-size: 10px; }
+        .color-indicator { width: 16px; height: 3px; background: red; margin-top: 1px; }
+
+        /* STATS */
+        .anki-stats-card {
+            background: #f9f9f9; border-radius: 20px; padding: 25px; margin: 20px 0;
+            color: var(--text-dark); display: flex; justify-content: space-between; align-items: center;
+        }
+        .stat-row { font-size: 1.1rem; margin: 10px 0; font-weight: 500; }
+
+        /* MODAIS */
+        #modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 20000; align-items: center; justify-content: center; padding: 20px; }
+        .modal-box { background: var(--white); color: var(--text-dark); width: 100%; max-width: 380px; padding: 25px; border-radius: 25px; text-align: center; box-sizing: border-box; }
+        .modal-box input, .modal-box textarea { width: 100%; padding: 15px; margin: 10px 0; border: 1px solid #ddd; border-radius: 12px; font-size: 16px; outline: none; box-sizing: border-box; font-family: var(--font-main); }
+        
+        .congratulations-rect { background: #e8f5e9; color: #2e7d32; border: 2px solid #a5d6a7; padding: 20px; border-radius: 15px; font-weight: bold; text-align: center; width: 100%; margin-bottom: 15px; box-sizing: border-box; }
+
+        /* ESTUDO */
+        .card-box { width: 100%; flex-grow: 1; background: var(--white); color: var(--text-dark); border-radius: 25px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px; position: relative; }
+        .divider { width: 80%; height: 2px; background: #eee; margin: 25px 0; display: none; }
+        
+        .anki-footer { display: none; width: 100%; gap: 6px; margin-top: 20px; padding-bottom: 10px; }
+        .btn-group { flex: 1; display: flex; flex-direction: column; align-items: center; }
+        .btn-anki { width: 100%; padding: 15px 0; border: none; border-radius: 12px; background: var(--white); font-weight: bold; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.1); font-size: 0.85rem; height: 50px; display: flex; align-items: center; justify-content: center; font-family: var(--font-main); }
+        .time-label { font-size: 0.75rem; color: #aaa; margin-bottom: 4px; font-weight: bold; height: 14px; }
+
+        .btn-gold { background: var(--accent-gold); color: var(--primary-green); border: none; padding: 18px; border-radius: 15px; font-weight: bold; width: 100%; cursor: pointer; font-size: 1rem; font-family: var(--font-main); }
+        
+        .main-input { 
+            width: 100%; min-height: 120px; border-radius: 15px; padding: 15px; border: none; 
+            font-size: 16px; margin-bottom: 15px; background: #f5f5f5; outline: none; 
+            box-sizing: border-box; color: var(--text-dark); text-align: left; overflow-y: auto;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <div id="splash-screen">
+        <div class="logo-container">
+            <svg viewBox="0 0 400 150">
+                <text x="200" y="80" text-anchor="middle" font-family="serif" font-weight="bold" font-size="75" letter-spacing="8" fill="#f4e9c1">ÁRION</text>
+                <text x="200" y="120" text-anchor="middle" font-family="sans-serif" font-size="20" letter-spacing="4" opacity="0.8" fill="#f4e9c1">FLASHCARDS</text>
+            </svg>
+        </div>
+    </div>
+
+    <nav class="top-nav" id="main-nav">
+        <button class="nav-btn" id="nav-decks" onclick="mudarTela('deck-screen'); atualizarNav('nav-decks')">Baralhos</button>
+        <button class="nav-btn" id="nav-browse" onclick="abrirPainel(); atualizarNav('nav-browse')">Painel (Cards)</button>
+        <button class="nav-btn" id="nav-store" onclick="mudarTela('store-screen'); atualizarNav('nav-store')" style="color:var(--premium-gold); border-color:var(--premium-gold)">✨ Loja</button>
+    </nav>
+
+    <div id="modal-overlay">
+        <div class="modal-box" id="custom-modal">
+            <h3 id="modal-title">Título</h3>
+            <div id="modal-content"></div>
+            <button class="btn-gold" id="modal-confirm-btn" style="margin-top:10px">CONFIRMAR</button>
+            <button onclick="fecharModal()" style="background:none; border:none; margin-top:15px; color:gray; cursor:pointer; font-size:0.9rem">Cancelar</button>
+        </div>
+    </div>
+
+    <div id="deck-screen" class="screen">
+        <header><h1>Meus Baralhos</h1></header>
+        <div class="deck-list" id="deck-list"></div>
+        <div style="text-align:center; padding:20px;"><button class="btn-gold" style="width:auto; padding:15px 40px; border-radius:50px;" onclick="abrirModalCriar()">+ Novo Baralho</button></div>
+    </div>
+
+    <div id="store-screen" class="screen">
+        <header><h1>Loja Árion</h1></header>
+        <div class="store-card">
+            <h2 style="margin:0">Biologia Completa</h2>
+            <p style="color:#666; font-size:0.9rem">Cronograma completo do Ensino Médio separado por módulos.</p>
+            <div class="price-tag">R$ 19,90 / mês</div>
+            <button class="btn-gold" onclick="simularAssinatura()">ASSINAR AGORA</button>
+        </div>
+    </div>
+
+    <div id="browse-screen" class="screen">
+        <header><h1>Painel de Cards</h1></header>
+        <div class="tabs-container">
+            <button class="tab-btn active-tab" id="tab-all" onclick="alternarAbasPainel('all')">Todos</button>
+            <button class="tab-btn" id="tab-premium" onclick="alternarAbasPainel('premium')">Gerenciar Premium</button>
+        </div>
+        
+        <div id="browse-all-section">
+            <div class="search-container">
+                <input type="text" id="browse-search" class="search-input" placeholder="Pesquisar nos flashcards..." oninput="filtrarPainel()">
+            </div>
+            <div style="overflow-y: auto; flex-grow: 1;">
+                <table class="browse-table">
+                    <thead>
+                        <tr><th>Frente</th><th>Verso</th><th>Baralho</th></tr>
+                    </thead>
+                    <tbody id="browse-list"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="browse-premium-section" style="display:none; overflow-y: auto; flex-grow: 1;">
+            <div id="premium-manager-root" class="premium-manager-container"></div>
+        </div>
+    </div>
+
+    <div id="details-screen" class="screen">
+        <header><h1 id="details-deck-name"></h1><button onclick="mudarTela('deck-screen')" style="background:none; border:none; color:white; font-size:1.5rem;">✕</button></header>
+        <div id="stats-area"></div>
+        <div id="details-actions"></div>
+    </div>
+
+    <div id="study-screen" class="screen">
+        <header><h1 id="study-title">Estudo</h1><button onclick="abrirDetalhes(dIdx)" style="background:none; border:1px solid white; color:white; border-radius:8px; padding:5px 15px;">Sair</button></header>
+        <div class="card-box" onclick="virarCard()">
+            <div id="display-front" style="font-size:1.4rem"></div>
+            <div class="divider" id="card-divider"></div>
+            <div id="display-back" style="font-size:1.4rem; font-weight:bold; color:var(--primary-green); display:none"></div>
+        </div>
+        <div class="anki-footer" id="anki-btns">
+            <div class="btn-group"><span class="time-label"></span><button class="btn-anki" style="background:#f0f0f0; color:#666" onclick="abrirModalEditarCard()">✎ Editar</button></div>
+            <div class="btn-group"><span class="time-label" id="t0"></span><button class="btn-anki" style="color:#d9534f" onclick="responder(0)">De novo</button></div>
+            <div class="btn-group"><span class="time-label" id="t1"></span><button class="btn-anki" style="color:#f0ad4e" onclick="responder(1)">Difícil</button></div>
+            <div class="btn-group"><span class="time-label" id="t2"></span><button class="btn-anki" style="color:#5cb85c" onclick="responder(2)">Bom</button></div>
+            <div class="btn-group"><span class="time-label" id="t3"></span><button class="btn-anki" style="color:#5bc0de" onclick="responder(3)">Fácil</button></div>
+        </div>
+    </div>
+
+    <div id="create-screen" class="screen">
+        <header><h1>Criar flashcards</h1></header>
+        <div class="toolbar">
+            <button class="tool-btn" onclick="formatar('bold')">B</button>
+            <button class="tool-btn" onclick="formatar('italic')" style="font-style:italic">I</button>
+            <button class="tool-btn" onclick="formatar('underline')" style="text-decoration:underline">U</button>
+            <button class="tool-btn" id="btn-sup" onclick="formatar('superscript')">x²</button>
+            <button class="tool-btn" id="btn-sub" onclick="formatar('subscript')">x₂</button>
+            
+            <div class="color-split-btn">
+                <button class="color-main-btn" onclick="aplicarCorPadrao()">
+                    <span>A</span><div class="color-indicator" id="current-color"></div>
+                </button>
+                <button class="color-select-btn" onclick="document.getElementById('colorPicker').click()">▼</button>
+            </div>
+            <input type="color" id="colorPicker" style="display:none" onchange="atualizarCorPadrao(this.value)">
+        </div>
+        <div id="card-front" class="main-input" contenteditable="true"></div>
+        <div id="card-back" class="main-input" contenteditable="true"></div>
+        <button class="btn-gold" onclick="salvarCard()">SALVAR E CONTINUAR</button>
+        <button onclick="abrirDetalhes(dIdx)" style="background:none; border:1px solid white; color:white; margin-top:10px; padding:15px; border-radius:15px; cursor:pointer; width:100%">FINALIZAR / VOLTAR</button>
+    </div>
+
+    <script>
+        let baralhos = JSON.parse(localStorage.getItem('arion_db_v4')) || [];
+        let dIdx = 0, fila = [], respondido = false;
+        let corAtual = "#ff0000";
+        let onboardingFeito = localStorage.getItem('arion_onboarding') === 'true';
+
+        window.onload = () => {
+            setTimeout(() => {
+                document.getElementById('splash-screen').style.opacity = '0';
+                setTimeout(() => { 
+                    document.getElementById('splash-screen').style.display = 'none'; 
+                    mudarTela('deck-screen');
+                    renderizar(); 
+                }, 500);
+            }, 1500);
+            
+            document.addEventListener('selectionchange', () => {
+                if(document.getElementById('create-screen').classList.contains('active')){
+                    document.getElementById('btn-sup').classList.toggle('active-tool', document.queryCommandState('superscript'));
+                    document.getElementById('btn-sub').classList.toggle('active-tool', document.queryCommandState('subscript'));
+                }
+            });
+        };
+
+        function formatar(cmd, val = null) { document.execCommand(cmd, false, val); }
+        function atualizarCorPadrao(cor) { corAtual = cor; document.getElementById('current-color').style.background = cor; }
+        function aplicarCorPadrao() { document.execCommand('foreColor', false, corAtual); }
+        function salvar() { localStorage.setItem('arion_db_v4', JSON.stringify(baralhos)); renderizar(); }
+        
+        function mudarTela(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            const nav = document.getElementById('main-nav');
+            if(id === 'study-screen' || id === 'create-screen' || id === 'splash-screen') {
+                nav.style.display = 'none';
+            } else {
+                nav.style.display = 'flex';
+                if(id === 'deck-screen') atualizarNav('nav-decks');
+            }
+        }
+
+        function atualizarNav(id) {
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active-nav'));
+            const btn = document.getElementById(id);
+            if(btn) btn.classList.add('active-nav');
+        }
+
+        function fecharModal() { document.getElementById('modal-overlay').style.display = 'none'; }
+
+        function abrirPainel() {
+            alternarAbasPainel('all');
+            document.getElementById('browse-search').value = "";
+            filtrarPainel();
+            mudarTela('browse-screen');
+            atualizarNav('nav-browse');
+        }
+
+        function alternarAbasPainel(aba) {
+            document.getElementById('tab-all').classList.toggle('active-tab', aba === 'all');
+            document.getElementById('tab-premium').classList.toggle('active-tab', aba === 'premium');
+            document.getElementById('browse-all-section').style.display = aba === 'all' ? 'block' : 'none';
+            document.getElementById('browse-premium-section').style.display = aba === 'premium' ? 'block' : 'none';
+            if(aba === 'premium') renderizarGerenciadorPremium();
+        }
+
+        function simularAssinatura() {
+            const bioDeck = {
+                nome: "Biologia: Completo",
+                premium: true,
+                cards: [
+                    {f: "Mitocôndria", v: "ATP", rev: 0, int: 0, ease: 2.5, state: 'new', rep: 0, liberado: false, modulo: "Citologia", submodulo: "Organelas"},
+                    {f: "Ribossomos", v: "Proteína", rev: 0, int: 0, ease: 2.5, state: 'new', rep: 0, liberado: false, modulo: "Citologia", submodulo: "Organelas"},
+                    {f: "Poríferos", v: "Esponjas", rev: 0, int: 0, ease: 2.5, state: 'new', rep: 0, liberado: false, modulo: "Zoologia", submodulo: "Poríferos"},
+                    {f: "Cnidários", v: "Medusas", rev: 0, int: 0, ease: 2.5, state: 'new', rep: 0, liberado: false, modulo: "Zoologia", submodulo: "Cnidários"}
+                ]
+            };
+            baralhos.push(bioDeck);
+            salvar();
+            alert("Conteúdo Premium assinado! Libere os módulos no Painel.");
+            mudarTela('deck-screen');
+        }
+
+        function renderizarGerenciadorPremium() {
+            const root = document.getElementById('premium-manager-root');
+            root.innerHTML = "";
+
+            if(!onboardingFeito) {
+                const balloon = document.createElement('div');
+                balloon.className = 'onboarding-balloon';
+                balloon.innerHTML = `<strong>Dica Árion:</strong> Toda vez que estudar um conteúdo novo em aula, você deve liberar os flashcards aqui para que eles apareçam no seu estudo diário. 😊`;
+                balloon.onclick = () => { balloon.remove(); onboardingFeito = true; localStorage.setItem('arion_onboarding', 'true'); };
+                root.appendChild(balloon);
+            }
+
+            baralhos.forEach((b, dIdx) => {
+                if(!b.premium) return;
+                
+                // Agrupar por modulo e submodulo
+                const grupos = {};
+                b.cards.forEach((c, cIdx) => {
+                    const mod = c.modulo || "Diversos";
+                    const sub = c.submodulo || "Geral";
+                    if(!grupos[mod]) grupos[mod] = {};
+                    if(!grupos[mod][sub]) grupos[mod][sub] = [];
+                    grupos[mod][sub].push({card: c, idx: cIdx});
+                });
+
+                for(let mod in grupos) {
+                    const h = document.createElement('div');
+                    h.className = 'module-header';
+                    h.innerText = mod;
+                    root.appendChild(h);
+
+                    for(let sub in grupos[mod]) {
+                        const row = document.createElement('div');
+                        row.className = 'submodule-row';
+                        const isTodosLiberados = grupos[mod][sub].every(item => item.card.liberado);
+                        
+                        row.innerHTML = `
+                            <span>${sub} <small style="color:gray">(${grupos[mod][sub].length} cards)</small></span>
+                            <input type="checkbox" ${isTodosLiberados ? 'checked' : ''} 
+                                style="width:20px; height:20px"
+                                onchange="toggleSubmodulo(${dIdx}, '${mod}', '${sub}', this.checked)">
+                        `;
+                        root.appendChild(row);
+                    }
+                }
+            });
+        }
+
+        function toggleSubmodulo(dI, mod, sub, status) {
+            baralhos[dI].cards.forEach(c => {
+                if(c.modulo === mod && c.submodulo === sub) c.liberado = status;
+            });
+            salvar();
+        }
+
+        function filtrarPainel() {
+            const termo = document.getElementById('browse-search').value.toLowerCase();
+            const list = document.getElementById('browse-list');
+            list.innerHTML = "";
+            baralhos.forEach((b, deckIdx) => {
+                b.cards.forEach((c, cardIdx) => {
+                    if (c.f.toLowerCase().includes(termo) || c.v.toLowerCase().includes(termo) || b.nome.toLowerCase().includes(termo)) {
+                        const tr = document.createElement('tr');
+                        tr.className = 'card-row';
+                        tr.innerHTML = `<td style="max-width:110px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">${c.f}</td>
+                                        <td style="max-width:110px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">${c.v}</td>
+                                        <td style="color:#666">${b.nome}</td>`;
+                        tr.onclick = () => editarCardPainel(deckIdx, cardIdx);
+                        list.appendChild(tr);
+                    }
+                });
+            });
+        }
+
+        function editarCardPainel(di, ci) {
+            const c = baralhos[di].cards[ci];
+            document.getElementById('modal-overlay').style.display = 'flex';
+            document.getElementById('modal-title').innerText = "Editar Card";
+            document.getElementById('modal-content').innerHTML = `
+                <div id="edit-f-p" class="main-input" contenteditable="true" style="height:80px; background:#eee">${c.f}</div>
+                <div id="edit-v-p" class="main-input" contenteditable="true" style="height:80px; background:#eee">${c.v}</div>`;
+            document.getElementById('modal-confirm-btn').onclick = () => {
+                c.f = document.getElementById('edit-f-p').innerHTML;
+                c.v = document.getElementById('edit-v-p').innerHTML;
+                salvar(); fecharModal(); abrirPainel();
+            };
+        }
+
+        function abrirModalCriar() {
+            document.getElementById('modal-overlay').style.display = 'flex';
+            document.getElementById('modal-title').innerText = "Novo Baralho";
+            document.getElementById('modal-content').innerHTML = `<input type="text" id="deck-n" placeholder="Nome do baralho...">`;
+            document.getElementById('modal-confirm-btn').onclick = () => {
+                let n = document.getElementById('deck-n').value;
+                if(n.trim()) { baralhos.push({nome: n, cards: [], premium: false}); salvar(); fecharModal(); }
+            };
+        }
+
+        function prepararRenomear(i) {
+            document.getElementById('modal-overlay').style.display = 'flex';
+            document.getElementById('modal-title').innerText = "Renomear Baralho";
+            document.getElementById('modal-content').innerHTML = `<input type="text" id="edit-n" value="${baralhos[i].nome}">`;
+            document.getElementById('modal-confirm-btn').onclick = () => {
+                let n = document.getElementById('edit-n').value;
+                if(n.trim()) { baralhos[i].nome = n; salvar(); fecharModal(); }
+            };
+        }
+
+        function prepararExclusao(i) {
+            document.getElementById('modal-overlay').style.display = 'flex';
+            document.getElementById('modal-title').innerText = "Excluir Baralho?";
+            document.getElementById('modal-content').innerHTML = `<p style="color:#666">Isso apagará permanentemente todos os cartões deste baralho.</p>`;
+            document.getElementById('modal-confirm-btn').onclick = () => { baralhos.splice(i, 1); salvar(); fecharModal(); };
+        }
+
+        function abrirModalEditarCard() {
+            const c = fila[0];
+            document.getElementById('modal-overlay').style.display = 'flex';
+            document.getElementById('modal-title').innerText = "Editar Cartão";
+            document.getElementById('modal-content').innerHTML = `
+                <div id="edit-f" class="main-input" contenteditable="true" style="height:80px; background:#eee">${c.f}</div>
+                <div id="edit-v" class="main-input" contenteditable="true" style="height:80px; background:#eee">${c.v}</div>`;
+            document.getElementById('modal-confirm-btn').onclick = () => {
+                c.f = document.getElementById('edit-f').innerHTML;
+                c.v = document.getElementById('edit-v').innerHTML;
+                salvar(); fecharModal(); carregarCard();
+                if(respondido) virarCard();
+            };
+        }
+
+        function renderizar() {
+            document.getElementById('deck-list').innerHTML = baralhos.map((b, i) => `
+                <div class="deck-item ${b.premium ? 'premium' : ''}" onclick="abrirDetalhes(${i})">
+                    ${b.premium ? '<div class="premium-badge">PREMIUM</div>' : ''}
+                    <div><strong style="${b.premium ? 'color:var(--premium-gold)' : ''}">${b.nome}</strong><br><small style="opacity:0.6">${b.cards.length} cards</small></div>
+                    <div class="deck-options-btn" onclick="event.stopPropagation(); toggleMenu(${i})">⋮</div>
+                    <div class="options-menu" id="menu-${i}">
+                        <button onclick="event.stopPropagation(); prepararRenomear(${i})">Renomear</button>
+                        <button style="color:red" onclick="event.stopPropagation(); prepararExclusao(${i})">Excluir</button>
+                    </div>
+                </div>`).join('');
+        }
+
+        function toggleMenu(i) {
+            const menus = document.querySelectorAll('.options-menu');
+            const targetMenu = document.getElementById(`menu-${i}`);
+            const isVisible = targetMenu.style.display === 'block';
+            menus.forEach(m => m.style.display = 'none');
+            if (!isVisible) targetMenu.style.display = 'block';
+        }
+
+        window.addEventListener('click', (e) => {
+            if (!e.target.classList.contains('deck-options-btn')) document.querySelectorAll('.options-menu').forEach(m => m.style.display = 'none');
+            if (e.target === document.getElementById('modal-overlay')) fecharModal();
+        });
+
+        function abrirDetalhes(i, finalizou = false) {
+            dIdx = i; const b = baralhos[i]; const h = Date.now();
+            fila = b.cards.filter(c => c.rev <= h && (!b.premium || c.liberado === true));
+            
+            const novos = b.cards.filter(c => c.rep === 0 && (!b.premium || c.liberado)).length;
+            const learn = b.cards.filter(c => c.state === 'learning' && c.rev <= h && (!b.premium || c.liberado)).length;
+            const rev = b.cards.filter(c => c.state === 'review' && c.rev <= h && (!b.premium || c.liberado)).length;
+
+            document.getElementById('details-deck-name').innerText = b.nome;
+            const area = document.getElementById('stats-area');
+            const actions = document.getElementById('details-actions');
+
+            if (finalizou && fila.length === 0) {
+                area.innerHTML = `<div class="congratulations-rect">Parabéns! Você finalizou os flashcards previstos para hoje</div>`;
+                actions.innerHTML = `<button class="btn-gold" onclick="mudarTela('deck-screen')">VOLTAR PARA MEUS BARALHOS</button>`;
+            } else {
+                const isDisabled = fila.length === 0;
+                area.innerHTML = `
+                <div class="anki-stats-card">
+                    <div style="text-align:left">
+                        <div class="stat-row">Novo: <span style="color:#2185d0">${novos}</span></div>
+                        <div class="stat-row">Aprendizagem: <span style="color:#c33">${learn}</span></div>
+                        <div class="stat-row">A Revisar: <span style="color:#2e7d32">${rev}</span></div>
+                    </div>
+                    <button class="btn-anki" 
+                        style="background:${isDisabled ? '#e0e0e0' : '#2185d0'}; color:${isDisabled ? '#999' : 'white'}; padding:12px 20px; width:auto; height:auto; cursor:${isDisabled ? 'not-allowed' : 'pointer'}; opacity:${isDisabled ? '0.7' : '1'};" 
+                        onclick="${isDisabled ? '' : 'iniciarEstudo()'}" ${isDisabled ? 'disabled' : ''}>Estudar agora</button>
+                </div>`;
+                actions.innerHTML = `<button class="btn-gold" onclick="abrirCriador(${i})">+ ADICIONAR CARDS</button>`;
+            }
+            mudarTela('details-screen');
+        }
+
+        function iniciarEstudo() { if(fila.length > 0) carregarCard(); }
+
+        function carregarCard() {
+            mudarTela('study-screen'); respondido = false;
+            document.getElementById('display-front').innerHTML = fila[0].f;
+            document.getElementById('display-back').style.display = 'none';
+            document.getElementById('card-divider').style.display = 'none';
+            document.getElementById('anki-btns').style.display = 'flex';
+            document.querySelectorAll('.time-label').forEach(el => el.innerText = "");
+            document.querySelectorAll('.btn-anki').forEach((btn, idx) => { if(idx > 0) btn.style.visibility = 'hidden'; });
+        }
+
+        function virarCard() {
+            if(respondido) return;
+            respondido = true;
+            const c = fila[0];
+            document.getElementById('display-back').innerHTML = c.v;
+            document.getElementById('display-back').style.display = 'block';
+            document.getElementById('card-divider').style.display = 'block';
+            document.querySelectorAll('.btn-anki').forEach(btn => btn.style.visibility = 'visible');
+            if(c.state !== 'review') {
+                document.getElementById('t0').innerText = "<1m"; document.getElementById('t1').innerText = "6m";
+                document.getElementById('t2').innerText = "10m"; document.getElementById('t3').innerText = "4d";
+            } else {
+                document.getElementById('t0').innerText = "<10m"; document.getElementById('t1').innerText = Math.round(c.int * 1.2) + "d";
+                document.getElementById('t2').innerText = Math.round(c.int * c.ease) + "d"; document.getElementById('t3').innerText = Math.round(c.int * c.ease * 1.3) + "d";
+            }
+        }
+
+        function responder(q) {
+            let c = fila.shift();
+            const min = 60000, dia = 86400000;
+            if (c.state !== 'review') {
+                if (q === 0) { c.rev = Date.now() + min; c.state = 'learning'; fila.push(c); }
+                else if (q === 1) { c.rev = Date.now() + (6 * min); fila.push(c); }
+                else if (q === 2) { c.state = 'review'; c.int = 1; c.rev = Date.now() + dia; }
+                else { c.state = 'review'; c.int = 4; c.rev = Date.now() + (4 * dia); }
+            } else {
+                if (q === 0) { c.ease = Math.max(1.3, c.ease - 0.2); c.state = 'learning'; c.rev = Date.now() + min; fila.push(c); }
+                else {
+                    if (q === 1) c.ease = Math.max(1.3, c.ease - 0.15);
+                    if (q === 3) c.ease += 0.15;
+                    c.int = Math.round(c.int * (q === 1 ? 1.2 : q === 2 ? c.ease : c.ease * 1.3));
+                    c.rev = Date.now() + (c.int * dia);
+                }
+            }
+            c.rep++; salvar();
+            if(fila.length > 0) carregarCard(); else abrirDetalhes(dIdx, true);
+        }
+
+        function abrirCriador(i) { dIdx = i; mudarTela('create-screen'); }
+        function salvarCard() {
+            const f = document.getElementById('card-front'), v = document.getElementById('card-back');
+            if(!f.innerHTML || f.innerHTML === '<br>') return;
+            baralhos[dIdx].cards.push({f: f.innerHTML, v: v.innerHTML, rev: Date.now(), int: 0, rep: 0, ease: 2.5, state: 'new', liberado: true});
+            salvar(); f.innerHTML = ""; v.innerHTML = ""; f.focus();
+        }
+    </script>
+</body>
+</html>
