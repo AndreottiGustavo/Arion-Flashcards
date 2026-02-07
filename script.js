@@ -350,6 +350,22 @@ let baralhos = JSON.parse(localStorage.getItem('arion_db_v4')) || [];
             document.getElementById('display-back').style.display = 'none';
             document.getElementById('card-divider').style.display = 'none';
             document.getElementById('anki-btns').style.display = 'none';
+                atualizarRotulos(c);
+        }
+
+
+        function atualizarRotulos(c) {
+            document.getElementById("t0").innerText =
+                formatarIntervalo(obterProximoIntervalo(c, 0));
+        
+            document.getElementById("t1").innerText =
+                formatarIntervalo(obterProximoIntervalo(c, 1));        
+        
+            document.getElementById("t2").innerText =
+                formatarIntervalo(obterProximoIntervalo(c, 2));
+        
+            document.getElementById("t3").innerText =
+                formatarIntervalo(obterProximoIntervalo(c, 3));
         }
 
         function virarCard() {
@@ -379,29 +395,87 @@ let baralhos = JSON.parse(localStorage.getItem('arion_db_v4')) || [];
 ////////////////////AQUI ESTÁ A TODA REVISÃO ESPAÇADA DO ANKI/////////////////
         
         function responder(q) {
+        
+                   let c = fila.shift();
+        
+            // ======== CONSTANTES E FUNÇÕES AUXILIARES ========
+            const agora = Date.now();
+            const dia = 86400000;
+        
+            // Configurações padrão do Anki
+            const learningSteps = [1, 10]; // minutos
+            const lapseSteps = [10];       // minutos
+            const MAX_INTERVAL = 75;       // limite máximo em dias (2,5 meses)
+            const MIN_EASE = 1.3;          // menor EF possível
+        
+            const marcarMinutos = (min) => agora + (min * 60000);
+            const marcarDias = (dias) => agora + (dias * dia);
+        
+            // Inicializa propriedades caso não existam
+            if (!c.ease) c.ease = 2.5;
+            if (!c.int) c.int = 0;
+            if (!c.step) c.step = 0;
+            if (!c.state) c.state = 'new';
 
-           let c = fila.shift();
+        }
 
-    // ======== CONSTANTES E FUNÇÕES AUXILIARES ========
-    const agora = Date.now();
-    const dia = 86400000;
+        function obterProximoIntervalo(c, q) {
+            const agora = Date.now();
+            const dia = 86400000;
+            const learningSteps = [1, 10]; 
+            const lapseSteps = [10];       
+            const MIN_EASE = 1.3;
+        
+            // Copia segura (não mexe no card real)
+            let ease = c.ease || 2.5;
+            let int = c.int || 0;
+            let step = c.step || 0;
+            let state = c.state || 'new';
+        
+            // --- NEW / LEARNING ---
+            if (state === 'new' || state === 'learning') {
+        
+                if (q === 0) return 1;              // "De novo" sempre volta p/ 1 min
+                if (q === 1) return learningSteps[step]; // difícil repete step atual
+        
+                if (q === 2) { // bom
+                    if (step + 1 < learningSteps.length) {
+                        return learningSteps[step + 1];
+                    }
+                    return 1 * 1440; // vira review: 1 dia
+                }
+        
+                if (q === 3) {
+                    return 4 * 1440; // easy = 4 dias
+                }
+            }
+        
+            // --- REVIEW ---
+            if (state === 'review') {
+        
+                if (q === 0) {
+                    return lapseSteps[0]; // 10 min
+                }
+        
+                if (q === 1) {
+                    return int * 1.2 * 1440; // difícil aumenta pouco
+                }
+        
+                if (q === 2) {
+                    return int * ease * 1440; // bom usa ease
+                }
+        
+                if (q === 3) {
+                    return int * ease * 1.3 * 1440; // easy mais rápido
+                }
+            }
+        
+            return 0;
+        }
 
-    // Configurações padrão do Anki
-    const learningSteps = [1, 10]; // minutos
-    const lapseSteps = [10];       // minutos
-    const MAX_INTERVAL = 75;       // limite máximo em dias (2,5 meses)
-    const MIN_EASE = 1.3;          // menor EF possível
 
-    const marcarMinutos = (min) => agora + (min * 60000);
-    const marcarDias = (dias) => agora + (dias * dia);
 
-    // Inicializa propriedades caso não existam
-    if (!c.ease) c.ease = 2.5;
-    if (!c.int) c.int = 0;
-    if (!c.step) c.step = 0;
-    if (!c.state) c.state = 'new';
-
-    // ======== FUNÇÕES DE ESTADO ========
+            // ======== FUNÇÕES DE ESTADO ========
 
     function processarNewOuLearning(c, q) {
 
@@ -567,4 +641,5 @@ cardBox.addEventListener('touchmove', e => {
             });
 
         })();
+
 
