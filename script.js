@@ -596,62 +596,115 @@ cardBox.addEventListener('touchmove', e => {
         // ================swipe de voltar do iPhone===============
 
 
-//////////////////// GESTO DE VOLTAR (IPHONE) COM TRANSIÇÃO ///////////////////
+//////////////////// GESTO DE VOLTAR (IPHONE) - VERSÃO CORRIGIDA ///////////////////
 (function() {
     let touchStartX = 0;
     let touchMoveX = 0;
     let telaAtual = null; 
+    let telaFundo = null;
     const bordaSensivel = 40; 
     const distanciaMinima = 100;
 
     window.addEventListener('touchstart', e => {
         touchStartX = e.changedTouches[0].screenX;
         telaAtual = document.querySelector('.screen.active');
-        if (touchStartX < bordaSensivel && telaAtual) {
+
+        // Se for a tela inicial, não faz nada
+        if (!telaAtual || telaAtual.id === 'deck-screen') {
+            telaAtual = null;
+            return;
+        }
+
+        if (touchStartX < bordaSensivel) {
             telaAtual.style.transition = 'none';
+
+            // Define quem aparece atrás
+            let idDestino = (telaAtual.id === 'study-screen') ? 'details-screen' : 'deck-screen';
+            telaFundo = document.getElementById(idDestino);
+            
+            if (telaFundo) {
+                telaFundo.style.display = 'flex'; 
+                telaFundo.style.transition = 'none';
+                telaFundo.style.opacity = '0.5'; 
+                telaFundo.style.transform = 'scale(0.95)';
+                telaFundo.style.zIndex = '1'; // Fundo atrás
+                telaAtual.style.zIndex = '2'; // Atual na frente
+            }
         }
     }, { passive: true });
 
     window.addEventListener('touchmove', e => {
-        if (touchStartX < bordaSensivel && telaAtual) {
-            touchMoveX = e.changedTouches[0].screenX;
-            const deslocamento = Math.max(0, touchMoveX - touchStartX);
-            telaAtual.style.transform = `translateX(${deslocamento}px)`;
-            telaAtual.style.boxShadow = '-10px 0 20px rgba(0,0,0,0.2)';
+        // Se não temos tela atual ou é a principal, cancela o movimento
+        if (!telaAtual || telaAtual.id === 'deck-screen' || touchStartX >= bordaSensivel) return;
+
+        touchMoveX = e.changedTouches[0].screenX;
+        const deslocamento = Math.max(0, touchMoveX - touchStartX);
+        const progresso = Math.min(1, deslocamento / window.innerWidth);
+
+        telaAtual.style.transform = `translateX(${deslocamento}px)`;
+        telaAtual.style.boxShadow = '-10px 0 20px rgba(0,0,0,0.2)';
+
+        if (telaFundo) {
+            telaFundo.style.opacity = 0.5 + (progresso * 0.5);
+            telaFundo.style.transform = `scale(${0.95 + (progresso * 0.05)})`;
         }
     }, { passive: true });
 
     window.addEventListener('touchend', e => {
-        if (touchStartX < bordaSensivel && telaAtual) {
-            const touchEndX = e.changedTouches[0].screenX;
-            const deslocamentoFinal = touchEndX - touchStartX;
+        if (!telaAtual || telaAtual.id === 'deck-screen' || touchStartX >= bordaSensivel) {
+            return;
+        }
 
-            telaAtual.style.transition = 'transform 0.3s ease-out';
+        const touchEndX = e.changedTouches[0].screenX;
+        const deslocamentoFinal = touchEndX - touchStartX;
+
+        telaAtual.style.transition = 'transform 0.3s ease-out';
+        if (telaFundo) telaFundo.style.transition = 'all 0.3s ease-out';
+        
+        if (deslocamentoFinal > distanciaMinima) {
+            if (navigator.vibrate) navigator.vibrate(10); 
+            telaAtual.style.transform = 'translateX(100%)';
             
-            if (deslocamentoFinal > distanciaMinima) {
-                if (navigator.vibrate) navigator.vibrate(10); // Vibração curta de 10ms (estilo iOS)
-                telaAtual.style.transform = 'translateX(100%)';
+            if (telaFundo) {
+                telaFundo.style.opacity = '1';
+                telaFundo.style.transform = 'scale(1)';
+            }
+            
+            setTimeout(() => {
+                const idAtual = telaAtual.id;
+                if (idAtual === 'study-screen') {
+                    abrirDetalhes(dIdx);
+                } else {
+                    mudarTela('deck-screen');
+                    atualizarNav('nav-decks');
+                }
                 
+                // Reset fundamental
+                resetEstilos(telaAtual);
+                telaAtual = null;
+                telaFundo = null;
+            }, 300);
+        } else {
+            // Cancelou o swipe
+            telaAtual.style.transform = 'translateX(0)';
+            if (telaFundo) {
+                telaFundo.style.opacity = '0.5';
+                telaFundo.style.transform = 'scale(0.95)';
                 setTimeout(() => {
-                    // --- ESSA É A PARTE QUE MAPEIA SEU HTML ---
-                    const idAtual = telaAtual.id;
-
-                    if (idAtual === 'study-screen') {
-                        abrirDetalhes(dIdx); // Volta para os detalhes do baralho
-                    } else if (['details-screen', 'store-screen', 'browse-screen', 'create-screen'].includes(idAtual)) {
-                        mudarTela('deck-screen');
-                        atualizarNav('nav-decks');
+                    // Se não mudamos de tela, esconde o fundo de novo
+                    if (telaFundo && !telaFundo.classList.contains('active')) {
+                        telaFundo.style.display = 'none';
                     }
-                    // ------------------------------------------
-
-                    telaAtual.style.transition = 'none';
-                    telaAtual.style.transform = 'translateX(0)';
-                    telaAtual.style.boxShadow = 'none';
                 }, 300);
-            } else {
-                telaAtual.style.transform = 'translateX(0)';
-                telaAtual.style.boxShadow = 'none';
             }
         }
     }, { passive: true });
+
+    function resetEstilos(el) {
+        if (!el) return;
+        el.style.transition = '';
+        el.style.transform = '';
+        el.style.boxShadow = '';
+        el.style.zIndex = '';
+    }
 })();
