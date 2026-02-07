@@ -653,33 +653,39 @@
             baralhos[dIdx].cards.push({f: f.innerHTML, v: v.innerHTML, rev: Date.now(), int: 0, rep: 0, ease: 2.5, state: 'new', liberado: true});
             salvar(); f.innerHTML = ""; v.innerHTML = ""; f.focus();
         }
-// SWIPE COM EFEITO VISUAL
+// SWIPE COM EFEITO VISUAL CORRIGIDO
 (function(){
     const cardBox = document.querySelector('.card-box');
     let startX = 0, startY = 0, isSwiping = false;
 
-cardBox.addEventListener('touchstart', e => {
-        // TRAVA: Só permite o swipe se o card já foi respondido (botões visíveis)
-        if (document.getElementById('anki-btns').style.display === 'none') return;
+    cardBox.addEventListener('touchstart', e => {
+        const ankiBtns = document.getElementById('anki-btns');
+        // TRAVA: Se os botões estão escondidos, isSwiping continua falso e damos um 'return'
+        if (!ankiBtns || ankiBtns.style.display === 'none' || ankiBtns.style.display === '') {
+            isSwiping = false;
+            return;
+        }
         
         isSwiping = true;
         startX = e.touches[0].clientX;
         startY = e.touches[0].clientY;
         cardBox.style.transition = 'none';
-    });
+    }, {passive: true});
 
     cardBox.addEventListener('touchmove', e => {
+        // Se a trava no touchstart funcionou, o isSwiping será falso e nada abaixo executa
         if(!isSwiping) return;
+
         const dx = e.touches[0].clientX - startX;
         const dy = e.touches[0].clientY - startY;
         cardBox.style.transform = `translate(${dx}px, ${dy}px) rotate(${dx * 0.05}deg)`;
 
-        // Feedback visual mais equilibrado
+        // Feedback visual equilibrado
         if (dx > 50) {
-            cardBox.style.boxShadow = '0 15px 40px rgba(0, 123, 255, 0.6)'; // Azul menos opaco
+            cardBox.style.boxShadow = '0 15px 40px rgba(0, 123, 255, 0.6)';
             cardBox.style.border = '3px solid #007bff';
         } else if (dx < -50) {
-            cardBox.style.boxShadow = '0 15px 40px rgba(255, 59, 48, 0.6)'; // Vermelho menos opaco
+            cardBox.style.boxShadow = '0 15px 40px rgba(255, 59, 48, 0.6)';
             cardBox.style.border = '3px solid #ff3b30';
         } else {
             cardBox.style.boxShadow = '0 10px 30px rgba(0,0,0,0.18)';
@@ -687,23 +693,32 @@ cardBox.addEventListener('touchstart', e => {
         }
 
         if(Math.abs(dx) > Math.abs(dy)) e.preventDefault();
-    }, {passive:false});
+    }, {passive: false});
 
-    cardBox.addEventListener('touchend', e => {
+cardBox.addEventListener('touchend', e => {
         if(!isSwiping) return;
         isSwiping = false;
         const dx = e.changedTouches[0].clientX - startX;
         
-        // RESET DA SOMBRA SEMPRE QUE SOLTAR O DEDO
+        // RESET IMEDIATO DA SOMBRA
         cardBox.style.boxShadow = '0 10px 30px rgba(0,0,0,0.18)';
         cardBox.style.border = 'none';
 
-        if (dx > 120) {
-            proximoCard('bom');
-        } else if (dx < -120) {
-            proximoCard('denovo');
+        // LÓGICA DE DECISÃO:
+        if (dx > 100) {
+            // Arremessa para a direita e marca como BOM
+            cardBox.style.transition = 'transform 0.4s ease-out';
+            cardBox.style.transform = `translate(1000px, ${e.changedTouches[0].clientY - startY}px) rotate(30deg)`;
+            setTimeout(() => responder(2), 200); 
+
+        } else if (dx < -100) {
+            // Arremessa para a esquerda e marca como DE NOVO
+            cardBox.style.transition = 'transform 0.4s ease-out';
+            cardBox.style.transform = `translate(-1000px, ${e.changedTouches[0].clientY - startY}px) rotate(-30deg)`;
+            setTimeout(() => responder(0), 200);
+
         } else {
-            // Volta para o centro suavemente
+            // Se não passou de 100px, volta suavemente para o centro
             cardBox.style.transition = 'transform 0.3s ease';
             cardBox.style.transform = 'translate(0,0) rotate(0)';
         }
@@ -714,6 +729,7 @@ cardBox.addEventListener('touchstart', e => {
     </script>
 </body>
 </html>
+
 
 
 
