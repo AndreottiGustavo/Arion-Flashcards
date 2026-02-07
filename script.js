@@ -338,42 +338,32 @@ let baralhos = JSON.parse(localStorage.getItem('arion_db_v4')) || [];
 
 
         function carregarCard() {
-    const c = fila[0];
-    respondido = false;
+            const c = fila[0];
+            respondido = false;
+        
+            const cardBox = document.querySelector('.card-box');
+            cardBox.style.transform = 'translate(0,0) rotate(0)';
+            cardBox.style.transition = 'none';
+            cardBox.style.boxShadow = '0 10px 25px rgba(0,0,0,0.15)';
+            cardBox.style.border = 'none';
+        
+            document.getElementById('display-front').innerHTML = c.f;
+            document.getElementById('display-back').style.display = 'none';
+            document.getElementById('card-divider').style.display = 'none';
+            document.getElementById('anki-btns').style.display = 'none';
+        
+            atualizarRotulos(c);
+        }
 
-    const cardBox = document.querySelector('.card-box');
-    cardBox.style.transform = 'translate(0,0) rotate(0)';
-    cardBox.style.transition = 'none';
-    cardBox.style.boxShadow = '0 10px 25px rgba(0,0,0,0.15)';
-    cardBox.style.border = 'none';
-
-    document.getElementById('display-front').innerHTML = c.f;
-    document.getElementById('display-back').style.display = 'none';
-    document.getElementById('card-divider').style.display = 'none';
-    document.getElementById('anki-btns').style.display = 'none';
-
-    // Atualiza os rótulos de intervalo
-    atualizarRotulos(c);
-}
-
-function atualizarRotulos(c) {
-    // Se for novo ou learning, mostra intervalos padrão
-    if(c.state === 'new' || c.state === 'learning') {
-        document.getElementById("t0").innerText = "<1m"; // De novo
-        document.getElementById("t1").innerText = "2m";  // Difícil
-        document.getElementById("t2").innerText = "1d";  // Bom
-        document.getElementById("t3").innerText = "4d";  // Easy
-    } else {
-        // Se for review, calcula intervalos reais
-        document.getElementById("t0").innerText = formatarIntervalo(obterProximoIntervalo(c, 0));
-        document.getElementById("t1").innerText = formatarIntervalo(obterProximoIntervalo(c, 1));
-        document.getElementById("t2").innerText = formatarIntervalo(obterProximoIntervalo(c, 2));
-        document.getElementById("t3").innerText = formatarIntervalo(obterProximoIntervalo(c, 3));
-    }
-}
+    Function atualizarRotulos(c) {
+            document.getElementById("t0").innerText = formatarIntervalo(obterProximoIntervalo(c, 0));
+            document.getElementById("t1").innerText = formatarIntervalo(obterProximoIntervalo(c, 1));
+            document.getElementById("t2").innerText = formatarIntervalo(obterProximoIntervalo(c, 2));
+            document.getElementById("t3").innerText = formatarIntervalo(obterProximoIntervalo(c, 3));
+        }
 
 
-        function virarCard() {
+   function virarCard() {
             if(respondido) return;
             respondido = true;
             const c = fila[0];
@@ -382,100 +372,111 @@ function atualizarRotulos(c) {
             document.getElementById('card-divider').style.display = 'block';
             document.getElementById('anki-btns').style.display = 'flex';
             
-            const int = c.int || 0;
-            const ease = c.ease || 2.5;
-
-            if(c.state === 'new') {
-                document.getElementById('t0').innerText = "<1m"; document.getElementById('t1').innerText = "2m";
-                document.getElementById('t2').innerText = "1d"; document.getElementById('t3').innerText = "4d";
-            } else {
-                document.getElementById('t0').innerText = "<10m"; 
-                document.getElementById('t1').innerText = Math.max(1, Math.round(int * 1.2)) + "d";
-                document.getElementById('t2').innerText = Math.round(int * ease) + "d"; 
-                document.getElementById('t3').innerText = Math.round(int * ease * 1.3) + "d";
-            }
+            // IMPORTANTE: Chamamos atualizarRotulos aqui também para garantir que os tempos nos botões estejam corretos
+            atualizarRotulos(c);
         }
 
 
 ////////////////////AQUI ESTÁ A TODA REVISÃO ESPAÇADA DO ANKI/////////////////
         
-        function responder(q) {
-        
-                   let c = fila.shift();
-        
-            // ======== CONSTANTES E FUNÇÕES AUXILIARES ========
+   function responder(q) {
+            let c = fila.shift(); // Tira o card atual da frente
             const agora = Date.now();
-            const dia = 86400000;
-        
-            // Configurações padrão do Anki
             const learningSteps = [1, 10]; // minutos
-            const lapseSteps = [10];       // minutos
-            const MAX_INTERVAL = 75;       // limite máximo em dias (2,5 meses)
-            const MIN_EASE = 1.3;          // menor EF possível
-        
-            const marcarMinutos = (min) => agora + (min * 60000);
-            const marcarDias = (dias) => agora + (dias * dia);
-        
-            // Inicializa propriedades caso não existam
-            if (!c.ease) c.ease = 2.5;
-            if (!c.int) c.int = 0;
-            if (!c.step) c.step = 0;
-            if (!c.state) c.state = 'new';
-
-        }
-
-        function obterProximoIntervalo(c, q) {
-            const agora = Date.now();
-            const dia = 86400000;
-            const learningSteps = [1, 10]; 
-            const lapseSteps = [10];       
+            const MAX_INTERVAL = 75; // dias (conforme seu código)
             const MIN_EASE = 1.3;
         
-            // Copia segura (não mexe no card real)
+            // Garante que os atributos existam
+            if (!c.ease) c.ease = 2.5;
+            if (c.int === undefined) c.int = 0;
+            if (c.step === undefined) c.step = 0;
+            if (!c.state) c.state = 'new';
+        
+            const intervaloMs = obterProximoIntervalo(c, q);
+            c.rev = agora + intervaloMs;
+        
+            // LÓGICA DE APRENDIZADO (New ou Learning)
+            if (c.state === 'new' || c.state === 'learning') {
+                if (q === 0) { // Errou (Again)
+                    c.step = 0;
+                    c.state = 'learning';
+                    fila.push(c); 
+                } else if (q === 1) { // Difícil (Hard)
+                    c.state = 'learning';
+                    fila.push(c); 
+                } else if (q === 2) { // Bom (Good)
+                    c.step++;
+                    if (c.step < learningSteps.length) {
+                        c.state = 'learning';
+                        fila.push(c); 
+                    } else {
+                        c.state = 'review';
+                        c.int = 1; 
+                    }
+                } else if (q === 3) { // Fácil (Easy)
+                    c.state = 'review';
+                    c.int = 4; 
+                }
+            } 
+            // LÓGICA DE REVISÃO
+            else if (c.state === 'review') {
+                if (q === 0) { // Errou (Lapse)
+                    c.ease = Math.max(MIN_EASE, c.ease - 0.2);
+                    c.state = 'learning';
+                    c.step = 0;
+                    fila.push(c); 
+                } else if (q === 1) { // Hard
+                    c.ease = Math.max(MIN_EASE, c.ease - 0.15);
+                    c.int = Math.max(1, Math.round(c.int * 1.2));
+                } else if (q === 2) { // Good
+                    c.int = Math.round(c.int * c.ease);
+                } else if (q === 3) { // Easy
+                    c.ease += 0.15;
+                    c.int = Math.round(c.int * c.ease * 1.3);
+                }
+                c.int = Math.min(c.int, MAX_INTERVAL);
+            }
+        
+            c.rep++;
+            salvar();
+        
+            // Controle da interface
+            if (fila.length > 0) {
+                carregarCard();
+            } else {
+                abrirDetalhes(dIdx, true); // Finaliza e mostra o retângulo de parabéns
+            }
+        }
+
+        
+        function obterProximoIntervalo(c, q) {
+            const dia = 86400000;
+            const minMs = 60000;
+            const learningSteps = [1, 10]; 
+            const lapseSteps = [10];       
+        
             let ease = c.ease || 2.5;
             let int = c.int || 0;
             let step = c.step || 0;
             let state = c.state || 'new';
         
-            // --- NEW / LEARNING ---
             if (state === 'new' || state === 'learning') {
-        
-                if (q === 0) return 1;              // "De novo" sempre volta p/ 1 min
-                if (q === 1) return learningSteps[step]; // difícil repete step atual
-        
-                if (q === 2) { // bom
-                    if (step + 1 < learningSteps.length) {
-                        return learningSteps[step + 1];
-                    }
-                    return 1 * 1440; // vira review: 1 dia
-                }
-        
-                if (q === 3) {
-                    return 4 * 1440; // easy = 4 dias
-                }
-            }
-        
-            // --- REVIEW ---
-            if (state === 'review') {
-        
-                if (q === 0) {
-                    return lapseSteps[0]; // 10 min
-                }
-        
-                if (q === 1) {
-                    return int * 1.2 * 1440; // difícil aumenta pouco
-                }
-        
+                if (q === 0) return 1 * minMs;
+                if (q === 1) return learningSteps[step] * minMs;
                 if (q === 2) {
-                    return int * ease * 1440; // bom usa ease
+                    if (step + 1 < learningSteps.length) return learningSteps[step + 1] * minMs;
+                    return 1 * dia;
                 }
-        
-                if (q === 3) {
-                    return int * ease * 1.3 * 1440; // easy mais rápido
-                }
+                if (q === 3) return 4 * dia;
             }
         
-            return 0;
+            if (state === 'review') {
+                if (q === 0) return lapseSteps[0] * minMs;
+                if (q === 1) return Math.max(1, Math.round(int * 1.2)) * dia;
+                if (q === 2) return Math.round(int * ease) * dia;
+                if (q === 3) return Math.round(int * ease * 1.3) * dia;
+            }
+            return minMs;
         }
 
 
@@ -646,6 +647,7 @@ cardBox.addEventListener('touchmove', e => {
             });
 
         })();
+
 
 
 
