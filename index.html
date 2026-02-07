@@ -553,7 +553,7 @@
             const actions = document.getElementById('details-actions');
 
             if (finalizou && fila.length === 0) {
-                area.innerHTML = `<div class="congratulations-rect">Parabéns! Você finalizou os flashcards previstos para hoje</div>`;
+                area.innerHTML = `<div class="congratulations-rect">Parabéns! Você finalizou os flashcards previstos para hoje.</div>`;
                 actions.innerHTML = `<button class="btn-gold" onclick="mudarTela('deck-screen')">VOLTAR PARA MEUS BARALHOS</button>`;
             } else {
                 const isDisabled = fila.length === 0;
@@ -686,7 +686,10 @@ cardBox.addEventListener('touchend', e => {
             if (Math.abs(dx) < 10) virarCard(); 
         }
     });
+})();
 
+        
     </script>
 </body>
 </html>
+
