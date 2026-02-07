@@ -21,6 +21,23 @@ let baralhos = JSON.parse(localStorage.getItem('arion_db_v4')) || [];
             });
         };
 
+function formatarIntervalo(ms) {
+    const min = Math.round(ms / 60000);
+    const dia = 1440;
+
+    if (min < 60) return `${min} min`;
+    if (min < dia) return `${Math.round(min / 60)} h`;
+
+    const dias = Math.round(min / dia);
+    if (dias < 30) return `${dias} dia${dias > 1 ? 's' : ''}`;
+
+    const meses = Math.round(dias / 30);
+    if (meses < 12) return `${meses} mês${meses > 1 ? 'es' : ''}`;
+
+    const anos = Math.round(meses / 12);
+    return `${anos} ano${anos > 1 ? 's' : ''}`;
+}
+
         function formatar(cmd, val = null) { document.execCommand(cmd, false, val); }
         function atualizarCorPadrao(cor) { corAtual = cor; document.getElementById('current-color').style.background = cor; }
         function aplicarCorPadrao() { document.execCommand('foreColor', false, corAtual); }
@@ -308,7 +325,7 @@ function iniciarEstudo(i) {
     const hoje = new Date().setHours(0,0,0,0);
     
     // Filtra apenas os cards que precisam ser estudados hoje
-    fila = b.cards.filter(c => (c.state === 'new' || c.rev <= hoje) && (!b.premium || c.liberado));
+    fila = b.cards.filter(c => (c.state === 'new' || c.rev <= Date.now()) && (!b.premium || c.liberado));
     
     if(fila.length === 0) {
         abrirDetalhes(dIdx, true); // Se não tiver nada, volta e mostra os parabéns
@@ -548,4 +565,5 @@ cardBox.addEventListener('touchmove', e => {
                     cardBox.style.boxShadow = '0 10px 25px rgba(0,0,0,0.15)';
                 }
             });
+
         })();
