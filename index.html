@@ -603,12 +603,27 @@
                     </div>
                     <button class="btn-anki" 
                         style="background:${isDisabled ? '#e0e0e0' : '#2185d0'}; color:${isDisabled ? '#999' : 'white'}; padding:12px 20px; width:auto; height:auto; cursor:${isDisabled ? 'not-allowed' : 'pointer'}; opacity:${isDisabled ? '0.7' : '1'}; border-radius:10px; border:none; font-weight:bold;" 
-                        onclick="${isDisabled ? '' : 'iniciarEstudo('+i+')'}" ${isDisabled ? 'disabled' : ''}>Estudar agora</button>
+                        onclick="${isDisabled ? '' : 'iniciarEstudo(' + dIdx + ')'}" ${isDisabled ? 'disabled' : ''}>Estudar agora</button>
                 </div>`;
                 actions.innerHTML = `<button class="btn-gold" onclick="abrirCriador(${i})">+ ADICIONAR CARDS</button>`;
             }
         }
-
+function iniciarEstudo(i) {
+    if (i !== undefined) dIdx = i;
+    const b = baralhos[dIdx];
+    const hoje = new Date().setHours(0,0,0,0);
+    
+    // Filtra apenas os cards que precisam ser estudados hoje
+    fila = b.cards.filter(c => (c.state === 'new' || c.rev <= hoje) && (!b.premium || c.liberado));
+    
+    if(fila.length === 0) {
+        abrirDetalhes(dIdx, true); // Se não tiver nada, volta e mostra os parabéns
+        return;
+    }
+    
+    mudarTela('study-screen');
+    carregarCard();
+}
         function carregarCard() {
             const c = fila[0];
             respondido = false;
@@ -720,6 +735,7 @@
     </script>
 </body>
 </html>
+
 
 
 
