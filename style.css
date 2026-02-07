@@ -77,26 +77,46 @@
         .logo-container { width: 300px; fill: var(--accent-gold); max-width: 80%; }
 
        /* TELAS - CORREÇÃO DE ALINHAMENTO E CAMADAS */
-       .screen { 
-        display: none; 
-        height: 100dvh; 
-        width: 100%;
-        max-width: 600px; 
-        flex-direction: column; 
-        padding: 15px; 
-        box-sizing: border-box; 
-        
-        /* Centralização para telas fixas */
-        position: fixed; 
-        top: 0;
-        left: 50%;
-        transform: translateX(-50%); 
-        
-        background: var(--primary-green);
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
-        z-index: 1;
-    }
+
+        .screen {
+
+            display: none;
+
+            height: 100dvh;
+
+            flex-direction: column;
+
+            padding: 15px;
+
+            box-sizing: border-box;
+
+            max-width: 600px;
+
+            margin: 0 auto;
+
+            overflow-y: auto;
+
+            position: absolute; /* Importante para sobrepor */
+
+            inset: 0;
+
+            background: var(--primary-green); /* Garante que uma tela tape a outra */
+
+            z-index: 1;
+
+        }
+
+
+
+        .active {
+
+            display: flex !important;
+
+            z-index: 2; /* A tela ativa fica por cima */
+
+            animation: fadeInScreen 0.3s ease-out; /* Adicionado */
+
+        }
 
     .active { 
         display: flex !important; 
