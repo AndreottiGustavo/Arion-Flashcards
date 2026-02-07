@@ -21,23 +21,6 @@ let baralhos = JSON.parse(localStorage.getItem('arion_db_v4')) || [];
             });
         };
 
-        function formatarIntervalo(ms) {
-            const min = Math.round(ms / 60000);
-            const dia = 1440;
-        
-            if (min < 60) return `${min} min`;
-            if (min < dia) return `${Math.round(min / 60)} h`;
-        
-            const dias = Math.round(min / dia);
-            if (dias < 30) return `${dias} dia${dias > 1 ? 's' : ''}`;
-        
-            const meses = Math.round(dias / 30);
-            if (meses < 12) return `${meses} mês${meses > 1 ? 'es' : ''}`;
-        
-            const anos = Math.round(meses / 12);
-            return `${anos} ano${anos > 1 ? 's' : ''}`;
-        }
-
         function formatar(cmd, val = null) { document.execCommand(cmd, false, val); }
         function atualizarCorPadrao(cor) { corAtual = cor; document.getElementById('current-color').style.background = cor; }
         function aplicarCorPadrao() { document.execCommand('foreColor', false, corAtual); }
@@ -47,7 +30,7 @@ let baralhos = JSON.parse(localStorage.getItem('arion_db_v4')) || [];
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(id).classList.add('active');
             const nav = document.getElementById('main-nav');
-            if(id === 'study-screen' || id === 'create-screen' || id === 'splash-screen') {
+            if(id === 'splash-screen') {
                 nav.style.display = 'none';
             } else {
                 nav.style.display = 'flex';
@@ -288,6 +271,24 @@ let baralhos = JSON.parse(localStorage.getItem('arion_db_v4')) || [];
             if (e.target === document.getElementById('modal-overlay')) fecharModal();
         });
 
+        // ========== REVISÃO ESPAÇADA (tudo junto aqui) ==========
+        // Config (só dono altera) | Fila/estudo | Virar cartão | Botões | Swipe
+
+        // --- Configuração (não expor na UI; só você altera no código)
+        const ANKI = {
+            learningSteps: [1, 10],    // minutos (padrão "1m 10m")
+            lapseSteps: [10],           // minutos (relearning)
+            graduatingInterval: 1,     // dias (Good no último step)
+            easyInterval: 4,            // dias (Easy em new/learning)
+            startingEase: 2.5,
+            easyBonus: 1.3,
+            hardInterval: 1.2,         // multiplicador em review
+            newInterval: 0.2,          // multiplicador após lapse (20%)
+            minEase: 1.3,
+            maxInterval: 75   // vestibular: cap em 75 dias
+        };
+
+        // --- Fila e tela de estudo (quais cards mostrar, "Estudar agora")
         function abrirDetalhes(i, finalizou = false) {
             dIdx = i; const b = baralhos[i]; const h = Date.now();
             // Mantendo sua lógica de filtro original
@@ -319,51 +320,41 @@ let baralhos = JSON.parse(localStorage.getItem('arion_db_v4')) || [];
                 actions.innerHTML = `<button class="btn-gold" onclick="abrirCriador(${i})">+ ADICIONAR CARDS</button>`;
             }
         }
-        function iniciarEstudo(i) {
-            if (i !== undefined) dIdx = i;
-            const b = baralhos[dIdx];
-            const hoje = new Date().setHours(0,0,0,0);
-            
-            // Filtra apenas os cards que precisam ser estudados hoje
-            fila = b.cards.filter(c => (c.state === 'new' || c.rev <= Date.now()) && (!b.premium || c.liberado));
-            
-            if(fila.length === 0) {
-                abrirDetalhes(dIdx, true); // Se não tiver nada, volta e mostra os parabéns
-                return;
-            }
-            
-            mudarTela('study-screen');
-            carregarCard();
-        }
-
-
+function iniciarEstudo(i) {
+    if (i !== undefined) dIdx = i;
+    const b = baralhos[dIdx];
+    const agora = Date.now();
+    
+    // Filtra apenas os cards que precisam ser estudados hoje
+    fila = b.cards.filter(c => (c.state === 'new' || c.rev <= agora) && (!b.premium || c.liberado));
+    
+    if(fila.length === 0) {
+        abrirDetalhes(dIdx, true); // Se não tiver nada, volta e mostra os parabéns
+        return;
+    }
+    
+    mudarTela('study-screen');
+    carregarCard();
+}
         function carregarCard() {
             const c = fila[0];
             respondido = false;
-        
+            
             const cardBox = document.querySelector('.card-box');
             cardBox.style.transform = 'translate(0,0) rotate(0)';
             cardBox.style.transition = 'none';
+            // Restaurando a sombra e removendo bordas
             cardBox.style.boxShadow = '0 10px 25px rgba(0,0,0,0.15)';
             cardBox.style.border = 'none';
-        
+
             document.getElementById('display-front').innerHTML = c.f;
             document.getElementById('display-back').style.display = 'none';
             document.getElementById('card-divider').style.display = 'none';
             document.getElementById('anki-btns').style.display = 'none';
-        
-            atualizarRotulos(c);
         }
 
-    function atualizarRotulos(c) {
-            document.getElementById("t0").innerText = formatarIntervalo(obterProximoIntervalo(c, 0));
-            document.getElementById("t1").innerText = formatarIntervalo(obterProximoIntervalo(c, 1));
-            document.getElementById("t2").innerText = formatarIntervalo(obterProximoIntervalo(c, 2));
-            document.getElementById("t3").innerText = formatarIntervalo(obterProximoIntervalo(c, 3));
-        }
-
-
-   function virarCard() {
+        // --- Virar cartão (verso + textos De novo / Difícil / Bom / Fácil)
+        function virarCard() {
             if(respondido) return;
             respondido = true;
             const c = fila[0];
@@ -372,89 +363,169 @@ let baralhos = JSON.parse(localStorage.getItem('arion_db_v4')) || [];
             document.getElementById('card-divider').style.display = 'block';
             document.getElementById('anki-btns').style.display = 'flex';
             
-            // IMPORTANTE: Chamamos atualizarRotulos aqui também para garantir que os tempos nos botões estejam corretos
-            atualizarRotulos(c);
-        }
+            const int = c.int || 0;
+            const ease = c.ease || ANKI.startingEase;
+            const steps = ANKI.learningSteps;
 
-
-////////////////////AQUI ESTÁ A TODA REVISÃO ESPAÇADA DO ANKI/////////////////
-        
-   function responder(q) {
-            if(fila.length === 0) return;
-        
-            const c = fila.shift(); // Remove o card da frente
-            const agora = Date.now();
-            const learningSteps = [1, 10]; // minutos
-            const MAX_INTERVAL = 75; // dias
-            const MIN_EASE = 1.3;
-        
-            // Inicializa atributos se não existirem
-            if (!c.ease) c.ease = 2.5;
-            if (c.int === undefined) c.int = 0;
-            if (c.step === undefined) c.step = 0;
-            if (!c.state) c.state = 'new';
-        
-            // Calcula o próximo intervalo em ms
-            const intervaloMs = obterProximoIntervalo(c, q);
-            c.rev = agora + intervaloMs;
-        
-            // ==== LOGICA DE APRENDIZADO ====
-            if (c.state === 'new' || c.state === 'learning') {
-                if (q === 0) { // AGAIN
-                    c.state = 'learning';
-                    c.step = 0;
-                    fila.push(c);
-                } else if (q === 1) { // HARD
-                    c.state = 'learning';
-                    fila.push(c);
-                } else if (q === 2) { // GOOD
-                    c.step++;
-                    if (c.step < learningSteps.length) {
-                        c.state = 'learning';
-                        fila.push(c);
-                    } else {
-                        c.state = 'review';
-                        c.int = 1;
-                    }
-                } else if (q === 3) { // EASY
-                    c.state = 'review';
-                    c.int = 4;
-                }
-            } 
-            // ==== LOGICA DE REVISÃO ====
-            else if (c.state === 'review') {
-                if (q === 0) { // AGAIN
-                    c.ease = Math.max(MIN_EASE, c.ease - 0.2);
-                    c.state = 'learning';
-                    c.step = 0;
-                    fila.push(c);
-                } else if (q === 1) { // HARD
-                    c.ease = Math.max(MIN_EASE, c.ease - 0.15);
-                    c.int = Math.max(1, Math.round(c.int * 1.2));
-                } else if (q === 2) { // GOOD
-                    c.int = Math.round(c.int * c.ease);
-                } else if (q === 3) { // EASY
-                    c.ease += 0.15;
-                    c.int = Math.round(c.int * c.ease * 1.3);
-                }
-                c.int = Math.min(c.int, MAX_INTERVAL);
+            if (c.state === 'new') {
+                // Novo = primeiro step (0): Again 1m, Hard = média 1º e 2º, Good = próximo step, Easy = 4d
+                document.getElementById('t0').innerText = "<1m";
+                document.getElementById('t1').innerText = (steps.length >= 2 ? Math.round((steps[0] + steps[1]) / 2) : Math.min(1440, Math.round(steps[0] * 1.5))) + "m";
+                document.getElementById('t2').innerText = (steps.length >= 2 ? steps[1] + "m" : ANKI.graduatingInterval + "d");
+                document.getElementById('t3').innerText = ANKI.easyInterval + "d";
+            } else if (c.state === 'learning') {
+                const stepsDisplay = (c.prevInt != null) ? ANKI.lapseSteps : steps;
+                const step = Math.min(c.step || 0, stepsDisplay.length - 1);
+                const againMin = stepsDisplay[0];
+                document.getElementById('t0').innerText = "<" + againMin + "m";
+                const hardMin = (step === 0 && stepsDisplay.length >= 2) ? Math.round((stepsDisplay[0] + stepsDisplay[1]) / 2) : stepsDisplay[step];
+                document.getElementById('t1').innerText = hardMin + "m";
+                const isLastStep = step >= stepsDisplay.length - 1;
+                document.getElementById('t2').innerText = isLastStep ? (c.prevInt != null ? (Math.max(1, Math.round(c.prevInt * ANKI.newInterval)) + "d") : (ANKI.graduatingInterval + "d")) : (stepsDisplay[step + 1] + "m");
+                document.getElementById('t3').innerText = ANKI.easyInterval + "d";
+            } else {
+                document.getElementById('t0').innerText = "<" + ANKI.lapseSteps[0] + "m";
+                document.getElementById('t1').innerText = Math.max(1, Math.round(int * ANKI.hardInterval)) + "d";
+                document.getElementById('t2').innerText = Math.max(1, Math.round(int * ease)) + "d";
+                document.getElementById('t3').innerText = Math.max(1, Math.round(int * ease * ANKI.easyBonus)) + "d";
             }
-        
-            c.rep = (c.rep || 0) + 1;
-            salvar();
-        
-            // Carrega próximo card ou finaliza
-            if (fila.length > 0) carregarCard();
-            else abrirDetalhes(dIdx, true);
         }
 
 
+        // --- Responder (De novo / Difícil / Bom / Fácil — atualiza rev, int, ease, state)
+        function responder(q) {
+
+           let c = fila.shift();
+
+    // ======== CONSTANTES E FUNÇÕES AUXILIARES ========
+    const agora = Date.now();
+    const dia = 86400000;
+    const ls = ANKI.learningSteps;
+    const lapses = ANKI.lapseSteps;
+
+    const marcarMinutos = (min) => agora + (min * 60000);
+    const marcarDias = (dias) => agora + (dias * dia);
+
+    if (!c.ease) c.ease = ANKI.startingEase;
+    if (!c.int) c.int = 0;
+    if (!c.step) c.step = 0;
+    if (!c.state) c.state = 'new';
+
+    // ======== FUNÇÕES DE ESTADO ========
+
+    function processarNewOuLearning(c, q) {
+        const steps = (c.prevInt != null) ? lapses : ls; // relearning usa lapseSteps
+        // AGAIN → volta para primeiro passo
+        if (q === 0) {
+            c.state = 'learning';
+            c.step = 0;
+            c.rev = marcarMinutos(steps[0]);
+            return reenfileirar(c);
+        }
+
+        // HARD → Anki: no 1º step = média dos dois primeiros; nos outros = repete o step
+        if (q === 1) {
+            c.state = 'learning';
+            let minHard = steps[c.step];
+            if (c.step === 0 && steps.length >= 2) minHard = Math.round((steps[0] + steps[1]) / 2);
+            else if (steps.length === 1) minHard = Math.min(1440, Math.round(steps[0] * 1.5));
+            c.rev = marcarMinutos(minHard);
+            return reenfileirar(c);
+        }
+
+        // GOOD → avança passo ou gradua
+        if (q === 2) {
+            c.step++;
+            if (c.step < steps.length) {
+                c.state = 'learning';
+                c.rev = marcarMinutos(steps[c.step]);
+                return reenfileirar(c);
+            }
+            // Último step: graduar (ou sair do relearning)
+            c.state = 'review';
+            if (c.prevInt != null) {
+                c.int = Math.max(1, Math.round(c.prevInt * ANKI.newInterval));
+                delete c.prevInt;
+            } else {
+                c.int = ANKI.graduatingInterval;
+            }
+            c.rev = marcarDias(c.int);
+            return finalizar();
+        }
+
+        // EASY → gradua com easy interval
+        if (q === 3) {
+            c.state = 'review';
+            c.int = ANKI.easyInterval;
+            if (c.prevInt != null) delete c.prevInt;
+            c.rev = marcarDias(c.int);
+            return finalizar();
+        }
+    }
+
+    function processarReview(c, q) {
+        // AGAIN → Lapse: ease -0.2, relearning; ao sair usa newInterval
+        if (q === 0) {
+            c.ease = Math.max(ANKI.minEase, c.ease - 0.2);
+            c.prevInt = c.int;
+            c.state = 'learning';
+            c.step = 0;
+            c.rev = marcarMinutos(lapses[0]);
+            return reenfileirar(c);
+        }
+
+        // HARD
+        if (q === 1) {
+            c.ease = Math.max(ANKI.minEase, c.ease - 0.15);
+            c.int = Math.max(c.int + 1, Math.round(c.int * ANKI.hardInterval));
+        }
+        // GOOD
+        else if (q === 2) {
+            c.int = Math.max(c.int + 1, Math.round(c.int * c.ease));
+        }
+        // EASY
+        else if (q === 3) {
+            c.ease += 0.15;
+            c.int = Math.max(c.int + 1, Math.round(c.int * c.ease * ANKI.easyBonus));
+        }
+
+        c.int = Math.min(c.int, ANKI.maxInterval);
+        c.rev = marcarDias(c.int);
+        return finalizar();
+    }
+
+    // ======== FUNÇÕES AUXILIARES DE FLUXO ========
+
+    function reenfileirar(c) {
+        fila.push(c);
+        salvar();
+        carregarCard();
+    }
+
+    function finalizar() {
+        c.rep++;
+        salvar();
+
+        if (fila.length > 0) carregarCard();
+        else abrirDetalhes(dIdx, true);
+    }
+
+    // ======== DISPATCH (SEPARA POR TIPO DE CARTÃO) ========
+
+    if (c.state === 'new' || c.state === 'learning') {
+        return processarNewOuLearning(c, q);
+    } else {
+        return processarReview(c, q);
+    }
+    }
 
 
 
 
 
-        ////////////// SWIPE DO CARTÃO ////////////    
+
+///=============== FUNÇÃO SWIPE===============
+            
         (function(){
             const cardBox = document.querySelector('.card-box');
             let startX = 0, startY = 0, isSwiping = false;
@@ -506,11 +577,4 @@ cardBox.addEventListener('touchmove', e => {
                     cardBox.style.boxShadow = '0 10px 25px rgba(0,0,0,0.15)';
                 }
             });
-
         })();
-
-
-
-
-
-
