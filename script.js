@@ -596,10 +596,10 @@ cardBox.addEventListener('touchmove', e => {
         // ================swipe de voltar do iPhone===============
 
 
-//////////////////// GESTO DE VOLTAR (IPHONE) - VERSÃO CENTRALIZADA ///////////////////
+//////////////////// GESTO DE VOLTAR (IPHONE) - SEM PULO ///////////////////
 (function() {
     let touchStartX = 0;
-    let touchMoveX = 0;
+    let initialLeft = 0; // Captura a posição real da tela no início
     let telaAtual = null; 
     let telaFundo = null;
     const bordaSensivel = 40; 
@@ -615,6 +615,8 @@ cardBox.addEventListener('touchmove', e => {
         }
 
         if (touchStartX < bordaSensivel) {
+            // Captura a posição exata (em pixels) onde a tela está centralizada
+            initialLeft = telaAtual.getBoundingClientRect().left;
             telaAtual.style.transition = 'none';
 
             let idDestino = (telaAtual.id === 'study-screen') ? 'details-screen' : 'deck-screen';
@@ -624,32 +626,37 @@ cardBox.addEventListener('touchmove', e => {
                 telaFundo.style.display = 'flex'; 
                 telaFundo.style.transition = 'none';
                 telaFundo.style.opacity = '0.5'; 
-                telaFundo.style.transform = 'translateX(-50%) scale(0.95)'; // Mantém centralizado
+                // Alinha o fundo exatamente na mesma posição da frente
+                telaFundo.style.left = `${initialLeft}px`;
+                telaFundo.style.transform = 'translateX(0) scale(0.95)'; 
                 telaFundo.style.zIndex = '1';
+                
+                telaAtual.style.left = `${initialLeft}px`;
+                telaAtual.style.transform = 'translateX(0)';
                 telaAtual.style.zIndex = '2';
             }
         }
     }, { passive: true });
 
     window.addEventListener('touchmove', e => {
-        if (!telaAtual || telaAtual.id === 'deck-screen' || touchStartX >= bordaSensivel) return;
+        if (!telaAtual || touchStartX >= bordaSensivel) return;
 
-        touchMoveX = e.changedTouches[0].screenX;
-        const deslocamento = Math.max(0, touchMoveX - touchStartX);
+        const currentX = e.changedTouches[0].screenX;
+        const deslocamento = Math.max(0, currentX - touchStartX);
         const progresso = Math.min(1, deslocamento / window.innerWidth);
 
-        // Move a tela mantendo a centralização base do CSS (-50%)
-        telaAtual.style.transform = `translateX(calc(-50% + ${deslocamento}px))`;
+        // Move a partir da posição inicial fixa em pixels (sem o pulo do -50%)
+        telaAtual.style.transform = `translateX(${deslocamento}px)`;
         telaAtual.style.boxShadow = '-10px 0 20px rgba(0,0,0,0.2)';
 
         if (telaFundo) {
             telaFundo.style.opacity = 0.5 + (progresso * 0.5);
-            telaFundo.style.transform = `translateX(-50%) scale(${0.95 + (progresso * 0.05)})`;
+            telaFundo.style.transform = `scale(${0.95 + (progresso * 0.05)})`;
         }
     }, { passive: true });
 
     window.addEventListener('touchend', e => {
-        if (!telaAtual || telaAtual.id === 'deck-screen' || touchStartX >= bordaSensivel) return;
+        if (!telaAtual || touchStartX >= bordaSensivel) return;
 
         const touchEndX = e.changedTouches[0].screenX;
         const deslocamentoFinal = touchEndX - touchStartX;
@@ -658,13 +665,12 @@ cardBox.addEventListener('touchmove', e => {
         if (telaFundo) telaFundo.style.transition = 'all 0.3s ease-out';
         
         if (deslocamentoFinal > distanciaMinima) {
-            if (navigator.vibrate) navigator.vibrate(20); // Aumentei para 20ms para testar
-            
-            telaAtual.style.transform = 'translateX(100%)'; // Sai da tela totalmente
+            if (navigator.vibrate) navigator.vibrate(20);
+            telaAtual.style.transform = 'translateX(100vw)'; 
             
             if (telaFundo) {
                 telaFundo.style.opacity = '1';
-                telaFundo.style.transform = 'translateX(-50%) scale(1)';
+                telaFundo.style.transform = 'scale(1)';
             }
             
             setTimeout(() => {
@@ -676,18 +682,20 @@ cardBox.addEventListener('touchmove', e => {
                     atualizarNav('nav-decks');
                 }
                 resetEstilos(telaAtual);
+                if (telaFundo) resetEstilos(telaFundo);
                 telaAtual = null;
                 telaFundo = null;
             }, 300);
         } else {
-            // Volta para a posição central (-50%)
-            telaAtual.style.transform = 'translateX(-50%)';
+            // Volta suavemente para a posição inicial
+            telaAtual.style.transform = 'translateX(0)';
             if (telaFundo) {
                 telaFundo.style.opacity = '0.5';
-                telaFundo.style.transform = 'translateX(-50%) scale(0.95)';
+                telaFundo.style.transform = 'scale(0.95)';
                 setTimeout(() => {
                     if (telaFundo && !telaFundo.classList.contains('active')) {
                         telaFundo.style.display = 'none';
+                        resetEstilos(telaFundo);
                     }
                 }, 300);
             }
@@ -697,7 +705,8 @@ cardBox.addEventListener('touchmove', e => {
     function resetEstilos(el) {
         if (!el) return;
         el.style.transition = '';
-        el.style.transform = 'translateX(-50%)'; // Reset para o centro
+        el.style.transform = '';
+        el.style.left = ''; // Devolve o controle para o CSS (voltar ao -50%)
         el.style.boxShadow = '';
         el.style.zIndex = '';
     }
