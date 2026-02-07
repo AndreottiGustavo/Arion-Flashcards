@@ -87,7 +87,23 @@
             margin: 0 auto; 
             overflow-y: auto;
         }
-        .active { display: flex !important; }
+        .active { display: flex !important; animation: fadeInScreen 0.3s ease-out; /* Adicionado */
+        
+    }
+
+    /* Nova regra de animação */
+    @keyframes fadeInScreen {
+        from { 
+            opacity: 0; 
+            transform: translateY(5px); 
+        }
+        to { 
+            opacity: 1; 
+            transform: translateY(0); 
+        }
+    }
+
+
         header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-top: 10px; }
         h1 { color: var(--accent-gold); margin: 0; font-size: 1.4rem; letter-spacing: 2px; text-transform: uppercase; }
 

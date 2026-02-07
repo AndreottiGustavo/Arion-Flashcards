@@ -1,3 +1,4 @@
+// ========== CONFIGURAÇÕES DADOS (localStorage)==========
 let baralhos = JSON.parse(localStorage.getItem('arion_db_v4')) || [];
         let dIdx = 0, fila = [], respondido = false;
         let corAtual = "#ff0000";
@@ -26,8 +27,13 @@ let baralhos = JSON.parse(localStorage.getItem('arion_db_v4')) || [];
         function aplicarCorPadrao() { document.execCommand('foreColor', false, corAtual); }
         function salvar() { localStorage.setItem('arion_db_v4', JSON.stringify(baralhos)); renderizar(); }
         
+        
         function mudarTela(id) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.screen').forEach(s => {
+                s.classList.remove('active');
+                s.style.transform = ''; // LIMPA O SWIPE: Garante que a tela comece centralizada
+            });
+            
             document.getElementById(id).classList.add('active');
             const nav = document.getElementById('main-nav');
             if(id === 'splash-screen') {
@@ -522,9 +528,12 @@ function iniciarEstudo(i) {
 
 
 
+/// ==========================================
+// 4. GESTOS DE TOQUE (SWIPE)
+// ==========================================
 
 
-///=============== FUNÇÃO SWIPE===============
+///=============== FUNÇÃO SWIPE DOS CARTÕES===============
             
         (function(){
             const cardBox = document.querySelector('.card-box');
@@ -578,3 +587,71 @@ cardBox.addEventListener('touchmove', e => {
                 }
             });
         })();
+
+
+
+
+
+
+        // ================swipe de voltar do iPhone===============
+
+
+//////////////////// GESTO DE VOLTAR (IPHONE) COM TRANSIÇÃO ///////////////////
+(function() {
+    let touchStartX = 0;
+    let touchMoveX = 0;
+    let telaAtual = null; 
+    const bordaSensivel = 40; 
+    const distanciaMinima = 100;
+
+    window.addEventListener('touchstart', e => {
+        touchStartX = e.changedTouches[0].screenX;
+        telaAtual = document.querySelector('.screen.active');
+        if (touchStartX < bordaSensivel && telaAtual) {
+            telaAtual.style.transition = 'none';
+        }
+    }, { passive: true });
+
+    window.addEventListener('touchmove', e => {
+        if (touchStartX < bordaSensivel && telaAtual) {
+            touchMoveX = e.changedTouches[0].screenX;
+            const deslocamento = Math.max(0, touchMoveX - touchStartX);
+            telaAtual.style.transform = `translateX(${deslocamento}px)`;
+            telaAtual.style.boxShadow = '-10px 0 20px rgba(0,0,0,0.2)';
+        }
+    }, { passive: true });
+
+    window.addEventListener('touchend', e => {
+        if (touchStartX < bordaSensivel && telaAtual) {
+            const touchEndX = e.changedTouches[0].screenX;
+            const deslocamentoFinal = touchEndX - touchStartX;
+
+            telaAtual.style.transition = 'transform 0.3s ease-out';
+            
+            if (deslocamentoFinal > distanciaMinima) {
+                if (navigator.vibrate) navigator.vibrate(10); // Vibração curta de 10ms (estilo iOS)
+                telaAtual.style.transform = 'translateX(100%)';
+                
+                setTimeout(() => {
+                    // --- ESSA É A PARTE QUE MAPEIA SEU HTML ---
+                    const idAtual = telaAtual.id;
+
+                    if (idAtual === 'study-screen') {
+                        abrirDetalhes(dIdx); // Volta para os detalhes do baralho
+                    } else if (['details-screen', 'store-screen', 'browse-screen', 'create-screen'].includes(idAtual)) {
+                        mudarTela('deck-screen');
+                        atualizarNav('nav-decks');
+                    }
+                    // ------------------------------------------
+
+                    telaAtual.style.transition = 'none';
+                    telaAtual.style.transform = 'translateX(0)';
+                    telaAtual.style.boxShadow = 'none';
+                }, 300);
+            } else {
+                telaAtual.style.transform = 'translateX(0)';
+                telaAtual.style.boxShadow = 'none';
+            }
+        }
+    }, { passive: true });
+})();
