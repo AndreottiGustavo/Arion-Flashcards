@@ -17,26 +17,6 @@
     </script>
 
     <style>
-html, body {
-    margin: 0;
-    padding: 0;
-    overflow-x: hidden; /* remove scroll horizontal */
-    width: 100%;
-}
-
-.screen, .card-box, .deck-list, .deck-item {
-    width: 100%;
-    max-width: 100%;
-    box-sizing: border-box;
-}
-
-.card-box, .deck-item {
-    margin: 0 auto;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
         :root {
             --primary-green: #0a3d3a;
             --accent-gold: #f4e9c1;
@@ -597,7 +577,11 @@ html, body {
 
         function carregarCard() {
             mudarTela('study-screen'); respondido = false;
-            document.getElementById('main-card-box').style.transform = 'translate(0,0) rotate(0)';
+            //mudei aqui
+            const cardBox = document.querySelector('.card-box');
+            cardBox.style.transform = 'translate(0,0) rotate(0)';
+            cardBox.style.transition = 'none';
+            // mudei aqui
             document.getElementById('display-front').innerHTML = fila[0].f;
             document.getElementById('display-back').style.display = 'none';
             document.getElementById('card-divider').style.display = 'none';
@@ -605,7 +589,7 @@ html, body {
             document.querySelectorAll('.time-label').forEach(el => el.innerText = "");
             document.querySelectorAll('.btn-anki').forEach((btn, idx) => { if(idx > 0) btn.style.visibility = 'hidden'; });
         }
-document.querySelectorAll('.btn-anki')
+
         function virarCard() {
             if(respondido) return;
             respondido = true;
@@ -651,62 +635,58 @@ document.querySelectorAll('.btn-anki')
             baralhos[dIdx].cards.push({f: f.innerHTML, v: v.innerHTML, rev: Date.now(), int: 0, rep: 0, ease: 2.5, state: 'new', liberado: true});
             salvar(); f.innerHTML = ""; v.innerHTML = ""; f.focus();
         }
-        // SWIPE PARA VIRAR CARD
+// SWIPE COM EFEITO VISUAL
 (function(){
-            const cardBox = document.querySelector('.card-box');
-            if(!cardBox) return;
-            let startX = 0, startY = 0, isSwiping = false;
+    const cardBox = document.querySelector('.card-box');
+    let startX = 0, startY = 0, isSwiping = false;
 
-            cardBox.addEventListener('touchstart', e => {
-                if(e.touches.length === 1){
-                    startX = e.touches[0].clientX;
-                    startY = e.touches[0].clientY;
-                    isSwiping = true;
-                    cardBox.style.transition = 'none';
-                }
-            });
+    cardBox.addEventListener('touchstart', e => {
+        if(e.touches.length === 1){
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+            isSwiping = true;
+            cardBox.style.transition = 'none';
+        }
+    });
 
-            cardBox.addEventListener('touchmove', e => {
-                if(!isSwiping) return;
-                const dx = e.touches[0].clientX - startX;
-                const dy = e.touches[0].clientY - startY;
-                cardBox.style.transform = `translate(${dx}px, ${dy}px) rotate(${dx * 0.05}deg)`;
-                
-                // Previne o scroll da página enquanto você arrasta o card
-                if(Math.abs(dx) > Math.abs(dy)) e.preventDefault();
-            }, {passive:false});
+    cardBox.addEventListener('touchmove', e => {
+        if(!isSwiping) return;
+        const dx = e.touches[0].clientX - startX;
+        const dy = e.touches[0].clientY - startY;
+        cardBox.style.transform = `translate(${dx}px, ${dy}px) rotate(${dx * 0.05}deg)`;
+        if(Math.abs(dx) > Math.abs(dy)) e.preventDefault();
+    }, {passive:false});
+//segunda alteração do swipe
+cardBox.addEventListener('touchend', e => {
+        if(!isSwiping) return;
+        isSwiping = false;
+        const dx = e.changedTouches[0].clientX - startX;
+        const limite = 100;
 
-            cardBox.addEventListener('touchend', e => {
-                if(!isSwiping) return;
-                isSwiping = false;
-                const dx = e.changedTouches[0].clientX - startX;
-                const limite = 100;
+        if (dx > limite) {
+            // SWIPE DIREITA -> BOM
+            cardBox.style.transition = 'transform 0.4s ease-out';
+            cardBox.style.transform = 'translate(1000px, 0) rotate(30deg)';
+            setTimeout(() => {
+                if(!respondido) virarCard();
+                responder(2); // Chama a sua função que já existe
+            }, 100);
+        } else if (dx < -limite) {
+            // SWIPE ESQUERDA -> ERREI
+            cardBox.style.transition = 'transform 0.4s ease-out';
+            cardBox.style.transform = 'translate(-1000px, 0) rotate(-30deg)';
+            setTimeout(() => {
+                if(!respondido) virarCard();
+                responder(0); // Chama a sua função que já existe
+            }, 100);
+        } else {
+            // VOLTA AO NORMAL se o movimento for curto
+            cardBox.style.transition = 'transform 0.3s ease';
+            cardBox.style.transform = 'translate(0,0) rotate(0)';
+            if (Math.abs(dx) < 10) virarCard(); 
+        }
+    });
 
-                if (dx > limite) {
-                    // SWIPE DIREITA -> BOM
-                    cardBox.style.transition = 'transform 0.4s ease-out';
-                    cardBox.style.transform = 'translate(1000px, 0) rotate(30deg)';
-                    setTimeout(() => {
-                        if(!respondido) virarCard();
-                        responder(2); 
-                    }, 100);
-                } else if (dx < -limite) {
-                    // SWIPE ESQUERDA -> ERREI
-                    cardBox.style.transition = 'transform 0.4s ease-out';
-                    cardBox.style.transform = 'translate(-1000px, 0) rotate(-30deg)';
-                    setTimeout(() => {
-                        if(!respondido) virarCard();
-                        responder(0);
-                    }, 100);
-                } else {
-                    // VOLTA AO NORMAL
-                    cardBox.style.transition = 'transform 0.3s ease';
-                    cardBox.style.transform = 'translate(0,0) rotate(0)';
-                    if (Math.abs(dx) < 10) virarCard(); 
-                }
-            });
-        })();
     </script>
 </body>
 </html>
-
