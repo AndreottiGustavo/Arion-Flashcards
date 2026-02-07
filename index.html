@@ -225,7 +225,6 @@
     padding: 20px; 
     position: relative; 
     box-sizing: border-box; 
-    margin: 20px auto;
     box-shadow: 0 10px 30px rgba(0,0,0,0.18);
 }
         .divider { width: 80%; height: 2px; background: #eee; margin: 25px 0; display: none; }
@@ -421,7 +420,7 @@
             mudarTela('browse-screen');
             atualizarNav('nav-browse');
         }
-function abrirCriador() {
+        function abrirCriador() {
             document.getElementById('front').innerHTML = "";
             document.getElementById('back').innerHTML = "";
             mudarTela('create-screen');
@@ -594,7 +593,7 @@ function abrirCriador() {
         function prepararExclusao(i) {
             document.getElementById('modal-overlay').style.display = 'flex';
             document.getElementById('modal-title').innerText = "Excluir Baralho?";
-            document.getElementById('modal-content').innerHTML = `<p style="color:#666">Isso apagará permanentemente todos os cartões deste baralho.</p>`;
+            document.getElementById('modal-content').innerHTML = `<p style="color:#666">Isso apagará permanentemente todos os cartões deste baralho e seu progesso será perdido.</p>`;
             document.getElementById('modal-confirm-btn').onclick = () => { baralhos.splice(i, 1); salvar(); fecharModal(); };
         }
 
@@ -726,34 +725,145 @@ function iniciarEstudo(i) {
             }
         }
 
-        function responder(q) {
-            let c = fila.shift();
-            const hoje = new Date().setHours(0,0,0,0);
-            const dia = 86400000;
 
-            if (c.state === 'new') {
-                if (q === 0) { fila.push(c); }
-                else {
-                    c.state = 'review';
-                    if (q === 1 || q === 2) { c.int = 1; c.rev = hoje + dia; }
-                    else { c.int = 4; c.rev = hoje + (4 * dia); }
-                }
-            } else {
-                if (q === 0) {
-                    c.ease = Math.max(1.3, c.ease - 0.2);
-                    c.int = 0; c.rev = hoje; fila.push(c);
-                } else {
-                    if (q === 1) c.ease = Math.max(1.3, c.ease - 0.15);
-                    if (q === 3) c.ease += 0.15;
-                    let factor = (q === 1 ? 1.2 : q === 2 ? c.ease : c.ease * 1.3);
-                    c.int = Math.max(1, Math.round(c.int * factor));
-                    c.rev = hoje + (c.int * dia);
-                }
-            }
-            c.rep++; salvar();
-            if(fila.length > 0) carregarCard(); else abrirDetalhes(dIdx, true);
+////////////////////AQUI ESTÁ A TODA REVISÃO ESPAÇADA DO ANKI/////////////////
+        
+        function responder(q) {
+
+           let c = fila.shift();
+
+    // ======== CONSTANTES E FUNÇÕES AUXILIARES ========
+    const agora = Date.now();
+    const dia = 86400000;
+
+    // Configurações padrão do Anki
+    const learningSteps = [1, 10]; // minutos
+    const lapseSteps = [10];       // minutos
+    const MAX_INTERVAL = 75;       // limite máximo em dias (2,5 meses)
+    const MIN_EASE = 1.3;          // menor EF possível
+
+    const marcarMinutos = (min) => agora + (min * 60000);
+    const marcarDias = (dias) => agora + (dias * dia);
+
+    // Inicializa propriedades caso não existam
+    if (!c.ease) c.ease = 2.5;
+    if (!c.int) c.int = 0;
+    if (!c.step) c.step = 0;
+    if (!c.state) c.state = 'new';
+
+    // ======== FUNÇÕES DE ESTADO ========
+
+    function processarNewOuLearning(c, q) {
+
+        // AGAIN → volta para primeiro passo
+        if (q === 0) {
+            c.state = 'learning';
+            c.step = 0;
+            c.rev = marcarMinutos(learningSteps[0]);
+            return reenfileirar(c);
         }
 
+        // HARD → repete o mesmo passo
+        if (q === 1) {
+            c.state = 'learning';
+            c.rev = marcarMinutos(learningSteps[c.step]);
+            return reenfileirar(c);
+        }
+
+        // GOOD → avança passo ou vira review
+        if (q === 2) {
+            c.step++;
+            if (c.step < learningSteps.length) {
+                c.state = 'learning';
+                c.rev = marcarMinutos(learningSteps[c.step]);
+                return reenfileirar(c);
+            } else {
+                // terminou steps → vira review
+                c.state = 'review';
+                c.int = 1; // 1 dia
+                c.rev = marcarDias(1);
+                return finalizar();
+            }
+        }
+
+        // EASY → pula direto para review com 4 dias
+        if (q === 3) {
+            c.state = 'review';
+            c.int = 4;
+            c.rev = marcarDias(4);
+            return finalizar();
+        }
+    }
+
+    function processarReview(c, q) {
+
+        // AGAIN → Lapse: volta para aprendizado
+        if (q === 0) {
+            c.ease = Math.max(MIN_EASE, c.ease - 0.2);
+            c.state = 'learning';
+            c.step = 0;
+            c.rev = marcarMinutos(lapseSteps[0]);
+            return reenfileirar(c);
+        }
+
+        // HARD
+        if (q === 1) {
+            c.ease = Math.max(MIN_EASE, c.ease - 0.15);
+            c.int = Math.max(1, Math.round(c.int * 1.2));
+        }
+
+        // GOOD
+        else if (q === 2) {
+            c.int = Math.round(c.int * c.ease);
+        }
+
+        // EASY
+        else if (q === 3) {
+            c.ease += 0.15;
+            c.int = Math.round(c.int * c.ease * 1.3);
+        }
+
+        // Aplicar limite máximo
+        c.int = Math.min(c.int, MAX_INTERVAL);
+
+        // Agendar próxima revisão
+        c.rev = marcarDias(c.int);
+
+        return finalizar();
+    }
+
+    // ======== FUNÇÕES AUXILIARES DE FLUXO ========
+
+    function reenfileirar(c) {
+        fila.push(c);
+        salvar();
+        carregarCard();
+    }
+
+    function finalizar() {
+        c.rep++;
+        salvar();
+
+        if (fila.length > 0) carregarCard();
+        else abrirDetalhes(dIdx, true);
+    }
+
+    // ======== DISPATCH (SEPARA POR TIPO DE CARTÃO) ========
+
+    if (c.state === 'new' || c.state === 'learning') {
+        return processarNewOuLearning(c, q);
+    } else {
+        return processarReview(c, q);
+    }
+
+
+
+
+
+
+
+
+            
         (function(){
             const cardBox = document.querySelector('.card-box');
             let startX = 0, startY = 0, isSwiping = false;
@@ -809,6 +919,7 @@ cardBox.addEventListener('touchmove', e => {
     </script>
 </body>
 </html>
+
 
 
 
