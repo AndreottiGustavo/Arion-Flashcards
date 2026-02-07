@@ -80,16 +80,28 @@
         .screen { 
             display: none; 
             height: 100dvh; 
+            width: 100%; /* Ocupa a largura total até o limite do max-width */
+            max-width: 600px; 
             flex-direction: column; 
             padding: 15px; 
             box-sizing: border-box; 
-            max-width: 600px; 
-            margin: 0 auto; 
+            
+            /* Centralização de elemento FIXO */
+            position: fixed; 
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%); 
+            
+            background: var(--primary-green);
             overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            z-index: 1;
         }
-        .active { display: flex !important; animation: fadeInScreen 0.3s ease-out; /* Adicionado */
-        
-    }
+
+        .active { 
+            display: flex !important; 
+            z-index: 2; 
+        }
 
     /* Nova regra de animação */
     @keyframes fadeInScreen {
