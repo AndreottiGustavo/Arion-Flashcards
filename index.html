@@ -176,7 +176,8 @@
 
         /* TOOLBAR EDITOR */
         .toolbar { 
-            display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 10px; 
+            width: 100%; box-sizing: border-box;
+            display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 4px; 
             background: #eee; padding: 6px; border-radius: 12px; align-items: center;
         }
         .tool-btn { 
@@ -207,7 +208,7 @@
 
         /* ESTUDO */ 
 .card-box { 
-    width: 92%; 
+    width: 100%; 
     max-width: 400px; 
     
     /* Mude para height fixa para manter os dois iguais */
@@ -808,6 +809,7 @@ cardBox.addEventListener('touchmove', e => {
     </script>
 </body>
 </html>
+
 
 
 
