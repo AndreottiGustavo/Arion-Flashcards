@@ -596,12 +596,12 @@ cardBox.addEventListener('touchmove', e => {
         // ================swipe de voltar do iPhone===============
 
 
-//////////////////// GESTO DE VOLTAR (IPHONE) - VERSÃO CORRIGIDA ///////////////////
+//////////////////// GESTO DE VOLTAR (IPHONE) COM TRANSIÇÃO DE CAMADAS ///////////////////
 (function() {
     let touchStartX = 0;
     let touchMoveX = 0;
     let telaAtual = null; 
-    let telaFundo = null;
+    let telaFundo = null; // Armazenamos a tela de fundo para facilitar
     const bordaSensivel = 40; 
     const distanciaMinima = 100;
 
@@ -609,102 +609,91 @@ cardBox.addEventListener('touchmove', e => {
         touchStartX = e.changedTouches[0].screenX;
         telaAtual = document.querySelector('.screen.active');
 
-        // Se for a tela inicial, não faz nada
-        if (!telaAtual || telaAtual.id === 'deck-screen') {
-            telaAtual = null;
-            return;
-        }
-
-        if (touchStartX < bordaSensivel) {
+        if (touchStartX < bordaSensivel && telaAtual) {
             telaAtual.style.transition = 'none';
 
-            // Define quem aparece atrás
+            // Identifica qual tela deve aparecer atrás
             let idDestino = (telaAtual.id === 'study-screen') ? 'details-screen' : 'deck-screen';
             telaFundo = document.getElementById(idDestino);
             
-            if (telaFundo) {
+            if (telaFundo && telaFundo !== telaAtual) {
                 telaFundo.style.display = 'flex'; 
-                telaFundo.style.transition = 'none';
+                telaFundo.style.transition = 'none'; // Segue o dedo sem atraso
                 telaFundo.style.opacity = '0.5'; 
                 telaFundo.style.transform = 'scale(0.95)';
-                telaFundo.style.zIndex = '1'; // Fundo atrás
-                telaAtual.style.zIndex = '2'; // Atual na frente
             }
         }
     }, { passive: true });
 
     window.addEventListener('touchmove', e => {
-        // Se não temos tela atual ou é a principal, cancela o movimento
-        if (!telaAtual || telaAtual.id === 'deck-screen' || touchStartX >= bordaSensivel) return;
+        if (touchStartX < bordaSensivel && telaAtual) {
+            touchMoveX = e.changedTouches[0].screenX;
+            const deslocamento = Math.max(0, touchMoveX - touchStartX);
+            const larguraTela = window.innerWidth;
+            const progresso = Math.min(1, deslocamento / larguraTela); // Vai de 0 a 1
 
-        touchMoveX = e.changedTouches[0].screenX;
-        const deslocamento = Math.max(0, touchMoveX - touchStartX);
-        const progresso = Math.min(1, deslocamento / window.innerWidth);
+            // Move a tela da frente
+            telaAtual.style.transform = `translateX(${deslocamento}px)`;
+            telaAtual.style.boxShadow = '-10px 0 20px rgba(0,0,0,0.2)';
 
-        telaAtual.style.transform = `translateX(${deslocamento}px)`;
-        telaAtual.style.boxShadow = '-10px 0 20px rgba(0,0,0,0.2)';
-
-        if (telaFundo) {
-            telaFundo.style.opacity = 0.5 + (progresso * 0.5);
-            telaFundo.style.transform = `scale(${0.95 + (progresso * 0.05)})`;
+            // Evolui a tela de trás (Efeito iOS Natural)
+            if (telaFundo) {
+                telaFundo.style.opacity = 0.5 + (progresso * 0.5);
+                telaFundo.style.transform = `scale(${0.95 + (progresso * 0.05)})`;
+            }
         }
     }, { passive: true });
 
     window.addEventListener('touchend', e => {
-        if (!telaAtual || telaAtual.id === 'deck-screen' || touchStartX >= bordaSensivel) {
-            return;
-        }
+        if (touchStartX < bordaSensivel && telaAtual) {
+            const touchEndX = e.changedTouches[0].screenX;
+            const deslocamentoFinal = touchEndX - touchStartX;
 
-        const touchEndX = e.changedTouches[0].screenX;
-        const deslocamentoFinal = touchEndX - touchStartX;
-
-        telaAtual.style.transition = 'transform 0.3s ease-out';
-        if (telaFundo) telaFundo.style.transition = 'all 0.3s ease-out';
-        
-        if (deslocamentoFinal > distanciaMinima) {
-            if (navigator.vibrate) navigator.vibrate(10); 
-            telaAtual.style.transform = 'translateX(100%)';
+            // Ativa transições suaves para o encaixe final
+            telaAtual.style.transition = 'transform 0.3s ease-out';
+            if (telaFundo) telaFundo.style.transition = 'all 0.3s ease-out';
             
-            if (telaFundo) {
-                telaFundo.style.opacity = '1';
-                telaFundo.style.transform = 'scale(1)';
-            }
-            
-            setTimeout(() => {
-                const idAtual = telaAtual.id;
-                if (idAtual === 'study-screen') {
-                    abrirDetalhes(dIdx);
-                } else {
-                    mudarTela('deck-screen');
-                    atualizarNav('nav-decks');
+            if (deslocamentoFinal > distanciaMinima) {
+                if (navigator.vibrate) navigator.vibrate(10); 
+                
+                telaAtual.style.transform = 'translateX(100%)';
+                if (telaFundo) {
+                    telaFundo.style.opacity = '1';
+                    telaFundo.style.transform = 'scale(1)';
                 }
                 
-                // Reset fundamental
-                resetEstilos(telaAtual);
-                telaAtual = null;
-                telaFundo = null;
-            }, 300);
-        } else {
-            // Cancelou o swipe
-            telaAtual.style.transform = 'translateX(0)';
-            if (telaFundo) {
-                telaFundo.style.opacity = '0.5';
-                telaFundo.style.transform = 'scale(0.95)';
                 setTimeout(() => {
-                    // Se não mudamos de tela, esconde o fundo de novo
-                    if (telaFundo && !telaFundo.classList.contains('active')) {
-                        telaFundo.style.display = 'none';
+                    const idAtual = telaAtual.id;
+                    if (idAtual === 'study-screen') {
+                        abrirDetalhes(dIdx);
+                    } else if (['details-screen', 'store-screen', 'browse-screen', 'create-screen'].includes(idAtual)) {
+                        mudarTela('deck-screen');
+                        atualizarNav('nav-decks');
                     }
+
+                    // Reset de segurança
+                    resetEstilos(telaAtual);
+                    telaFundo = null;
                 }, 300);
+            } else {
+                // Cancelou o swipe: volta tudo ao normal
+                telaAtual.style.transform = 'translateX(0)';
+                if (telaFundo) {
+                    telaFundo.style.opacity = '0.5';
+                    telaFundo.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        if (telaFundo && !telaFundo.classList.contains('active')) {
+                            telaFundo.style.display = 'none';
+                        }
+                    }, 300);
+                }
             }
         }
     }, { passive: true });
 
     function resetEstilos(el) {
-        if (!el) return;
-        el.style.transition = '';
-        el.style.transform = '';
-        el.style.boxShadow = '';
-        el.style.zIndex = '';
+        el.style.transition = 'none';
+        el.style.transform = 'translateX(0)';
+        el.style.boxShadow = 'none';
     }
 })();
