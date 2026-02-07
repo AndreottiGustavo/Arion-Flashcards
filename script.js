@@ -380,220 +380,81 @@ let baralhos = JSON.parse(localStorage.getItem('arion_db_v4')) || [];
 ////////////////////AQUI ESTÁ A TODA REVISÃO ESPAÇADA DO ANKI/////////////////
         
    function responder(q) {
-            let c = fila.shift(); // Tira o card atual da frente
+            if(fila.length === 0) return;
+        
+            const c = fila.shift(); // Remove o card da frente
             const agora = Date.now();
             const learningSteps = [1, 10]; // minutos
-            const MAX_INTERVAL = 75; // dias (conforme seu código)
+            const MAX_INTERVAL = 75; // dias
             const MIN_EASE = 1.3;
         
-            // Garante que os atributos existam
+            // Inicializa atributos se não existirem
             if (!c.ease) c.ease = 2.5;
             if (c.int === undefined) c.int = 0;
             if (c.step === undefined) c.step = 0;
             if (!c.state) c.state = 'new';
         
+            // Calcula o próximo intervalo em ms
             const intervaloMs = obterProximoIntervalo(c, q);
             c.rev = agora + intervaloMs;
         
-            // LÓGICA DE APRENDIZADO (New ou Learning)
+            // ==== LOGICA DE APRENDIZADO ====
             if (c.state === 'new' || c.state === 'learning') {
-                if (q === 0) { // Errou (Again)
+                if (q === 0) { // AGAIN
+                    c.state = 'learning';
                     c.step = 0;
+                    fila.push(c);
+                } else if (q === 1) { // HARD
                     c.state = 'learning';
-                    fila.push(c); 
-                } else if (q === 1) { // Difícil (Hard)
-                    c.state = 'learning';
-                    fila.push(c); 
-                } else if (q === 2) { // Bom (Good)
+                    fila.push(c);
+                } else if (q === 2) { // GOOD
                     c.step++;
                     if (c.step < learningSteps.length) {
                         c.state = 'learning';
-                        fila.push(c); 
+                        fila.push(c);
                     } else {
                         c.state = 'review';
-                        c.int = 1; 
+                        c.int = 1;
                     }
-                } else if (q === 3) { // Fácil (Easy)
+                } else if (q === 3) { // EASY
                     c.state = 'review';
-                    c.int = 4; 
+                    c.int = 4;
                 }
             } 
-            // LÓGICA DE REVISÃO
+            // ==== LOGICA DE REVISÃO ====
             else if (c.state === 'review') {
-                if (q === 0) { // Errou (Lapse)
+                if (q === 0) { // AGAIN
                     c.ease = Math.max(MIN_EASE, c.ease - 0.2);
                     c.state = 'learning';
                     c.step = 0;
-                    fila.push(c); 
-                } else if (q === 1) { // Hard
+                    fila.push(c);
+                } else if (q === 1) { // HARD
                     c.ease = Math.max(MIN_EASE, c.ease - 0.15);
                     c.int = Math.max(1, Math.round(c.int * 1.2));
-                } else if (q === 2) { // Good
+                } else if (q === 2) { // GOOD
                     c.int = Math.round(c.int * c.ease);
-                } else if (q === 3) { // Easy
+                } else if (q === 3) { // EASY
                     c.ease += 0.15;
                     c.int = Math.round(c.int * c.ease * 1.3);
                 }
                 c.int = Math.min(c.int, MAX_INTERVAL);
             }
         
-            c.rep++;
+            c.rep = (c.rep || 0) + 1;
             salvar();
         
-            // Controle da interface
-            if (fila.length > 0) {
-                carregarCard();
-            } else {
-                abrirDetalhes(dIdx, true); // Finaliza e mostra o retângulo de parabéns
-            }
-        }
-
-        
-        function obterProximoIntervalo(c, q) {
-            const dia = 86400000;
-            const minMs = 60000;
-            const learningSteps = [1, 10]; 
-            const lapseSteps = [10];       
-        
-            let ease = c.ease || 2.5;
-            let int = c.int || 0;
-            let step = c.step || 0;
-            let state = c.state || 'new';
-        
-            if (state === 'new' || state === 'learning') {
-                if (q === 0) return 1 * minMs;
-                if (q === 1) return learningSteps[step] * minMs;
-                if (q === 2) {
-                    if (step + 1 < learningSteps.length) return learningSteps[step + 1] * minMs;
-                    return 1 * dia;
-                }
-                if (q === 3) return 4 * dia;
-            }
-        
-            if (state === 'review') {
-                if (q === 0) return lapseSteps[0] * minMs;
-                if (q === 1) return Math.max(1, Math.round(int * 1.2)) * dia;
-                if (q === 2) return Math.round(int * ease) * dia;
-                if (q === 3) return Math.round(int * ease * 1.3) * dia;
-            }
-            return minMs;
+            // Carrega próximo card ou finaliza
+            if (fila.length > 0) carregarCard();
+            else abrirDetalhes(dIdx, true);
         }
 
 
 
-            // ======== FUNÇÕES DE ESTADO ========
-
-    function processarNewOuLearning(c, q) {
-
-        // AGAIN → volta para primeiro passo
-        if (q === 0) {
-            c.state = 'learning';
-            c.step = 0;
-            c.rev = marcarMinutos(learningSteps[0]);
-            return reenfileirar(c);
-        }
-
-        // HARD → repete o mesmo passo
-        if (q === 1) {
-            c.state = 'learning';
-            c.rev = marcarMinutos(learningSteps[c.step]);
-            return reenfileirar(c);
-        }
-
-        // GOOD → avança passo ou vira review
-        if (q === 2) {
-            c.step++;
-            if (c.step < learningSteps.length) {
-                c.state = 'learning';
-                c.rev = marcarMinutos(learningSteps[c.step]);
-                return reenfileirar(c);
-            } else {
-                // terminou steps → vira review
-                c.state = 'review';
-                c.int = 1; // 1 dia
-                c.rev = marcarDias(1);
-                return finalizar();
-            }
-        }
-
-        // EASY → pula direto para review com 4 dias
-        if (q === 3) {
-            c.state = 'review';
-            c.int = 4;
-            c.rev = marcarDias(4);
-            return finalizar();
-        }
-        }
-
-    function processarReview(c, q) {
-
-        // AGAIN → Lapse: volta para aprendizado
-        if (q === 0) {
-            c.ease = Math.max(MIN_EASE, c.ease - 0.2);
-            c.state = 'learning';
-            c.step = 0;
-            c.rev = marcarMinutos(lapseSteps[0]);
-            return reenfileirar(c);
-        }
-
-        // HARD
-        if (q === 1) {
-            c.ease = Math.max(MIN_EASE, c.ease - 0.15);
-            c.int = Math.max(1, Math.round(c.int * 1.2));
-        }
-
-        // GOOD
-        else if (q === 2) {
-            c.int = Math.round(c.int * c.ease);
-        }
-
-        // EASY
-        else if (q === 3) {
-            c.ease += 0.15;
-            c.int = Math.round(c.int * c.ease * 1.3);
-        }
-
-        // Aplicar limite máximo
-        c.int = Math.min(c.int, MAX_INTERVAL);
-
-        // Agendar próxima revisão
-        c.rev = marcarDias(c.int);
-
-        return finalizar();
-    }
-
-    // ======== FUNÇÕES AUXILIARES DE FLUXO ========
-
-    function reenfileirar(c) {
-        fila.push(c);
-        salvar();
-        carregarCard();
-    }
-
-    function finalizar() {
-        c.rep++;
-        salvar();
-
-        if (fila.length > 0) carregarCard();
-        else abrirDetalhes(dIdx, true);
-    }
-
-    // ======== DISPATCH (SEPARA POR TIPO DE CARTÃO) ========
-
-    if (c.state === 'new' || c.state === 'learning') {
-        return processarNewOuLearning(c, q);
-    } else {
-        return processarReview(c, q);
-    }
-    }
 
 
 
 
-
-
-
-            
+        ////////////// SWIPE DO CARTÃO ////////////    
         (function(){
             const cardBox = document.querySelector('.card-box');
             let startX = 0, startY = 0, isSwiping = false;
@@ -647,6 +508,7 @@ cardBox.addEventListener('touchmove', e => {
             });
 
         })();
+
 
 
 
