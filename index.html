@@ -597,6 +597,7 @@ html, body {
 
         function carregarCard() {
             mudarTela('study-screen'); respondido = false;
+            document.getElementById('main-card-box').style.transform = 'translate(0,0) rotate(0)';
             document.getElementById('display-front').innerHTML = fila[0].f;
             document.getElementById('display-back').style.display = 'none';
             document.getElementById('card-divider').style.display = 'none';
@@ -708,3 +709,4 @@ document.querySelectorAll('.btn-anki')
     </script>
 </body>
 </html>
+
