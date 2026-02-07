@@ -169,7 +169,7 @@
         
         .congratulations-rect { background: #e8f5e9; color: #2e7d32; border: 2px solid #a5d6a7; padding: 20px; border-radius: 15px; font-weight: bold; text-align: center; width: 100%; margin-bottom: 15px; box-sizing: border-box; }
 
-        /* ESTUDO */
+        /* ESTUDO */ 
         .card-box { 
     width: 100%; 
     flex-grow: 1; 
@@ -185,7 +185,8 @@
     position: relative; 
     min-height: 250px; 
     box-sizing: border-box; 
-    margin: 0 auto;}
+    margin: 0 auto;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);}
         .divider { width: 80%; height: 2px; background: #eee; margin: 25px 0; display: none; }
         
         .anki-footer { display: none; width: 100%; gap: 6px; margin-top: 20px; padding-bottom: 10px; }
@@ -596,6 +597,8 @@
             const cardBox = document.querySelector('.card-box');
             cardBox.style.transform = 'translate(0,0) rotate(0)';
             cardBox.style.transition = 'none';
+            cardBox.style.boxShadow = '0 10px 25px rgba(0,0,0,0.15)';
+            cardBox.style.border = 'none';
             // mudei aqui
             document.getElementById('display-front').innerHTML = fila[0].f;
             document.getElementById('display-back').style.display = 'none';
@@ -664,13 +667,29 @@
         }
     });
 
-    cardBox.addEventListener('touchmove', e => {
-        if(!isSwiping) return;
-        const dx = e.touches[0].clientX - startX;
-        const dy = e.touches[0].clientY - startY;
-        cardBox.style.transform = `translate(${dx}px, ${dy}px) rotate(${dx * 0.05}deg)`;
-        if(Math.abs(dx) > Math.abs(dy)) e.preventDefault();
-    }, {passive:false});
+cardBox.addEventListener('touchmove', e => {
+    if(!isSwiping) return;
+    const dx = e.touches[0].clientX - startX;
+    const dy = e.touches[0].clientY - startY;
+    cardBox.style.transform = `translate(${dx}px, ${dy}px) rotate(${dx * 0.05}deg)`;
+
+    // EFEITO DE COR NA SOMBRA
+    if (dx > 50) { 
+        // Arrastando para a DIREITA (AZUL)
+        cardBox.style.boxShadow = '0 10px 30px rgba(91, 192, 222, 0.8)';
+        cardBox.style.border = '2px solid #5bc0de';
+    } else if (dx < -50) { 
+        // Arrastando para a ESQUERDA (VERMELHO)
+        cardBox.style.boxShadow = '0 10px 30px rgba(217, 83, 79, 0.8)';
+        cardBox.style.border = '2px solid #d9534f';
+    } else { 
+        // VOLTA AO NORMAL no meio
+        cardBox.style.boxShadow = '0 10px 25px rgba(0,0,0,0.15)';
+        cardBox.style.border = 'none';
+    }
+
+    if(Math.abs(dx) > Math.abs(dy)) e.preventDefault();
+}, {passive:false});
 //segunda alteração do swipe
 cardBox.addEventListener('touchend', e => {
         if(!isSwiping) return;
@@ -707,5 +726,6 @@ cardBox.addEventListener('touchend', e => {
     </script>
 </body>
 </html>
+
 
 
