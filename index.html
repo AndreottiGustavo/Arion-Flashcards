@@ -654,16 +654,16 @@
             salvar(); f.innerHTML = ""; v.innerHTML = ""; f.focus();
         }
 // SWIPE COM EFEITO VISUAL CORRIGIDO
+// SWIPE COM TRAVA DE AÇO
 (function(){
     const cardBox = document.querySelector('.card-box');
     let startX = 0, startY = 0, isSwiping = false;
 
     cardBox.addEventListener('touchstart', e => {
-        const ankiBtns = document.getElementById('anki-btns');
-        // Se os botões estão escondidos, não iniciamos o swipe de jeito nenhum
-        if (!ankiBtns || ankiBtns.style.display === 'none' || ankiBtns.style.display === '') {
+        // USANDO A SUA VARIÁVEL GLOBAL: Só deixa mover se respondido for true
+if (typeof respondido !== 'undefined' && !respondido) {
             isSwiping = false;
-            return; 
+            return;
         }
         
         isSwiping = true;
@@ -672,15 +672,14 @@
         cardBox.style.transition = 'none';
     }, {passive: true});
 
-    cardBox.addEventListener('touchmove', e => {
-        // Se a trava do touchstart falhar, o move nem começa
-        if(!isSwiping) return;
+cardBox.addEventListener('touchmove', e => {
+        if (!isSwiping || !respondido) return;
 
         const dx = e.touches[0].clientX - startX;
         const dy = e.touches[0].clientY - startY;
         
-        // Só move se o deslocamento for maior que 10px (evita tremer no clique)
-        if (Math.abs(dx) > 10) {
+        // Só move se realmente houver um arrasto intencional
+        if (Math.abs(dx) > 5) {
             cardBox.style.transform = `translate(${dx}px, ${dy}px) rotate(${dx * 0.05}deg)`;
 
             if (dx > 50) {
@@ -694,23 +693,22 @@
                 cardBox.style.border = 'none';
             }
         }
-
         if(Math.abs(dx) > Math.abs(dy)) e.preventDefault();
     }, {passive: false});
 
     cardBox.addEventListener('touchend', e => {
-        if(!isSwiping) return;
-        const dx = e.changedTouches[0].clientX - startX;
-        isSwiping = false; // Reset imediato
+        if (!isSwiping) return;
+        isSwiping = false;
         
+        const dx = e.changedTouches[0].clientX - startX;
         cardBox.style.boxShadow = '0 10px 30px rgba(0,0,0,0.18)';
         cardBox.style.border = 'none';
 
-        if (dx > 100) {
+        if (dx > 100 && window.respondido) {
             cardBox.style.transition = 'transform 0.4s ease-out';
             cardBox.style.transform = `translate(1000px, ${e.changedTouches[0].clientY - startY}px) rotate(30deg)`;
             setTimeout(() => responder(2), 200);
-        } else if (dx < -100) {
+        } else if (dx < -100 && window.respondido) {
             cardBox.style.transition = 'transform 0.4s ease-out';
             cardBox.style.transform = `translate(-1000px, ${e.changedTouches[0].clientY - startY}px) rotate(-30deg)`;
             setTimeout(() => responder(0), 200);
@@ -725,6 +723,7 @@
     </script>
 </body>
 </html>
+
 
 
 
