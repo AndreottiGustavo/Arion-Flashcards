@@ -578,47 +578,26 @@
         });
 
         function abrirDetalhes(i, finalizou = false) {
-            dIdx = i; const b = baralhos[i]; const h = Date.now();
-            fila = b.cards.filter(c => c.rev <= h && (!b.premium || c.liberado === true));
-            
-            const novos = b.cards.filter(c => c.rep === 0 && (!b.premium || c.liberado)).length;
-            const learn = b.cards.filter(c => c.state === 'learning' && c.rev <= h && (!b.premium || c.liberado)).length;
-            const rev = b.cards.filter(c => c.state === 'review' && c.rev <= h && (!b.premium || c.liberado)).length;
-
-            document.getElementById('details-deck-name').innerText = b.nome;
-            const area = document.getElementById('stats-area');
-            const actions = document.getElementById('details-actions');
-
-            if (finalizou && fila.length === 0) {
-                area.innerHTML = `<div class="congratulations-rect">Parabéns! Você finalizou os flashcards previstos para hoje.</div>`;
-                actions.innerHTML = `<button class="btn-gold" onclick="mudarTela('deck-screen')">VOLTAR PARA MEUS BARALHOS</button>`;
-            } else {
-                const isDisabled = fila.length === 0;
-                area.innerHTML = `
-                <div class="anki-stats-card">
-                    <div style="text-align:left">
-                        <div class="stat-row">Novo: <span style="color:#2185d0">${novos}</span></div>
-                        <div class="stat-row">Aprendizagem: <span style="color:#c33">${learn}</span></div>
-                        <div class="stat-row">A Revisar: <span style="color:#2e7d32">${rev}</span></div>
-                    </div>
-                    <button class="btn-anki" 
-                        style="background:${isDisabled ? '#e0e0e0' : '#2185d0'}; color:${isDisabled ? '#999' : 'white'}; padding:12px 20px; width:auto; height:auto; cursor:${isDisabled ? 'not-allowed' : 'pointer'}; opacity:${isDisabled ? '0.7' : '1'};" 
-                        onclick="${isDisabled ? '' : 'iniciarEstudo()'}" ${isDisabled ? 'disabled' : ''}>Estudar agora</button>
-                </div>`;
-                actions.innerHTML = `<button class="btn-gold" onclick="abrirCriador(${i})">+ ADICIONAR CARDS</button>`;
-            }
-            mudarTela('details-screen');
-            document.getElementById('details-deck-name').innerText = b.nome;
-            
+            dIdx = i; 
+            const b = baralhos[i]; 
             const hoje = new Date().setHours(0,0,0,0);
+            
+            // Filtra os cards para saber o que tem para estudar hoje
+            fila = b.cards.filter(c => (c.state === 'new' || c.rev <= hoje) && (!b.premium || c.liberado));
+            
             const novos = b.cards.filter(c => c.state === 'new' && (!b.premium || c.liberado)).length;
             const revisao = b.cards.filter(c => c.state !== 'new' && c.rev <= hoje && (!b.premium || c.liberado)).length;
 
+            mudarTela('details-screen');
+            document.getElementById('details-deck-name').innerText = b.nome;
+
             let htmlStats = "";
-            if (finalizou) {
+            // Se finalizou, mostra o retângulo verde de parabéns
+            if (finalizou && fila.length === 0) {
                 htmlStats = `<div class="congratulations-rect">Parabéns! Você finalizou os flashcards previstos para hoje</div>`;
             }
 
+            // Mostra as estatísticas estilo Anki
             htmlStats += `
                 <div class="anki-stats-card">
                     <div class="stat-row" style="color:#5bc0de">Novos: <strong>${novos}</strong></div>
@@ -626,6 +605,8 @@
                 </div>`;
             
             document.getElementById('stats-area').innerHTML = htmlStats;
+            
+            // Define as ações (Botão Estudar ou Adicionar)
             document.getElementById('details-actions').innerHTML = `
                 <button class="btn-gold" onclick="iniciarEstudo(${i})">ESTUDAR AGORA</button>
                 ${!b.premium ? `<button class="btn-gold" style="background:#444; color:white" onclick="abrirCriador(${i})">+ ADICIONAR CARDS</button>` : ''}
@@ -637,6 +618,7 @@
         function salvarCard() {
             const f = document.getElementById('card-front'), v = document.getElementById('card-back');
             if(!f.innerHTML || f.innerHTML === '<br>') return;
+            // Ease Factor inicial de 2.5 conforme pedido
             baralhos[dIdx].cards.push({f: f.innerHTML, v: v.innerHTML, rev: 0, int: 0, ease: 2.5, state: 'new', rep: 0, liberado: true});
             salvar(); f.innerHTML = ""; v.innerHTML = ""; f.focus();
         }
@@ -657,7 +639,6 @@
         function carregarCard() {
             const c = fila[0];
             respondido = false;
-            
             const cardBox = document.querySelector('.card-box');
             cardBox.style.transform = 'translate(0,0) rotate(0)';
             cardBox.style.transition = 'none';
@@ -712,7 +693,6 @@
                 } else {
                     if (q === 1) c.ease = Math.max(1.3, c.ease - 0.15);
                     if (q === 3) c.ease += 0.15;
-                    
                     let factor = (q === 1 ? 1.2 : q === 2 ? c.ease : c.ease * 1.3);
                     c.int = Math.max(1, Math.round(c.int * factor));
                     c.rev = hoje + (c.int * dia);
@@ -722,7 +702,6 @@
             if(fila.length > 0) carregarCard(); else abrirDetalhes(dIdx, true);
         }
 
-        // SWIPE LOGIC
         (function(){
             const cardBox = document.querySelector('.card-box');
             let startX = 0, startY = 0, isSwiping = false;
@@ -730,8 +709,7 @@
             cardBox.addEventListener('touchstart', e => {
                 if (!respondido) { isSwiping = false; return; }
                 isSwiping = true;
-                startX = e.touches[0].clientX;
-                startY = e.touches[0].clientY;
+                startX = e.touches[0].clientX; startY = e.touches[0].clientY;
                 cardBox.style.transition = 'none';
             }, {passive: true});
 
@@ -741,8 +719,8 @@
                 const dy = e.touches[0].clientY - startY;
                 if (e.cancelable) e.preventDefault();
                 cardBox.style.transform = `translate(${dx}px, ${dy}px) rotate(${dx * 0.05}deg)`;
-                if (dx > 50) { cardBox.style.border = '3px solid #5cb85c'; }
-                else if (dx < -50) { cardBox.style.border = '3px solid #d9534f'; }
+                if (dx > 50) cardBox.style.border = '3px solid #5cb85c';
+                else if (dx < -50) cardBox.style.border = '3px solid #d9534f';
             }, {passive: false});
 
             cardBox.addEventListener('touchend', e => {
@@ -767,6 +745,7 @@
     </script>
 </body>
 </html>
+
 
 
 
