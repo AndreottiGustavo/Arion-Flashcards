@@ -335,38 +335,43 @@ let baralhos = JSON.parse(localStorage.getItem('arion_db_v4')) || [];
             mudarTela('study-screen');
             carregarCard();
         }
+
+
         function carregarCard() {
-            const c = fila[0];
-            respondido = false;
-            
-            const cardBox = document.querySelector('.card-box');
-            cardBox.style.transform = 'translate(0,0) rotate(0)';
-            cardBox.style.transition = 'none';
-            // Restaurando a sombra e removendo bordas
-            cardBox.style.boxShadow = '0 10px 25px rgba(0,0,0,0.15)';
-            cardBox.style.border = 'none';
+    const c = fila[0];
+    respondido = false;
 
-            document.getElementById('display-front').innerHTML = c.f;
-            document.getElementById('display-back').style.display = 'none';
-            document.getElementById('card-divider').style.display = 'none';
-            document.getElementById('anki-btns').style.display = 'none';
-                atualizarRotulos(c);
-        }
+    const cardBox = document.querySelector('.card-box');
+    cardBox.style.transform = 'translate(0,0) rotate(0)';
+    cardBox.style.transition = 'none';
+    cardBox.style.boxShadow = '0 10px 25px rgba(0,0,0,0.15)';
+    cardBox.style.border = 'none';
 
+    document.getElementById('display-front').innerHTML = c.f;
+    document.getElementById('display-back').style.display = 'none';
+    document.getElementById('card-divider').style.display = 'none';
+    document.getElementById('anki-btns').style.display = 'none';
 
-        function atualizarRotulos(c) {
-            document.getElementById("t0").innerText =
-                formatarIntervalo(obterProximoIntervalo(c, 0));
-        
-            document.getElementById("t1").innerText =
-                formatarIntervalo(obterProximoIntervalo(c, 1));        
-        
-            document.getElementById("t2").innerText =
-                formatarIntervalo(obterProximoIntervalo(c, 2));
-        
-            document.getElementById("t3").innerText =
-                formatarIntervalo(obterProximoIntervalo(c, 3));
-        }
+    // Atualiza os rótulos de intervalo
+    atualizarRotulos(c);
+}
+
+function atualizarRotulos(c) {
+    // Se for novo ou learning, mostra intervalos padrão
+    if(c.state === 'new' || c.state === 'learning') {
+        document.getElementById("t0").innerText = "<1m"; // De novo
+        document.getElementById("t1").innerText = "2m";  // Difícil
+        document.getElementById("t2").innerText = "1d";  // Bom
+        document.getElementById("t3").innerText = "4d";  // Easy
+    } else {
+        // Se for review, calcula intervalos reais
+        document.getElementById("t0").innerText = formatarIntervalo(obterProximoIntervalo(c, 0));
+        document.getElementById("t1").innerText = formatarIntervalo(obterProximoIntervalo(c, 1));
+        document.getElementById("t2").innerText = formatarIntervalo(obterProximoIntervalo(c, 2));
+        document.getElementById("t3").innerText = formatarIntervalo(obterProximoIntervalo(c, 3));
+    }
+}
+
 
         function virarCard() {
             if(respondido) return;
@@ -641,5 +646,6 @@ cardBox.addEventListener('touchmove', e => {
             });
 
         })();
+
 
 
