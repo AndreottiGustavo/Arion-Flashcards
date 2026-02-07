@@ -18,7 +18,7 @@
 
     <style>
         
-       :root {
+  :root {
             --primary-green: #0a3d3a;
             --accent-gold: #f4e9c1;
             --premium-gold: #FFD700;
@@ -26,6 +26,21 @@
             --text-dark: #333333;
             --danger: #ff4d4d;
             --font-main: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        /* Isso aqui serve para inputs normais */
+        ::placeholder {
+            color: #ccc;
+            opacity: 0.7;
+        }
+
+        /* ADICIONE ESTE BLOCO ABAIXO PARA AS DIVS EDITÁVEIS (Onde você cria os cards) */
+        [contenteditable="true"]:empty:before {
+            content: attr(data-placeholder);
+            color: #ccc;
+            opacity: 0.7;
+            pointer-events: none;
+            display: block;
         }
 
         /* BLOCO ÚNICO: Trava o fundo do app e o "puxar para atualizar" */
@@ -191,23 +206,27 @@
         .congratulations-rect { background: #e8f5e9; color: #2e7d32; border: 2px solid #a5d6a7; padding: 20px; border-radius: 15px; font-weight: bold; text-align: center; width: 100%; margin-bottom: 15px; box-sizing: border-box; }
 
         /* ESTUDO */ 
-        .card-box { 
-    width: 100%; 
-    flex-grow: 1; 
+.card-box { 
+    width: 92%; 
+    max-width: 400px; 
+    
+    /* Mude para height fixa para manter os dois iguais */
+    height: 380px; 
+    
     background: var(--white); 
     color: var(--text-dark); 
     border-radius: 25px; 
     display: flex; 
     flex-direction: column; 
     align-items: center; 
-    justify-content: center; 
+    justify-content: center; /* Centraliza a pergunta no meio do retângulo fixo */
     text-align: center; 
     padding: 20px; 
     position: relative; 
-    min-height: 250px; 
     box-sizing: border-box; 
-    margin: 0 auto;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.18);}
+    margin: 20px auto;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+}
         .divider { width: 80%; height: 2px; background: #eee; margin: 25px 0; display: none; }
         
         .anki-footer { display: none; width: 100%; gap: 6px; margin-top: 20px; padding-bottom: 10px; }
@@ -315,30 +334,34 @@
             <div class="btn-group"><span class="time-label" id="t3"></span><button class="btn-anki" style="color:#5bc0de" onclick="responder(3)">Fácil</button></div>
         </div>
     </div>
-
-    <div id="create-screen" class="screen">
-        <header><h1>Criar flashcards</h1></header>
-        <div class="toolbar">
-            <button class="tool-btn" onclick="formatar('bold')">B</button>
-            <button class="tool-btn" onclick="formatar('italic')" style="font-style:italic">I</button>
-            <button class="tool-btn" onclick="formatar('underline')" style="text-decoration:underline">U</button>
-            <button class="tool-btn" id="btn-sup" onclick="formatar('superscript')">x²</button>
-            <button class="tool-btn" id="btn-sub" onclick="formatar('subscript')">x₂</button>
-            
-            <div class="color-split-btn">
-                <button class="color-main-btn" onclick="aplicarCorPadrao()">
-                    <span>A</span><div class="color-indicator" id="current-color"></div>
-                </button>
-                <button class="color-select-btn" onclick="document.getElementById('colorPicker').click()">▼</button>
-            </div>
-            <input type="color" id="colorPicker" style="display:none" onchange="atualizarCorPadrao(this.value)">
-        </div>
-        <div id="card-front" class="main-input" contenteditable="true"></div>
-        <div id="card-back" class="main-input" contenteditable="true"></div>
-        <button class="btn-gold" onclick="salvarCard()">SALVAR E CONTINUAR</button>
-        <button onclick="abrirDetalhes(dIdx)" style="background:none; border:1px solid white; color:white; margin-top:10px; padding:15px; border-radius:15px; cursor:pointer; width:100%">FINALIZAR / VOLTAR</button>
+<div id="create-screen" class="screen">
+    <header><h1>Criar flashcards</h1></header>
+    
+    <div class="card-box" style="height: auto; min-height: 350px;">
+        <div id="front" class="main-input" contenteditable="true" data-placeholder="Pergunta (Frente)"></div>
+        <div class="divider" style="display:block;"></div>
+        <div id="back" class="main-input" contenteditable="true" data-placeholder="Resposta (Verso)"></div>
     </div>
 
+    <div class="toolbar">
+        <button class="tool-btn" onclick="formatar('bold')">B</button>
+        <button class="tool-btn" onclick="formatar('italic')" style="font-style:italic">I</button>
+        <button class="tool-btn" onclick="formatar('underline')" style="text-decoration:underline">U</button>
+        <button class="tool-btn" id="btn-sup" onclick="formatar('superscript')">x²</button>
+        <button class="tool-btn" id="btn-sub" onclick="formatar('subscript')">x₂</button>
+        
+        <div class="color-split-btn">
+            <button class="color-main-btn" onclick="aplicarCorPadrao()">
+                <span>A</span><div class="color-indicator" id="current-color"></div>
+            </button>
+            <button class="color-select-btn" onclick="document.getElementById('colorPicker').click()">▼</button>
+        </div>
+        <input type="color" id="colorPicker" style="display:none" onchange="atualizarCorPadrao(this.value)">
+    </div>
+
+    <button class="btn-gold" onclick="salvarCard()">SALVAR E CONTINUAR</button>
+    <button onclick="abrirDetalhes(dIdx)" style="background:none; border:1px solid white; color:white; margin-top:10px; padding:15px; border-radius:15px; cursor:pointer; width:100%">FINALIZAR / VOLTAR</button>
+</div>
     <script>
         let baralhos = JSON.parse(localStorage.getItem('arion_db_v4')) || [];
         let dIdx = 0, fila = [], respondido = false;
@@ -395,7 +418,43 @@
             mudarTela('browse-screen');
             atualizarNav('nav-browse');
         }
+function abrirCriador() {
+            document.getElementById('front').innerHTML = "";
+            document.getElementById('back').innerHTML = "";
+            mudarTela('create-screen');
+        }
 
+        // 2. Função para salvar o card usando os novos IDs e o Ease Factor do Anki
+        function salvarCard() {
+            const f = document.getElementById('front').innerHTML.trim();
+            const v = document.getElementById('back').innerHTML.trim();
+
+            // Valida se não estão vazios (o <br> é o que o navegador coloca quando você apaga tudo)
+            if (!f || f === "<br>" || !v || v === "<br>") {
+                alert("Por favor, preencha a Pergunta e a Resposta.");
+                return;
+            }
+
+            // Salva no baralho selecionado (usando dIdx que você já tem no código)
+            baralhos[dIdx].cards.push({
+                f: f,
+                v: v,
+                int: 0,       // Intervalo inicial
+                ease: 2.5,    // Ease Factor idêntico ao Anki
+                rev: Date.now(),
+                state: 'new',
+                rep: 0
+            });
+
+            salvar(); // Chama sua função salvar() que já existe para gravar no localStorage
+
+            // Limpa os campos para o próximo card reaparecer o placeholder
+            document.getElementById('front').innerHTML = "";
+            document.getElementById('back').innerHTML = "";
+            
+            // Foca no primeiro campo para agilizar a criação do próximo
+            document.getElementById('front').focus();
+        }
         function alternarAbasPainel(aba) {
             document.getElementById('tab-all').classList.toggle('active-tab', aba === 'all');
             document.getElementById('tab-premium').classList.toggle('active-tab', aba === 'premium');
@@ -703,14 +762,25 @@ function iniciarEstudo(i) {
                 cardBox.style.transition = 'none';
             }, {passive: true});
 
-            cardBox.addEventListener('touchmove', e => {
+cardBox.addEventListener('touchmove', e => {
                 if (!isSwiping || !respondido) return;
                 const dx = e.touches[0].clientX - startX;
                 const dy = e.touches[0].clientY - startY;
                 if (e.cancelable) e.preventDefault();
                 cardBox.style.transform = `translate(${dx}px, ${dy}px) rotate(${dx * 0.05}deg)`;
-                if (dx > 50) cardBox.style.border = '3px solid #5cb85c';
-                else if (dx < -50) cardBox.style.border = '3px solid #d9534f';
+                
+                if (dx > 50) { 
+                    cardBox.style.border = '3px solid #5cb85c';
+                    cardBox.style.boxShadow = '0 10px 30px rgba(92, 184, 92, 0.4)'; // Sombra Verde
+                }
+                else if (dx < -50) { 
+                    cardBox.style.border = '3px solid #d9534f';
+                    cardBox.style.boxShadow = '0 10px 30px rgba(217, 83, 79, 0.4)'; // Sombra Vermelha
+                }
+                else {
+                    cardBox.style.border = 'none';
+                    cardBox.style.boxShadow = '0 10px 25px rgba(0,0,0,0.15)'; // Volta ao normal
+                }
             }, {passive: false});
 
             cardBox.addEventListener('touchend', e => {
@@ -729,12 +799,14 @@ function iniciarEstudo(i) {
                     cardBox.style.transition = 'transform 0.3s ease';
                     cardBox.style.transform = 'translate(0,0) rotate(0)';
                     cardBox.style.border = 'none';
+                    cardBox.style.boxShadow = '0 10px 25px rgba(0,0,0,0.15)';
                 }
             });
         })();
     </script>
 </body>
 </html>
+
 
 
 
