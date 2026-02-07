@@ -355,7 +355,7 @@ let baralhos = JSON.parse(localStorage.getItem('arion_db_v4')) || [];
             atualizarRotulos(c);
         }
 
-    Function atualizarRotulos(c) {
+    function atualizarRotulos(c) {
             document.getElementById("t0").innerText = formatarIntervalo(obterProximoIntervalo(c, 0));
             document.getElementById("t1").innerText = formatarIntervalo(obterProximoIntervalo(c, 1));
             document.getElementById("t2").innerText = formatarIntervalo(obterProximoIntervalo(c, 2));
@@ -508,6 +508,7 @@ cardBox.addEventListener('touchmove', e => {
             });
 
         })();
+
 
 
 
