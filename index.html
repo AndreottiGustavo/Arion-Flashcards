@@ -578,72 +578,47 @@
         });
 
         function abrirDetalhes(i, finalizou = false) {
-            dIdx = i; 
-            const b = baralhos[i]; 
-            const hoje = new Date().setHours(0,0,0,0);
-            
-            // Filtra os cards para saber o que tem para estudar hoje
-            fila = b.cards.filter(c => (c.state === 'new' || c.rev <= hoje) && (!b.premium || c.liberado));
+            dIdx = i; const b = baralhos[i]; const h = Date.now();
+            // Mantendo sua lógica de filtro original
+            fila = b.cards.filter(c => (c.state === 'new' || c.rev <= h) && (!b.premium || c.liberado === true));
             
             const novos = b.cards.filter(c => c.state === 'new' && (!b.premium || c.liberado)).length;
-            const revisao = b.cards.filter(c => c.state !== 'new' && c.rev <= hoje && (!b.premium || c.liberado)).length;
+            const revisao = b.cards.filter(c => c.state !== 'new' && c.rev <= h && (!b.premium || c.liberado)).length;
 
             mudarTela('details-screen');
             document.getElementById('details-deck-name').innerText = b.nome;
+            const area = document.getElementById('stats-area');
+            const actions = document.getElementById('details-actions');
 
-            let htmlStats = "";
-            // Se finalizou, mostra o retângulo verde de parabéns
             if (finalizou && fila.length === 0) {
-                htmlStats = `<div class="congratulations-rect">Parabéns! Você finalizou os flashcards previstos para hoje</div>`;
-            }
-
-            // Mostra as estatísticas estilo Anki
-            htmlStats += `
-                <div class="anki-stats-card">
-                    <div class="stat-row" style="color:#5bc0de">Novos: <strong>${novos}</strong></div>
-                    <div class="stat-row" style="color:#5cb85c">Revisar: <strong>${revisao}</strong></div>
+                area.innerHTML = `<div class="congratulations-rect">Parabéns! Você finalizou os flashcards previstos para hoje</div>`;
+                actions.innerHTML = `<button class="btn-gold" onclick="mudarTela('deck-screen')">VOLTAR PARA MEUS BARALHOS</button>`;
+            } else {
+                const isDisabled = fila.length === 0;
+                area.innerHTML = `
+                <div class="anki-stats-card" style="box-shadow: 0 10px 25px rgba(0,0,0,0.15); border: none;">
+                    <div style="text-align:left">
+                        <div class="stat-row">Novo: <span style="color:#2185d0; font-weight:bold">${novos}</span></div>
+                        <div class="stat-row">A Revisar: <span style="color:#2e7d32; font-weight:bold">${revisao}</span></div>
+                    </div>
+                    <button class="btn-anki" 
+                        style="background:${isDisabled ? '#e0e0e0' : '#2185d0'}; color:${isDisabled ? '#999' : 'white'}; padding:12px 20px; width:auto; height:auto; cursor:${isDisabled ? 'not-allowed' : 'pointer'}; opacity:${isDisabled ? '0.7' : '1'}; border-radius:10px; border:none; font-weight:bold;" 
+                        onclick="${isDisabled ? '' : 'iniciarEstudo('+i+')'}" ${isDisabled ? 'disabled' : ''}>Estudar agora</button>
                 </div>`;
-            
-            document.getElementById('stats-area').innerHTML = htmlStats;
-            
-            // Define as ações (Botão Estudar ou Adicionar)
-            document.getElementById('details-actions').innerHTML = `
-                <button class="btn-gold" onclick="iniciarEstudo(${i})">ESTUDAR AGORA</button>
-                ${!b.premium ? `<button class="btn-gold" style="background:#444; color:white" onclick="abrirCriador(${i})">+ ADICIONAR CARDS</button>` : ''}
-            `;
-        }
-
-        function abrirCriador(i) { dIdx = i; mudarTela('create-screen'); }
-
-        function salvarCard() {
-            const f = document.getElementById('card-front'), v = document.getElementById('card-back');
-            if(!f.innerHTML || f.innerHTML === '<br>') return;
-            // Ease Factor inicial de 2.5 conforme pedido
-            baralhos[dIdx].cards.push({f: f.innerHTML, v: v.innerHTML, rev: 0, int: 0, ease: 2.5, state: 'new', rep: 0, liberado: true});
-            salvar(); f.innerHTML = ""; v.innerHTML = ""; f.focus();
-        }
-
-        function iniciarEstudo(i) {
-            dIdx = i;
-            const hoje = new Date().setHours(0,0,0,0);
-            fila = baralhos[i].cards.filter(c => (c.state === 'new' || c.rev <= hoje) && (!baralhos[i].premium || c.liberado));
-            
-            if(fila.length === 0) {
-                abrirDetalhes(i, true);
-                return;
+                actions.innerHTML = `<button class="btn-gold" onclick="abrirCriador(${i})">+ ADICIONAR CARDS</button>`;
             }
-            mudarTela('study-screen');
-            carregarCard();
         }
 
         function carregarCard() {
             const c = fila[0];
             respondido = false;
+            
             const cardBox = document.querySelector('.card-box');
             cardBox.style.transform = 'translate(0,0) rotate(0)';
             cardBox.style.transition = 'none';
+            // Restaurando a sombra e removendo bordas
+            cardBox.style.boxShadow = '0 10px 25px rgba(0,0,0,0.15)';
             cardBox.style.border = 'none';
-            cardBox.style.boxShadow = '0 10px 30px rgba(0,0,0,0.18)';
 
             document.getElementById('display-front').innerHTML = c.f;
             document.getElementById('display-back').style.display = 'none';
@@ -745,6 +720,7 @@
     </script>
 </body>
 </html>
+
 
 
 
