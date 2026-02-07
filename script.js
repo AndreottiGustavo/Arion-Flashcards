@@ -21,22 +21,22 @@ let baralhos = JSON.parse(localStorage.getItem('arion_db_v4')) || [];
             });
         };
 
-function formatarIntervalo(ms) {
-    const min = Math.round(ms / 60000);
-    const dia = 1440;
-
-    if (min < 60) return `${min} min`;
-    if (min < dia) return `${Math.round(min / 60)} h`;
-
-    const dias = Math.round(min / dia);
-    if (dias < 30) return `${dias} dia${dias > 1 ? 's' : ''}`;
-
-    const meses = Math.round(dias / 30);
-    if (meses < 12) return `${meses} mês${meses > 1 ? 'es' : ''}`;
-
-    const anos = Math.round(meses / 12);
-    return `${anos} ano${anos > 1 ? 's' : ''}`;
-}
+        function formatarIntervalo(ms) {
+            const min = Math.round(ms / 60000);
+            const dia = 1440;
+        
+            if (min < 60) return `${min} min`;
+            if (min < dia) return `${Math.round(min / 60)} h`;
+        
+            const dias = Math.round(min / dia);
+            if (dias < 30) return `${dias} dia${dias > 1 ? 's' : ''}`;
+        
+            const meses = Math.round(dias / 30);
+            if (meses < 12) return `${meses} mês${meses > 1 ? 'es' : ''}`;
+        
+            const anos = Math.round(meses / 12);
+            return `${anos} ano${anos > 1 ? 's' : ''}`;
+        }
 
         function formatar(cmd, val = null) { document.execCommand(cmd, false, val); }
         function atualizarCorPadrao(cor) { corAtual = cor; document.getElementById('current-color').style.background = cor; }
@@ -319,22 +319,22 @@ function formatarIntervalo(ms) {
                 actions.innerHTML = `<button class="btn-gold" onclick="abrirCriador(${i})">+ ADICIONAR CARDS</button>`;
             }
         }
-function iniciarEstudo(i) {
-    if (i !== undefined) dIdx = i;
-    const b = baralhos[dIdx];
-    const hoje = new Date().setHours(0,0,0,0);
-    
-    // Filtra apenas os cards que precisam ser estudados hoje
-    fila = b.cards.filter(c => (c.state === 'new' || c.rev <= Date.now()) && (!b.premium || c.liberado));
-    
-    if(fila.length === 0) {
-        abrirDetalhes(dIdx, true); // Se não tiver nada, volta e mostra os parabéns
-        return;
-    }
-    
-    mudarTela('study-screen');
-    carregarCard();
-}
+        function iniciarEstudo(i) {
+            if (i !== undefined) dIdx = i;
+            const b = baralhos[dIdx];
+            const hoje = new Date().setHours(0,0,0,0);
+            
+            // Filtra apenas os cards que precisam ser estudados hoje
+            fila = b.cards.filter(c => (c.state === 'new' || c.rev <= Date.now()) && (!b.premium || c.liberado));
+            
+            if(fila.length === 0) {
+                abrirDetalhes(dIdx, true); // Se não tiver nada, volta e mostra os parabéns
+                return;
+            }
+            
+            mudarTela('study-screen');
+            carregarCard();
+        }
         function carregarCard() {
             const c = fila[0];
             respondido = false;
@@ -567,3 +567,4 @@ cardBox.addEventListener('touchmove', e => {
             });
 
         })();
+
