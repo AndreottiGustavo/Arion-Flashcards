@@ -21,30 +21,6 @@
 </head>
 <body>
 
-
-    
-    <!-- =========================================================
-         NOVO HEADER FIXO COM LOGO + MENU SANDUÍCHE
-         ========================================================= -->
-         <header class="top-header">
-            <div class="header-brand">
-                <img src="LOGO ÁRION.png" alt="Logo Árion" class="app-logo-img">
-                <span class="app-brand-name">ÁRION</span>
-            </div>
-        
-            <div class="menu-container">
-                <button id="menu-toggle" class="hamburger-btn">☰</button>
-                
-                <nav class="nav-menu-dropdown" id="main-nav">
-                    <button class="nav-btn" id="nav-decks" onclick="mudarTela('deck-screen'); atualizarNav('nav-decks')">Baralhos</button>
-                    <button class="nav-btn" id="nav-browse" onclick="abrirPainel(); atualizarNav('nav-browse')">Painel (Cards)</button>
-                    <button class="nav-btn" id="nav-store" onclick="mudarTela('store-screen'); atualizarNav('nav-store')" style="color:var(--premium-gold); border-color:var(--premium-gold)">✨ Loja</button>
-                </nav>
-            </div>
-        </header>
-    
-
- 
     <div id="splash-screen">
         <div class="logo-container">
             <svg viewBox="0 0 400 150">
@@ -54,6 +30,11 @@
         </div>
     </div>
 
+    <nav class="top-nav" id="main-nav">
+        <button class="nav-btn" id="nav-decks" onclick="mudarTela('deck-screen'); atualizarNav('nav-decks')">Baralhos</button>
+        <button class="nav-btn" id="nav-browse" onclick="abrirPainel(); atualizarNav('nav-browse')">Painel (Cards)</button>
+        <button class="nav-btn" id="nav-store" onclick="mudarTela('store-screen'); atualizarNav('nav-store')" style="color:var(--premium-gold); border-color:var(--premium-gold)">✨ Loja</button>
+    </nav>
 
     <div id="modal-overlay">
         <div class="modal-box" id="custom-modal">
@@ -124,16 +105,10 @@
         </header>
     
         <div id="study-container">
-            <div class="card-box">
+            <div class="card-box" onclick="virarCard()">
                 <div id="display-front" style="font-size:1.4rem"></div>
-                
-                <div class="divider" id="card-divider" style="display:none; width: 100%; height: 1px; background: rgba(0,0,0,0.1); margin: 20px 0;"></div>
-                
-                <div id="display-back" style="font-size:1.4rem; font-weight:normal; color:var(--primary-green); display:none"></div>
-            
-                <button id="btn-show-answer" class="btn-gold" style="margin-top: 20px; width: 100%;" onclick="virarCard()">
-                    MOSTRAR RESPOSTA
-                </button>
+                <div class="divider" id="card-divider"></div>
+                <div id="display-back" style="font-size:1.4rem; font-weight:bold; color:var(--primary-green); display:none"></div>
             </div>
             
             <div class="anki-footer" id="anki-btns">

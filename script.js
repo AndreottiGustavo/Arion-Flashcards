@@ -90,19 +90,12 @@ function atualizarStreak() {
             }
         }
 
-        function atualizarNav(idAtivo) {
-            // Remove o destaque de todos os botões
-            document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.classList.remove('active-nav');
-            });
-            // Destaca o botão atual
-            const botaoAtivo = document.getElementById(idAtivo);
-            if (botaoAtivo) botaoAtivo.classList.add('active-nav');
-            
-            // FECHA O MENU AUTOMATICAMENTE APÓS CLICAR (Para o mobile)
-            const menu = document.getElementById('main-nav');
-            if (menu) menu.classList.remove('show');
+        function atualizarNav(id) {
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active-nav'));
+            const btn = document.getElementById(id);
+            if(btn) btn.classList.add('active-nav');
         }
+
         function fecharModal() { document.getElementById('modal-overlay').style.display = 'none'; }
 
         function abrirPainel() {
@@ -405,7 +398,7 @@ function atualizarStreak() {
         function carregarCard() {
             const c = fila[0];
             respondido = false;
-            document.getElementById('btn-show-answer').style.display = 'block';
+            
             const cardBox = document.querySelector('.card-box');
             cardBox.style.transform = 'translate(0,0) rotate(0)';
             cardBox.style.transition = 'none';
@@ -424,7 +417,6 @@ function atualizarStreak() {
             if(respondido) return;
             respondido = true;
             const c = fila[0];
-            document.getElementById('btn-show-answer').style.display = 'none';
             document.getElementById('display-back').innerHTML = c.v;
             document.getElementById('display-back').style.display = 'block';
             document.getElementById('card-divider').style.display = 'block';
@@ -688,7 +680,6 @@ cardBox.addEventListener('touchmove', e => {
     const distanciaMinima = 100;
 
     window.addEventListener('touchstart', e => {
-        if (e.touches[0].clientX < 50) e.stopPropagation();
         touchStartX = e.changedTouches[0].screenX;
         telaAtual = document.querySelector('.screen.active');
 
@@ -787,43 +778,33 @@ cardBox.addEventListener('touchmove', e => {
             }
         }
     }, { passive: true });
-})
-// A FUNÇÃO QUE RESOLVE A ESCORREGADA:
-function resetEstilos(el) {
-    if (!el) return;
 
-    el.style.transition = '';
-    el.style.transform = '';
-    el.style.left = '';
-    el.style.top = '';
-    el.style.opacity = '';
-    el.style.boxShadow = '';
-    el.style.zIndex = '';
-}
-
-
-// ATIVAÇÃO DO MENU SANDUÍCHE E INICIALIZAÇÃO
-document.addEventListener('DOMContentLoaded', () => {
-    const btn = document.getElementById('menu-toggle');
-    const menu = document.getElementById('main-nav');
-
-    if (btn && menu) {
-        btn.onclick = (e) => {
-            e.stopPropagation();
-            menu.classList.toggle('show');
-            console.log("Menu sanduíche acionado!");
-        };
-
-        // Fecha ao clicar em qualquer lugar fora
-        document.addEventListener('click', (e) => {
-            if (menu.classList.contains('show') && !menu.contains(e.target) && e.target !== btn) {
-                menu.classList.remove('show');
-            }
-        });
+    // A FUNÇÃO QUE RESOLVE A ESCORREGADA:
+    function resetEstilos(el) {
+        if (!el) return;
         
-        // Garante que o menu feche ao clicar em um botão interno
-        menu.querySelectorAll('.nav-btn').forEach(b => {
-            b.addEventListener('click', () => menu.classList.remove('show'));
-        });
+        // Se a tela já é a ativa, o reset deve ser invisível
+        if (el.classList.contains('active')) {
+            el.style.transition = 'none';
+            el.style.left = '';
+            el.style.transform = '';
+            el.style.boxShadow = '';
+            el.style.zIndex = '';
+            el.style.opacity = '';
+            return;
+        }
+
+        // Para a tela que saiu, limpamos de forma que ela fique pronta para a próxima
+        el.style.transition = 'none';
+        el.style.left = '50%';
+        el.style.transform = 'translateX(-50%)'; 
+        el.style.boxShadow = '';
+        el.style.zIndex = '';
+        el.style.opacity = '';
+
+        setTimeout(() => {
+            el.style.left = '';
+            el.style.transition = '';
+        }, 0);
     }
-});
+})();
