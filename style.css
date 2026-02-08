@@ -8,22 +8,6 @@
     --font-main: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
-/* Isso aqui serve para inputs normais */
-::placeholder {
-    color: #ccc;
-    opacity: 0.7;
-}
-
-/* ADICIONE ESTE BLOCO ABAIXO PARA AS DIVS EDITÁVEIS (Onde você cria os cards) */
-[contenteditable="true"]:empty:before {
-    content: attr(data-placeholder);
-    color: #ccc;
-    opacity: 0.7;
-    pointer-events: none;
-    display: block;
-}
-
-/* BLOCO ÚNICO: Trava o fundo do app e o "puxar para atualizar" */
 body, html {
     margin: 0; 
     padding: 0;
@@ -32,54 +16,114 @@ body, html {
     color: var(--white);
     width: 100%;
     height: 100%;
-    overflow: hidden; /* Não deixa a página inteira rolar */
-    position: fixed; /* Prende a página no lugar */
-    overscroll-behavior: none; /* Mata o "puxar para atualizar" */
+    overflow: hidden;
+    position: fixed;
+    overscroll-behavior: none;
     -webkit-tap-highlight-color: transparent;
 }
 
-/* Permite rolagem apenas dentro das telas (como a lista de baralhos) */
-.screen { 
-    display: none; 
-    height: 100dvh; 
-    flex-direction: column; 
-    padding: 15px; 
-    box-sizing: border-box; 
-    max-width: 600px; 
-    margin: 0 auto; 
-    overflow-y: auto; /* Permite rolar a lista de baralhos */
-    -webkit-overflow-scrolling: touch;
-    position: relative;
-}
-
-.active { display: flex !important; }
-
-/* BARRA DE NAVEGAÇÃO SUPERIOR */
-.top-nav {
-    display: none; 
-    justify-content: center; 
-    gap: 8px; 
-    padding: 10px;
-    background: var(--primary-green); 
-    border-bottom: 1px solid rgba(244, 233, 193, 0.2);
-    position: fixed; 
-    top: 0; 
-    left: 0;
-    right: 0;
-    z-index: 10000; 
-    height: 60px; 
+/* ============================================================================
+   HEADER E MENU SANDUÍCHE (VERSÃO ÚNICA E LIMPA)
+   ============================================================================ */
+   .top-header {
+    display: flex;
+    justify-content: space-between;
     align-items: center;
+    padding: 0 20px;
+    background: var(--primary-green);
+    border-bottom: 1px solid rgba(244, 233, 193, 0.2);
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 70px;
+    z-index: 10001;
 }
 
-.nav-btn {
-    background: none; border: 1px solid var(--accent-gold); color: var(--accent-gold);
-    padding: 8px 12px; border-radius: 20px; font-size: 0.75rem; cursor: pointer;
-    font-weight: bold; text-transform: uppercase; transition: 0.3s;
-    font-family: var(--font-main);
+.header-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
-.nav-btn.active-nav { background: var(--accent-gold); color: var(--primary-green); }
 
-/* SPLASH SCREEN */
+.app-logo-img {
+    width: 38px;
+    height: 38px;
+    object-fit: contain;
+    display: block !important; /* Força o logo a aparecer */
+}
+
+.app-brand-name {
+    font-family: serif;
+    font-weight: bold;
+    color: var(--accent-gold);
+    font-size: 1.4rem;
+    letter-spacing: 2px;
+}
+
+.hamburger-btn {
+    background: none;
+    border: none;
+    color: var(--accent-gold);
+    font-size: 2.2rem;
+    cursor: pointer;
+    padding: 10px;
+}
+
+.nav-menu-dropdown {
+    display: flex; 
+    flex-direction: column;
+    position: absolute;
+    top: 75px;
+    right: 15px;
+    background: var(--primary-green);
+    border: 1px solid var(--accent-gold);
+    border-radius: 20px; /* Bordas mais arredondadas */
+    padding: 10px;
+    min-width: 210px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.5); /* Sombra mais profunda */
+    z-index: 10002;
+
+    /* Transição suave que você já tem */
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+}
+
+.nav-menu-dropdown.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+/* DEIXANDO OS BOTÕES INTERNOS BONITOS */
+.nav-menu-dropdown .nav-btn {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--accent-gold);
+    border: 1px solid rgba(244, 233, 193, 0.2);
+    padding: 14px;
+    margin: 4px 0;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.nav-menu-dropdown .nav-btn:hover {
+    background: var(--accent-gold);
+    color: var(--primary-green);
+}
+
+/* Botão especial da Loja */
+#nav-store {
+    border-color: var(--premium-gold) !important;
+    color: var(--premium-gold) !important;
+}
+
+/*================================= SPLASH SCREEN =======================*/
 #splash-screen {
     position: fixed; inset: 0; background: var(--primary-green);
     display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -115,7 +159,13 @@ body, html {
     /* ANIMAÇÃO REMOVIDA PARA EVITAR PISCADA NO SWIPE */
 }
 
-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-top: 10px; }
+.screen header { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin-bottom: 20px; 
+    padding-top: 10px; 
+}
 h1 { color: var(--accent-gold); margin: 0; font-size: 1.4rem; letter-spacing: 2px; text-transform: uppercase; }
 
 /* LISTA DE BARALHOS */
@@ -278,27 +328,61 @@ box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 
 /* ESTUDO */ 
 .card-box { 
-width: 100%; 
-max-width: none; 
-margin: 0px 0px 20px 0px;
-/* Mude para height fixa para manter os dois iguais */
-height: 380px; 
+    width: 100%; 
+    max-width: none; 
+    margin: 0px 0px 20px 0px;
+    height: 380px; /* Mantém o tamanho fixo que você definiu */
 
-background: var(--white); 
-color: var(--text-dark); 
-border-radius: 25px; 
-display: flex; 
-flex-direction: column; 
-align-items: center; 
-justify-content: center; /* Centraliza a pergunta no meio do retângulo fixo */
-text-align: center; 
-padding: 20px; 
-position: relative; 
-box-sizing: border-box; 
-box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+    background: var(--white); 
+    color: var(--text-dark); 
+    border-radius: 25px; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    
+    /* MUDANÇA AQUI: flex-start faz a pergunta começar sempre do topo */
+    justify-content: flex-start; 
+    
+    text-align: center; 
+    padding: 30px 20px; /* Um pouco mais de espaço no topo */
+    position: relative; 
+    box-sizing: border-box; 
+    box-shadow: 0 10px 30px rgba(0,0,0,0.18);
 }
-.divider { width: 80%; height: 2px; background: #eee; margin: 25px 0; display: none; }
 
+/* LINHA ESTILO ANKI: Fina, 100% de largura e cor suave */
+.divider { 
+    width: 100%; 
+    height: 1px; 
+    background: #eeeeee; 
+    margin: 20px 0; 
+    display: none; 
+}
+
+/* ======================BOTÃO MOSTRAR RESPOSTA==================//*/
+#btn-show-answer {
+    /* FIXA O BOTÃO NO FUNDO DO CARTÃO */
+    position: absolute;
+    bottom: 20px;   /* Distância da borda de baixo */
+    left: 50%;      /* Move para o meio */
+    transform: translateX(-50%); /* Centraliza perfeitamente */
+    width: 85%;
+    max-width: 260px;
+    background: #2185d0;
+    color: white;
+    padding: 14px;
+    border: none;
+    border-radius: 15px;
+    font-weight: bold;
+    font-size: 0.9rem;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    z-index: 10; /* Garante que fique por cima de outros elementos */
+}
+
+#btn-show-answer:active {
+    opacity: 0.8; /* Efeito de clique */
+}
 .anki-footer { display: none; width: 100%; gap: 6px; margin-top: 20px; padding-bottom: 10px; }
 .btn-group { flex: 1; display: flex; flex-direction: column; align-items: center; }
 .btn-anki { width: 100%; padding: 15px 0; border: none; border-radius: 12px; background: var(--white); font-weight: bold; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.1); font-size: 0.85rem; height: 50px; display: flex; align-items: center; justify-content: center; font-family: var(--font-main); }
@@ -322,3 +406,4 @@ box-shadow: 0 10px 30px rgba(0,0,0,0.18);
         transform: scale(1) translateY(0);
     }
 }
+
