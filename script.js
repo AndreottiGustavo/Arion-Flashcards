@@ -688,6 +688,7 @@ cardBox.addEventListener('touchmove', e => {
     const distanciaMinima = 100;
 
     window.addEventListener('touchstart', e => {
+        if (e.touches[0].clientX < 50) e.stopPropagation();
         touchStartX = e.changedTouches[0].screenX;
         telaAtual = document.querySelector('.screen.active');
 
