@@ -582,23 +582,42 @@ function atualizarStreak() {
     }
 
     function mostrarParabens() {
-        const studyContainer = document.getElementById('study-container');
-        if (studyContainer) studyContainer.style.display = 'none';
+        const container = document.getElementById('flashcard-container');
         
-        const finishArea = document.getElementById('finish-area');
-        if (finishArea) {
-            finishArea.style.display = 'flex';
-            atualizarStreak(); // Atualiza a contagem de dias
-            if (typeof confetti === 'function') {
-                confetti({
-                    particleCount: 180, // Quantidade de confetes
-                    spread: 70,         // Ângulo da explosão
-                    origin: { y: 0.6 }, // Altura de onde saem (0.6 é perto do troféu)
-                    colors: ['#f4e9c1', '#FFD700', '#5bc0de', '#ff7eb9', 'ff0000', '#ffffff', '#22c55e'] // Cores do Árion
-                });
-            }
+        // Estilização robusta para mobile e desktop
+        container.innerHTML = `
+            <div style="
+                display: flex; 
+                flex-direction: column; 
+                align-items: center; 
+                justify-content: center; 
+                text-align: center; 
+                padding: 30px 20px; 
+                margin: 20px auto;
+                width: 85%; 
+                max-width: 500px;
+                background-color: #d4edda; 
+                color: #155724; 
+                border: 2px solid #c3e6cb; 
+                border-radius: 15px;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            ">
+                <span style="font-size: 50px; margin-bottom: 15px;">🎉</span>
+                <p style="font-weight: bold; font-size: 1.2rem; margin: 0; line-height: 1.4;">
+                    Parabéns! Você finalizou os flashcards previstos para hoje.
+                </p>
+            </div>
+        `;
+
+        // Disparo de confetes com z-index para não sumir no mobile
+        if (typeof confetti === 'function') {
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 },
+                zIndex: 10000 
+            });
         }
-    
     }
 
 
