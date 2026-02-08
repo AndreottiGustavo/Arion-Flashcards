@@ -33,7 +33,6 @@ body, html {
     top: 0; left: 0; right: 0;
     height: 70px;
     z-index: 10001;
-    pointer-events: none;
 }
 .header-brand, .hamburger-btn, .nav-menu-dropdown {
     pointer-events: auto;}
@@ -132,6 +131,7 @@ body, html {
 .logo-container { width: 300px; fill: var(--accent-gold); max-width: 80%; }
 
 /* TELAS - CORREÇÃO DE ALINHAMENTO E CAMADAS */
+/* TELAS — versão final corrigida */
 .screen { 
     display: none; 
     height: 100dvh; 
@@ -141,21 +141,23 @@ body, html {
     padding: 15px; 
     padding-top: 75px; 
     box-sizing: border-box; 
-    
-    position: fixed; 
-    top: 0;
+
+    /* Centralização correta sem quebrar swipe-back */
+    position: relative;
+    margin: 0 auto; 
     left: 0;
     right: 0;
-    margin-left: auto;
-    margin-right: auto;
-    transform: none; 
-    transform: translateX(-50%);
+
     background: var(--primary-green);
+
+    /* Rolagem suave e sem quebrar gestos do iOS */
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
+
+    /* Z-index apenas quando visível */
     z-index: 1;
-    touch-action: none; 
 }
+
 
 .active { 
     display: flex !important; 
