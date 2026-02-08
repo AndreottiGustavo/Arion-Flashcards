@@ -93,21 +93,41 @@
         <div id="details-actions"></div>
     </div>
 
+
+
+    ////// tela de estudo ///////
+
+    
     <div id="study-screen" class="screen">
-        <header><h1 id="study-title">Estudo</h1><button onclick="abrirDetalhes(dIdx)" style="background:none; border:1px solid white; color:white; border-radius:8px; padding:5px 15px;">Sair</button></header>
-        <div class="card-box" onclick="virarCard()">
-            <div id="display-front" style="font-size:1.4rem"></div>
-            <div class="divider" id="card-divider"></div>
-            <div id="display-back" style="font-size:1.4rem; font-weight:bold; color:var(--primary-green); display:none"></div>
+        <header>
+            <h1 id="study-title">Estudo</h1>
+            <button onclick="abrirDetalhes(dIdx)" style="background:none; border:1px solid white; color:white; border-radius:8px; padding:5px 15px;">Sair</button>
+        </header>
+
+        <div id="study-container">
+            <div class="card-box" onclick="virarCard()">
+                <div id="display-front" style="font-size:1.4rem"></div>
+                <div class="divider" id="card-divider"></div>
+                <div id="display-back" style="font-size:1.4rem; font-weight:bold; color:var(--primary-green); display:none"></div>
+            </div>
+            
+            <div class="anki-footer" id="anki-btns">
+                <div class="btn-group"><span class="time-label"></span><button class="btn-anki" style="background:#f0f0f0; color:#666" onclick="abrirModalEditarCard()">✎ Editar</button></div>
+                <div class="btn-group"><span class="time-label" id="t0"></span><button class="btn-anki" style="color:#d9534f" onclick="responder(0)">De novo</button></div>
+                <div class="btn-group"><span class="time-label" id="t1"></span><button class="btn-anki" style="color:#f0ad4e" onclick="responder(1)">Difícil</button></div>
+                <div class="btn-group"><span class="time-label" id="t2"></span><button class="btn-anki" style="color:#5cb85c" onclick="responder(2)">Bom</button></div>
+                <div class="btn-group"><span class="time-label" id="t3"></span><button class="btn-anki" style="color:#5bc0de" onclick="responder(3)">Fácil</button></div>
+            </div>
         </div>
-        <div class="anki-footer" id="anki-btns">
-            <div class="btn-group"><span class="time-label"></span><button class="btn-anki" style="background:#f0f0f0; color:#666" onclick="abrirModalEditarCard()">✎ Editar</button></div>
-            <div class="btn-group"><span class="time-label" id="t0"></span><button class="btn-anki" style="color:#d9534f" onclick="responder(0)">De novo</button></div>
-            <div class="btn-group"><span class="time-label" id="t1"></span><button class="btn-anki" style="color:#f0ad4e" onclick="responder(1)">Difícil</button></div>
-            <div class="btn-group"><span class="time-label" id="t2"></span><button class="btn-anki" style="color:#5cb85c" onclick="responder(2)">Bom</button></div>
-            <div class="btn-group"><span class="time-label" id="t3"></span><button class="btn-anki" style="color:#5bc0de" onclick="responder(3)">Fácil</button></div>
+
+        <div id="finish-screen" class="congratulations-container" style="display: none;">
+            <span class="trophy-icon">🏆</span>
+            <div class="congrats-title">Parabéns! Você finalizou os flashcards previstos para hoje.</div>
+            <div id="streak-display" class="streak-badge">Sua streak continua: 0 dias</div>
+            <button class="btn-gold" style="margin-top: 25px; width: 100%;" onclick="mudarTela('deck-screen')">Voltar aos Baralhos</button>
         </div>
     </div>
+
 <div id="create-screen" class="screen">
     <header><h1>Criar flashcards</h1></header>
     

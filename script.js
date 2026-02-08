@@ -22,6 +22,61 @@ let baralhos = JSON.parse(localStorage.getItem('arion_db_v4')) || [];
             });
         };
 
+
+// =============================== atualizar streak ===========================================
+
+function atualizarStreak() {
+    const agora = new Date();
+    const hojeStr = `${agora.getFullYear()}-${agora.getMonth() + 1}-${agora.getDate()}`;
+    let dadosStreak = JSON.parse(localStorage.getItem('arion_streak_data')) || {
+        contagem: 0,
+        ultimaData: null
+    };
+
+    if (dadosStreak.ultimaData) {
+        const ultimaDataEstudo = new Date(dadosStreak.ultimaData);
+        ultimaDataEstudo.setHours(0, 0, 0, 0);
+        
+        const dataHoje = new Date(hojeStr);
+        dataHoje.setHours(0, 0, 0, 0);
+        const diffTempo = dataHoje.getTime() - ultimaDataEstudo.getTime();
+        const diffDias = Math.floor(diffTempo / (1000 * 60 * 60 * 24));
+
+        if (diffDias === 1) {
+            dadosStreak.contagem += 1;
+            dadosStreak.ultimaData = hojeStr;
+        } else if (diffDias > 1) {
+            dadosStreak.contagem = 1;
+            dadosStreak.ultimaData = hojeStr;
+        } else if (diffDias === 0) {
+            console.log("Streak já contabilizada hoje.");
+        }
+    } else {
+        dadosStreak.contagem = 1;
+        dadosStreak.ultimaData = hojeStr;
+    }
+
+    localStorage.setItem('arion_streak_data', JSON.stringify(dadosStreak));
+    
+    const display = document.getElementById('streak-display');
+    if (display) {
+        display.innerText = `Sua streak continua: ${dadosStreak.contagem} dias`;
+    }
+    
+    return dadosStreak.contagem;
+}
+
+function mostrarParabens() {
+    const studyContainer = document.getElementById('study-container');
+    if (studyContainer) studyContainer.style.display = 'none';
+    
+    const finishScreen = document.getElementById('finish-screen');
+    if (finishScreen) {
+        finishScreen.style.display = 'flex';
+        atualizarStreak();
+    }
+}
+
         function formatar(cmd, val = null) { document.execCommand(cmd, false, val); }
         function atualizarCorPadrao(cor) { corAtual = cor; document.getElementById('current-color').style.background = cor; }
         function aplicarCorPadrao() { document.execCommand('foreColor', false, corAtual); }
@@ -326,22 +381,33 @@ let baralhos = JSON.parse(localStorage.getItem('arion_db_v4')) || [];
                 actions.innerHTML = `<button class="btn-gold" onclick="abrirCriador(${i})">+ ADICIONAR CARDS</button>`;
             }
         }
-function iniciarEstudo(i) {
-    if (i !== undefined) dIdx = i;
-    const b = baralhos[dIdx];
-    const agora = Date.now();
-    
-    // Filtra apenas os cards que precisam ser estudados hoje
-    fila = b.cards.filter(c => (c.state === 'new' || c.rev <= agora) && (!b.premium || c.liberado));
-    
-    if(fila.length === 0) {
-        abrirDetalhes(dIdx, true); // Se não tiver nada, volta e mostra os parabéns
-        return;
-    }
-    
-    mudarTela('study-screen');
-    carregarCard();
-}
+
+
+
+        function iniciarEstudo(i) {
+            if (i !== undefined) dIdx = i;
+        
+            const studyContainer = document.getElementById('study-container');
+            const finishScreen = document.getElementById('finish-screen');
+            if (studyContainer) studyContainer.style.display = 'block';
+            if (finishScreen) finishScreen.style.display = 'none';
+        
+            const b = baralhos[dIdx];
+            const agora = Date.now();
+            
+            fila = b.cards.filter(c => (c.state === 'new' || c.rev <= agora) && (!b.premium || c.liberado));
+            
+            if(fila.length === 0) {
+                mostrarParabens(); 
+                return;
+            }
+            
+            mudarTela('study-screen');
+            carregarCard();
+        }
+
+
+        
         function carregarCard() {
             const c = fila[0];
             respondido = false;
@@ -512,8 +578,11 @@ function iniciarEstudo(i) {
         c.rep++;
         salvar();
 
-        if (fila.length > 0) carregarCard();
-        else abrirDetalhes(dIdx, true);
+        if (fila.length > 0) {
+            carregarCard();
+        } else {
+            mostrarParabens(); 
+        }
     }
 
     // ======== DISPATCH (SEPARA POR TIPO DE CARTÃO) ========
