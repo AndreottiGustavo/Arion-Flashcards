@@ -596,10 +596,10 @@ cardBox.addEventListener('touchmove', e => {
         // ================swipe de voltar do iPhone===============
 
 
-//////////////////// GESTO DE VOLTAR (IPHONE) - SEM PULO ///////////////////
+//////////////////// GESTO DE VOLTAR (IPHONE) - VERSÃO FINAL ///////////////////
 (function() {
     let touchStartX = 0;
-    let initialLeft = 0; // Captura a posição real da tela no início
+    let initialLeft = 0; 
     let telaAtual = null; 
     let telaFundo = null;
     const bordaSensivel = 40; 
@@ -615,7 +615,7 @@ cardBox.addEventListener('touchmove', e => {
         }
 
         if (touchStartX < bordaSensivel) {
-            // Captura a posição exata (em pixels) onde a tela está centralizada
+            // Captura onde a tela está agora para evitar o pulo
             initialLeft = telaAtual.getBoundingClientRect().left;
             telaAtual.style.transition = 'none';
 
@@ -626,12 +626,12 @@ cardBox.addEventListener('touchmove', e => {
                 telaFundo.style.display = 'flex'; 
                 telaFundo.style.transition = 'none';
                 telaFundo.style.opacity = '0.5'; 
-                // Alinha o fundo exatamente na mesma posição da frente
-                telaFundo.style.left = `${initialLeft}px`;
+                // Fixa em pixels durante o movimento
+                telaFundo.style.left = initialLeft + 'px';
                 telaFundo.style.transform = 'translateX(0) scale(0.95)'; 
                 telaFundo.style.zIndex = '1';
                 
-                telaAtual.style.left = `${initialLeft}px`;
+                telaAtual.style.left = initialLeft + 'px';
                 telaAtual.style.transform = 'translateX(0)';
                 telaAtual.style.zIndex = '2';
             }
@@ -645,7 +645,7 @@ cardBox.addEventListener('touchmove', e => {
         const deslocamento = Math.max(0, currentX - touchStartX);
         const progresso = Math.min(1, deslocamento / window.innerWidth);
 
-        // Move a partir da posição inicial fixa em pixels (sem o pulo do -50%)
+        // Move a tela
         telaAtual.style.transform = `translateX(${deslocamento}px)`;
         telaAtual.style.boxShadow = '-10px 0 20px rgba(0,0,0,0.2)';
 
@@ -675,8 +675,6 @@ cardBox.addEventListener('touchmove', e => {
             
             setTimeout(() => {
                 const idAtual = telaAtual.id;
-                
-                // Primeiro aplicamos a mudança de tela silenciosa
                 if (idAtual === 'study-screen') {
                     abrirDetalhes(dIdx);
                 } else {
@@ -684,7 +682,6 @@ cardBox.addEventListener('touchmove', e => {
                     atualizarNav('nav-decks');
                 }
                 
-                // Pequeno delay para o navegador processar a troca antes de resetar o transform
                 requestAnimationFrame(() => {
                     resetEstilos(telaAtual);
                     if (telaFundo) resetEstilos(telaFundo);
@@ -693,7 +690,7 @@ cardBox.addEventListener('touchmove', e => {
                 });
             }, 300);
         } else {
-            // Volta suavemente para a posição inicial
+            // Cancela o swipe
             telaAtual.style.transform = 'translateX(0)';
             if (telaFundo) {
                 telaFundo.style.opacity = '0.5';
@@ -708,12 +705,20 @@ cardBox.addEventListener('touchmove', e => {
         }
     }, { passive: true });
 
+    // A FUNÇÃO QUE RESOLVE A ESCORREGADA:
     function resetEstilos(el) {
         if (!el) return;
-        el.style.transition = '';
-        el.style.transform = '';
-        el.style.left = ''; // Devolve o controle para o CSS (voltar ao -50%)
+        el.style.transition = 'none';
+        // Força o centro antes de liberar o controle para o CSS
+        el.style.left = '50%';
+        el.style.transform = 'translateX(-50%)'; 
         el.style.boxShadow = '';
         el.style.zIndex = '';
+        el.style.opacity = '';
+
+        setTimeout(() => {
+            el.style.left = ''; // Limpa estilo inline e deixa o CSS assumir
+            el.style.transition = '';
+        }, 0);
     }
 })();
