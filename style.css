@@ -60,14 +60,14 @@
             justify-content: center; 
             gap: 8px; 
             padding: 10px;
-            background: var(--primary-green); /* Cor sólida para não confundir no swipe */
+            background: var(--primary-green); 
             border-bottom: 1px solid rgba(244, 233, 193, 0.2);
-            position: fixed; /* Mude de sticky para fixed */
+            position: fixed; 
             top: 0; 
             left: 0;
             right: 0;
-            z-index: 10000; /* Garante que fica acima das telas no swipe */
-            height: 60px; /* Altura fixa para combinar com o padding-top da screen */
+            z-index: 10000; 
+            height: 60px; 
             align-items: center;
         }
         
@@ -87,59 +87,33 @@
         }
         .logo-container { width: 300px; fill: var(--accent-gold); max-width: 80%; }
 
-       /* TELAS - CORREÇÃO DE ALINHAMENTO E CAMADAS */
-
-       .screen { 
-        display: none; 
-        height: 100dvh; 
-        width: 100%;
-        max-width: 600px; 
-        flex-direction: column; 
-        padding: 15px; 
-        /* ADICIONE A LINHA ABAIXO: */
-        padding-top: 70px; /* Ajusta o conteúdo para baixo da top-nav */
-        box-sizing: border-box; 
-        
-        position: fixed; 
-        top: 0;
-        left: 50%;
-        transform: translateX(-50%); 
-        
-        background: var(--primary-green);
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
-        z-index: 1;
-    }
-
-
-
-        .active {
-
-            display: flex !important;
-
-            z-index: 2; /* A tela ativa fica por cima */
-
-            animation: fadeInScreen 0.3s ease-out; /* Adicionado */
-
+        /* TELAS - CORREÇÃO DE ALINHAMENTO E CAMADAS */
+        .screen { 
+            display: none; 
+            height: 100dvh; 
+            width: 100%;
+            max-width: 600px; 
+            flex-direction: column; 
+            padding: 15px; 
+            padding-top: 75px; 
+            box-sizing: border-box; 
+            
+            position: fixed; 
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%); 
+            
+            background: var(--primary-green);
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            z-index: 1;
         }
 
-    .active { 
-        display: flex !important; 
-        z-index: 2; 
-    }
-
-    /* Nova regra de animação */
-    @keyframes fadeInScreen {
-        from { 
-            opacity: 0; 
-            transform: translateY(5px); 
+        .active { 
+            display: flex !important; 
+            z-index: 2; 
+            /* ANIMAÇÃO REMOVIDA PARA EVITAR PISCADA NO SWIPE */
         }
-        to { 
-            opacity: 1; 
-            transform: translateY(0); 
-        }
-    }
-
 
         header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-top: 10px; }
         h1 { color: var(--accent-gold); margin: 0; font-size: 1.4rem; letter-spacing: 2px; text-transform: uppercase; }

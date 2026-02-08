@@ -675,16 +675,22 @@ cardBox.addEventListener('touchmove', e => {
             
             setTimeout(() => {
                 const idAtual = telaAtual.id;
+                
+                // Primeiro aplicamos a mudança de tela silenciosa
                 if (idAtual === 'study-screen') {
                     abrirDetalhes(dIdx);
                 } else {
                     mudarTela('deck-screen');
                     atualizarNav('nav-decks');
                 }
-                resetEstilos(telaAtual);
-                if (telaFundo) resetEstilos(telaFundo);
-                telaAtual = null;
-                telaFundo = null;
+                
+                // Pequeno delay para o navegador processar a troca antes de resetar o transform
+                requestAnimationFrame(() => {
+                    resetEstilos(telaAtual);
+                    if (telaFundo) resetEstilos(telaFundo);
+                    telaAtual = null;
+                    telaFundo = null;
+                });
             }, 300);
         } else {
             // Volta suavemente para a posição inicial
