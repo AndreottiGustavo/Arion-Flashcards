@@ -215,7 +215,7 @@
 
         /* =========================================== ESTILO DO PARABÉNS (FINALIZAÇÃO) =========================================== */
 .congratulations-container {
-    display: none; /* Fica oculto até o JS ativar */
+    display: flex; /* Fica oculto até o JS ativar */
     flex-direction: column;
     align-items: center;
     justify-content: center;
@@ -312,4 +312,13 @@
             box-sizing: border-box; color: var(--text-dark); text-align: left; overflow-y: auto;
         }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95) translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }

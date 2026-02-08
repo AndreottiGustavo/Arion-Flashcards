@@ -66,16 +66,7 @@ function atualizarStreak() {
     return dadosStreak.contagem;
 }
 
-function mostrarParabens() {
-    const studyContainer = document.getElementById('study-container');
-    if (studyContainer) studyContainer.style.display = 'none';
-    
-    const finishScreen = document.getElementById('finish-screen');
-    if (finishScreen) {
-        finishScreen.style.display = 'flex';
-        atualizarStreak();
-    }
-}
+
 
         function formatar(cmd, val = null) { document.execCommand(cmd, false, val); }
         function atualizarCorPadrao(cor) { corAtual = cor; document.getElementById('current-color').style.background = cor; }
@@ -386,15 +377,11 @@ function mostrarParabens() {
 
         function iniciarEstudo(i) {
             if (i !== undefined) dIdx = i;
-        
-            const studyContainer = document.getElementById('study-container');
-            const finishScreen = document.getElementById('finish-screen');
-            if (studyContainer) studyContainer.style.display = 'block';
-            if (finishScreen) finishScreen.style.display = 'none';
+            if (document.getElementById('study-container')) document.getElementById('study-container').style.display = 'block';
+            if (document.getElementById('finish-area')) document.getElementById('finish-area').style.display = 'none';
         
             const b = baralhos[dIdx];
             const agora = Date.now();
-            
             fila = b.cards.filter(c => (c.state === 'new' || c.rev <= agora) && (!b.premium || c.liberado));
             
             if(fila.length === 0) {
@@ -577,7 +564,7 @@ function mostrarParabens() {
     function finalizar() {
         c.rep++;
         salvar();
-
+    
         if (fila.length > 0) {
             carregarCard();
         } else {
@@ -594,7 +581,25 @@ function mostrarParabens() {
     }
     }
 
-
+    function mostrarParabens() {
+        const studyContainer = document.getElementById('study-container');
+        if (studyContainer) studyContainer.style.display = 'none';
+        
+        const finishArea = document.getElementById('finish-area');
+        if (finishArea) {
+            finishArea.style.display = 'flex';
+            atualizarStreak(); // Atualiza a contagem de dias
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 180, // Quantidade de confetes
+                    spread: 70,         // Ângulo da explosão
+                    origin: { y: 0.6 }, // Altura de onde saem (0.6 é perto do troféu)
+                    colors: ['#f4e9c1', '#FFD700', '#5bc0de', '#ff7eb9', 'ff0000', '#ffffff', '#22c55e'] // Cores do Árion
+                });
+            }
+        }
+    
+    }
 
 
 /// ==========================================

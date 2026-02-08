@@ -95,7 +95,7 @@
 
 
 
-    ////// tela de estudo ///////
+    
 
     
     <div id="study-screen" class="screen">
@@ -103,7 +103,7 @@
             <h1 id="study-title">Estudo</h1>
             <button onclick="abrirDetalhes(dIdx)" style="background:none; border:1px solid white; color:white; border-radius:8px; padding:5px 15px;">Sair</button>
         </header>
-
+    
         <div id="study-container">
             <div class="card-box" onclick="virarCard()">
                 <div id="display-front" style="font-size:1.4rem"></div>
@@ -119,12 +119,15 @@
                 <div class="btn-group"><span class="time-label" id="t3"></span><button class="btn-anki" style="color:#5bc0de" onclick="responder(3)">Fácil</button></div>
             </div>
         </div>
-
-        <div id="finish-screen" class="congratulations-container" style="display: none;">
-            <span class="trophy-icon">🏆</span>
-            <div class="congrats-title">Parabéns! Você finalizou os flashcards previstos para hoje.</div>
-            <div id="streak-display" class="streak-badge">Sua streak continua: 0 dias</div>
-            <button class="btn-gold" style="margin-top: 25px; width: 100%;" onclick="mudarTela('deck-screen')">Voltar aos Baralhos</button>
+    
+        <div id="finish-area" style="display: none; flex-direction: column; align-items: center; width: 100%; animation: fadeInScale 0.5s ease-out;">
+            <div id="finish-screen" class="congratulations-container" style="width: 90%; margin: 20px auto;">
+                <span class="trophy-icon">🏆</span>
+                <div class="congrats-title">Parabéns! Você finalizou os flashcards previstos para hoje.</div>
+                <div id="streak-display" class="streak-badge">Sua streak continua: 0 dias</div>
+            </div>
+            
+            <button class="btn-gold" style="margin-top: 20px; width: 90%;" onclick="mudarTela('deck-screen')">Voltar aos Baralhos</button>
         </div>
     </div>
 
@@ -159,7 +162,7 @@
 
     
     <script src="script.js"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
 </body>
 </html>
