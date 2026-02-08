@@ -16,9 +16,6 @@ body, html {
     color: var(--white);
     width: 100%;
     height: 100%;
-    overflow: hidden;
-    position: relative;
-    touch-action: none;
     -webkit-tap-highlight-color: transparent;
 }
 
@@ -152,7 +149,7 @@ body, html {
     margin-left: auto;
     margin-right: auto;
     transform: none; 
-    
+    transform: translateX(-50%);
     background: var(--primary-green);
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
