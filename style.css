@@ -17,8 +17,8 @@ body, html {
     width: 100%;
     height: 100%;
     overflow: hidden;
-    position: fixed;
-    overscroll-behavior: none;
+    position: relative;
+    touch-action: none;
     -webkit-tap-highlight-color: transparent;
 }
 
@@ -36,7 +36,10 @@ body, html {
     top: 0; left: 0; right: 0;
     height: 70px;
     z-index: 10001;
+    pointer-events: none;
 }
+.header-brand, .hamburger-btn, .nav-menu-dropdown {
+    pointer-events: auto;}
 
 .header-brand {
     display: flex;
@@ -144,13 +147,17 @@ body, html {
     
     position: fixed; 
     top: 0;
-    left: 50%;
-    transform: translateX(-50%); 
+    left: 0;
+    right: 0;
+    margin-left: auto;
+    margin-right: auto;
+    transform: none; 
     
     background: var(--primary-green);
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     z-index: 1;
+    touch-action: none; 
 }
 
 .active { 
@@ -328,27 +335,62 @@ box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 
 /* ESTUDO */ 
 .card-box { 
-width: 100%; 
-max-width: none; 
-margin: 0px 0px 20px 0px;
-/* Mude para height fixa para manter os dois iguais */
-height: 380px; 
+    width: 100%; 
+    max-width: none; 
+    margin: 0px 0px 20px 0px;
+    height: 380px; /* Mantém o tamanho fixo que você definiu */
 
-background: var(--white); 
-color: var(--text-dark); 
-border-radius: 25px; 
-display: flex; 
-flex-direction: column; 
-align-items: center; 
-justify-content: center; /* Centraliza a pergunta no meio do retângulo fixo */
-text-align: center; 
-padding: 20px; 
-position: relative; 
-box-sizing: border-box; 
-box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+    background: var(--white); 
+    color: var(--text-dark); 
+    border-radius: 25px; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    
+    /* MUDANÇA AQUI: flex-start faz a pergunta começar sempre do topo */
+    justify-content: flex-start; 
+    
+    text-align: center; 
+    padding: 30px 20px; /* Um pouco mais de espaço no topo */
+    position: relative; 
+    box-sizing: border-box; 
+    box-shadow: 0 10px 30px rgba(0,0,0,0.18);
 }
-.divider { width: 80%; height: 2px; background: #eee; margin: 25px 0; display: none; }
 
+/* LINHA ESTILO ANKI: Fina, 100% de largura e cor suave */
+.divider { 
+    width: 100%; 
+    height: 1px; 
+    background: #eeeeee; 
+    margin: 20px 0; 
+    display: none; 
+}
+
+/* ======================BOTÃO MOSTRAR RESPOSTA==================//*/
+#btn-show-answer {
+    /* FIXA O BOTÃO NO FUNDO DO CARTÃO */
+    position: absolute;
+    bottom: 20px;   /* Distância da borda de baixo */
+    left: 50%;      /* Move para o meio */
+    transform: translateX(-50%); /* Centraliza perfeitamente */
+    width: 85%;
+    max-width: 260px;
+    background: #2185d0;
+    color: white;
+    padding: 14px;
+    border: none;
+    border-radius: 15px;
+    font-weight: bold;
+    font-size: 0.9rem;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    z-index: 10;
+}
+
+
+#btn-show-answer:active {
+    opacity: 0.8; /* Efeito de clique */
+}
 .anki-footer { display: none; width: 100%; gap: 6px; margin-top: 20px; padding-bottom: 10px; }
 .btn-group { flex: 1; display: flex; flex-direction: column; align-items: center; }
 .btn-anki { width: 100%; padding: 15px 0; border: none; border-radius: 12px; background: var(--white); font-weight: bold; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.1); font-size: 0.85rem; height: 50px; display: flex; align-items: center; justify-content: center; font-family: var(--font-main); }
