@@ -791,29 +791,16 @@ cardBox.addEventListener('touchmove', e => {
 // A FUNÇÃO QUE RESOLVE A ESCORREGADA:
 function resetEstilos(el) {
     if (!el) return;
-    
-    if (el.classList.contains('active')) {
-        el.style.transition = 'none';
-        el.style.left = '';
-        el.style.transform = '';
-        el.style.boxShadow = '';
-        el.style.zIndex = '';
-        el.style.opacity = '';
-        return;
-    }
 
-    el.style.transition = 'none';
-    el.style.left = '50%';
-    el.style.transform = 'translateX(-50%)'; 
+    el.style.transition = '';
+    el.style.transform = '';
+    el.style.left = '';
+    el.style.top = '';
+    el.style.opacity = '';
     el.style.boxShadow = '';
     el.style.zIndex = '';
-    el.style.opacity = '';
+}
 
-    setTimeout(() => {
-        el.style.left = '';
-        el.style.transition = '';
-    }, 0);
-} // <--- A CHAVE QUE FALTAVA AQUI!
 
 // ATIVAÇÃO DO MENU SANDUÍCHE E INICIALIZAÇÃO
 document.addEventListener('DOMContentLoaded', () => {

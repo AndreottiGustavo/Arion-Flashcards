@@ -27,13 +27,23 @@ body, html {
     justify-content: space-between;
     align-items: center;
     padding: 0 20px;
+
     background: var(--primary-green);
     border-bottom: 1px solid rgba(244, 233, 193, 0.2);
+
     position: fixed;
-    top: 0; left: 0; right: 0;
+    top: 0;
+
+    /* CORREÇÃO: descola da borda esquerda (8px é o sweet spot do Safari) */
+    left: 8px;
+    right: 0;
+
     height: 70px;
     z-index: 10001;
+
+    pointer-events: none;
 }
+
 .header-brand, .hamburger-btn, .nav-menu-dropdown {
     pointer-events: auto;}
 
@@ -132,38 +142,38 @@ body, html {
 
 /* TELAS - CORREÇÃO DE ALINHAMENTO E CAMADAS */
 /* TELAS — versão final corrigida */
-.screen { 
-    display: none; 
-    height: 100dvh; 
+.screen {
+    display: none;
+    height: 100dvh;
     width: 100%;
-    max-width: 600px; 
-    flex-direction: column; 
-    padding: 15px; 
-    padding-top: 75px; 
-    box-sizing: border-box; 
 
-    /* Centralização correta sem quebrar swipe-back */
-    position: relative;
-    margin: 0 auto; 
-    left: 0;
-    right: 0;
+    /* Removido: max-width centralizada (Safari não aceita) */
+    /* max-width: 600px; */
+
+    padding: 15px;
+    padding-top: 75px;
+    box-sizing: border-box;
+
+    /* IMPORTANTE: tela encosta na borda */
+    margin: 0;
+    position: absolute; /* antes era relative → Safari ignora eventos */
+    top: 0; left: 0; right: 0;
 
     background: var(--primary-green);
-
-    /* Rolagem suave e sem quebrar gestos do iOS */
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
 
-    /* Z-index apenas quando visível */
     z-index: 1;
 }
 
-
-.active { 
-    display: flex !important; 
-    z-index: 2; 
-    /* ANIMAÇÃO REMOVIDA PARA EVITAR PISCADA NO SWIPE */
+.screen.active {
+    display: flex !important;
+    transform: none !important;   /* ESSENCIAL */
+    transition: none !important;   /* sem animações que bloqueiem guia */
+    z-index: 2;
 }
+
+
 
 .screen header { 
     display: flex; 
