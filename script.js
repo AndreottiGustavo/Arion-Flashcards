@@ -708,8 +708,20 @@ cardBox.addEventListener('touchmove', e => {
     // A FUNÇÃO QUE RESOLVE A ESCORREGADA:
     function resetEstilos(el) {
         if (!el) return;
+        
+        // Se a tela já é a ativa, o reset deve ser invisível
+        if (el.classList.contains('active')) {
+            el.style.transition = 'none';
+            el.style.left = '';
+            el.style.transform = '';
+            el.style.boxShadow = '';
+            el.style.zIndex = '';
+            el.style.opacity = '';
+            return;
+        }
+
+        // Para a tela que saiu, limpamos de forma que ela fique pronta para a próxima
         el.style.transition = 'none';
-        // Força o centro antes de liberar o controle para o CSS
         el.style.left = '50%';
         el.style.transform = 'translateX(-50%)'; 
         el.style.boxShadow = '';
@@ -717,7 +729,7 @@ cardBox.addEventListener('touchmove', e => {
         el.style.opacity = '';
 
         setTimeout(() => {
-            el.style.left = ''; // Limpa estilo inline e deixa o CSS assumir
+            el.style.left = '';
             el.style.transition = '';
         }, 0);
     }
