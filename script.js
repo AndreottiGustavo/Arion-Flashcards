@@ -405,7 +405,7 @@ function atualizarStreak() {
         function carregarCard() {
             const c = fila[0];
             respondido = false;
-            document.getElementById('btn-show-answer').style.display = 'block';
+            
             const cardBox = document.querySelector('.card-box');
             cardBox.style.transform = 'translate(0,0) rotate(0)';
             cardBox.style.transition = 'none';
@@ -424,7 +424,6 @@ function atualizarStreak() {
             if(respondido) return;
             respondido = true;
             const c = fila[0];
-            document.getElementById('btn-show-answer').style.display = 'none';
             document.getElementById('display-back').innerHTML = c.v;
             document.getElementById('display-back').style.display = 'block';
             document.getElementById('card-divider').style.display = 'block';
