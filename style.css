@@ -400,3 +400,35 @@ box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
 }
 
+/* Design diferenciado para o card de Estudo Geral */
+.deck-item.study-all {
+    border: none !important;
+    box-shadow: 0 4px 15px rgba(33, 133, 208, 0.4);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.deck-item.study-all:active {
+    transform: scale(0.98);
+}
+
+/* Efeito de brilho passando pelo card para chamar atenção */
+.deck-item.study-all::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+    transform: rotate(45deg);
+    animation: shine 4s infinite;
+}
+
+@keyframes shine {
+    0% { left: -100%; }
+    20% { left: 100%; }
+    100% { left: 100%; }
+}

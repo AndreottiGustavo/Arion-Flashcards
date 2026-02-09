@@ -157,22 +157,7 @@ function atualizarStreak() {
             if(aba === 'premium') renderizarGerenciadorPremium();
         }
 
-        function simularAssinatura() {
-            const bioDeck = {
-                nome: "Biologia: Completo",
-                premium: true,
-                cards: [
-                    {f: "Mitocôndria", v: "ATP", rev: 0, int: 0, ease: 2.5, state: 'new', rep: 0, liberado: false, modulo: "Citologia", submodulo: "Organelas"},
-                    {f: "Ribossomos", v: "Proteína", rev: 0, int: 0, ease: 2.5, state: 'new', rep: 0, liberado: false, modulo: "Citologia", submodulo: "Organelas"},
-                    {f: "Poríferos", v: "Esponjas", rev: 0, int: 0, ease: 2.5, state: 'new', rep: 0, liberado: false, modulo: "Zoologia", submodulo: "Poríferos"},
-                    {f: "Cnidários", v: "Medusas", rev: 0, int: 0, ease: 2.5, state: 'new', rep: 0, liberado: false, modulo: "Zoologia", submodulo: "Cnidários"}
-                ]
-            };
-            baralhos.push(bioDeck);
-            salvar();
-            alert("Conteúdo Premium assinado! Libere os módulos no Painel.");
-            mudarTela('deck-screen');
-        }
+        
 
         function renderizarGerenciadorPremium() {
             const root = document.getElementById('premium-manager-root');
@@ -305,16 +290,51 @@ function atualizarStreak() {
         }
 
         function renderizar() {
-            document.getElementById('deck-list').innerHTML = baralhos.map((b, i) => `
-                <div class="deck-item ${b.premium ? 'premium' : ''}" onclick="abrirDetalhes(${i})">
-                    ${b.premium ? '<div class="premium-badge">PREMIUM</div>' : ''}
-                    <div><strong style="${b.premium ? 'color:var(--premium-gold)' : ''}">${b.nome}</strong><br><small style="opacity:0.6">${b.cards.length} cards</small></div>
-                    <div class="deck-options-btn" onclick="event.stopPropagation(); toggleMenu(${i})">⋮</div>
-                    <div class="options-menu" id="menu-${i}">
-                        <button onclick="event.stopPropagation(); prepararRenomear(${i})">Renomear</button>
-                        <button style="color:red" onclick="event.stopPropagation(); prepararExclusao(${i})">Excluir</button>
+            let totalNovos = 0;
+            let totalRevisao = 0;
+            const agora = Date.now();
+        
+            baralhos.forEach(d => {
+                totalNovos += d.cards.filter(c => c.state === 'new' && (d.premium ? c.liberado : true)).length;
+                totalRevisao += d.cards.filter(c => c.state !== 'new' && c.rev <= agora && (d.premium ? c.liberado : true)).length;
+            });
+        
+            // GERAL: Padding-right de 45px para compensar a falta do botão ⋮ e alinhar os números
+            const btnEstudarTudo = `
+                <div class="deck-item study-all" onclick="estudarTudo()" style="background: linear-gradient(135deg, #2185d0, #1678c2); color: white; margin-bottom: 20px; border: none; cursor: pointer; padding: 25px 45px 25px 15px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                        <strong style="font-size: 1.1em;">🔥 Estudar Tudo (Geral)</strong>
+                        <small style="opacity: 1; color: white; white-space: nowrap;">
+                            <span style="color: #90caf9; font-weight: bold;">${totalNovos}</span> novos | <span style="color: #a5d6a7; font-weight: bold;">${totalRevisao}</span> revisões
+                        </small>
                     </div>
-                </div>`).join('');
+                </div>
+            `;
+        
+            const listaHtml = baralhos.map((b, i) => {
+                const n = b.cards.filter(c => c.state === 'new' && (b.premium ? c.liberado : true)).length;
+                const r = b.cards.filter(c => c.state !== 'new' && c.rev <= agora && (b.premium ? c.liberado : true)).length;
+        
+                return `
+                    <div class="deck-item ${b.premium ? 'premium' : ''}" onclick="abrirDetalhes(${i})" style="padding: 12px 15px; min-height: auto;">
+                        ${b.premium ? '<div class="premium-badge">PREMIUM</div>' : ''}
+                        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                            <strong style="${b.premium ? 'color:var(--premium-gold)' : ''}">${b.nome}</strong>
+                            <small style="white-space: nowrap; color: white;">
+                                <span style="color: #2185d0; font-weight: bold;">${n}</span> novos 
+                                <span style="color: #ccc; margin: 0 2px;">|</span> 
+                                <span style="color: #21ba45; font-weight: bold;">${r}</span> revisões
+                            </small>
+                        </div>
+                        <div class="deck-options-btn" onclick="event.stopPropagation(); toggleMenu(${i})">⋮</div>
+                        <div class="options-menu" id="menu-${i}">
+                            <button onclick="event.stopPropagation(); prepararRenomear(${i})">Renomear</button>
+                            <button style="color:red" onclick="event.stopPropagation(); prepararExclusao(${i})">Excluir</button>
+                        </div>
+                    </div>`;
+            }).join('');
+        
+            document.getElementById('deck-list').innerHTML = btnEstudarTudo + listaHtml;
         }
 
         function toggleMenu(i) {
@@ -382,6 +402,41 @@ function atualizarStreak() {
 
 
 
+        function estudarTudo() {
+            let filaGeral = [];
+            const agora = Date.now();
+        
+            // 1. Coleta cards de TODOS os baralhos
+            baralhos.forEach(b => {
+                const cardsDesteBaralho = b.cards.filter(c => {
+                    // Filtra: Novo ou No Prazo de Revisão + Deve estar liberado
+                    const isPendente = c.state === 'new' || c.rev <= agora;
+                    const isLiberado = b.premium ? c.liberado : true; 
+                    return isPendente && isLiberado;
+                });
+                filaGeral = filaGeral.concat(cardsDesteBaralho);
+            });
+        
+            if (filaGeral.length === 0) {
+                alert("Nada para estudar por hoje! Volte amanhã.");
+                return;
+            }
+        
+            // 2. Embaralha para o estudo intercalado
+            filaGeral.sort(() => Math.random() - 0.5);
+        
+            // 3. Configura as variáveis globais que seu script já usa
+            fila = filaGeral; 
+            
+            // 4. Interface
+            if (document.getElementById('study-container')) document.getElementById('study-container').style.display = 'block';
+            if (document.getElementById('finish-area')) document.getElementById('finish-area').style.display = 'none';
+        
+            mudarTela('study-screen');
+            carregarCard();
+        }
+
+        
         function iniciarEstudo(i) {
             if (i !== undefined) dIdx = i;
             if (document.getElementById('study-container')) document.getElementById('study-container').style.display = 'block';
@@ -883,4 +938,79 @@ function resetSwipe(el) {
     if (!el) return;
     el.style.transition = 'transform 0.3s ease';
     el.style.transform = 'translateX(-50%)';
+}
+
+
+// ============================================================================
+// BLOCO DE GESTÃO PREMIUM E IMPORTAÇÃO (ANKI .TXT)
+// ============================================================================
+
+function importarDeckAdministrador(conteudoTXT, nomeBaralho) {
+    // Divide o conteúdo por linhas, removendo as vazias
+    const linhas = conteudoTXT.split('\n').filter(l => l.trim() !== "");
+    const cardsProcessados = [];
+
+    linhas.forEach(linha => {
+        // O formato "Notas em Texto Puro" usa TAB (\t) como separador
+        const colunas = linha.split('\t'); 
+        
+        if (colunas.length >= 3) {
+            // Limpa aspas automáticas do Anki e espaços
+            const frente = colunas[0].replace(/^"|"$/g, '').trim();
+            const verso = colunas[1].replace(/^"|"$/g, '').trim();
+            const tagsRaw = colunas[2].replace(/^"|"$/g, '').trim();
+
+            let mod = "Geral";
+            let sub = "Diversos";
+
+            // Processa mod:Nome e sub:Nome (troca _ por espaço)
+            tagsRaw.split(' ').forEach(t => {
+                if(t.startsWith('mod:')) mod = t.replace('mod:', '').replace(/_/g, ' ');
+                if(t.startsWith('sub:')) sub = t.replace('sub:', '').replace(/_/g, ' ');
+            });
+
+            // Cria o objeto idêntico ao seu banco de dados atual
+            cardsProcessados.push({
+                f: frente,      // Pergunta
+                v: verso,       // Resposta
+                rev: 0,         // Pronto para revisão imediata
+                int: 0,         // Novo card
+                ease: 2.5,      // Ease Factor idêntico ao Anki
+                state: 'new',   // Entra no fluxo learningSteps
+                rep: 0,
+                step: 0,
+                liberado: false, // Inicia bloqueado para escolha no painel
+                modulo: mod,
+                submodulo: sub
+            });
+        }
+    });
+
+    if (cardsProcessados.length > 0) {
+        const novoDeck = { 
+            nome: nomeBaralho, 
+            premium: true, 
+            cards: cardsProcessados 
+        };
+        baralhos.push(novoDeck);
+        salvar(); // Persiste no localStorage
+        renderizar(); // Atualiza a lista de baralhos
+        alert(`Sucesso! ${cardsProcessados.length} cards importados.`);
+    } else {
+        alert("Erro: Verifique se o arquivo .txt tem Pergunta, Resposta e Tags.");
+    }
+}
+
+// Função para disparar o seletor de arquivo
+function dispararImportacao() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.txt';
+    input.onchange = e => {
+        const arquivo = e.target.files[0];
+        const leitor = new FileReader();
+        leitor.onload = ev => importarDeckAdministrador(ev.target.result, arquivo.name.replace('.txt', ''));
+        leitor.readAsText(arquivo);
+    };
+    input.click();
 }
