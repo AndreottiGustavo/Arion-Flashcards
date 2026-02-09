@@ -425,29 +425,44 @@ function atualizarStreak() {
             
             if (itemArrastadoIdx !== null) {
                 const touch = ev.changedTouches[0];
-                const el = document.elementFromPoint(touch.clientX, touch.clientY);
-                const targetDeck = el ? el.closest('.deck-item:not(.study-all)') : null;
+                // Pega todos os elementos no ponto onde o dedo soltou
+                const elementosNoPonto = document.elementsFromPoint(touch.clientX, touch.clientY);
+                
+                // Procura especificamente pelo deck-item mais próximo na lista de elementos sob o dedo
+                let targetDeck = null;
+                for (let el of elementosNoPonto) {
+                    if (el.classList && el.classList.contains('deck-item') && !el.classList.contains('study-all')) {
+                        targetDeck = el;
+                        break;
+                    }
+                }
         
-                // Limpa visual de todos
+                // Limpa visual de todos os itens
                 document.querySelectorAll('.deck-item').forEach(d => {
                     d.style.transform = "";
                     d.style.boxShadow = "";
                     d.style.zIndex = "";
+                    d.classList.remove('arrastando');
                 });
         
-                if (targetDeck) {
-                    const nomeAlvo = targetDeck.querySelector('strong').innerText;
-                    const indexDestino = baralhos.findIndex(b => b.nome === nomeAlvo);
+                if (targetDeck && targetDeck !== elementoAtivo) {
+                    // Tenta pegar o nome do deck para achar o index
+                    const strongEl = targetDeck.querySelector('strong');
+                    if (strongEl) {
+                        const nomeAlvo = strongEl.innerText;
+                        const indexDestino = baralhos.findIndex(b => b.nome === nomeAlvo);
         
-                    if (indexDestino !== -1 && indexOrigem !== indexDestino) {
-                        const item = baralhos.splice(indexOrigem, 1)[0];
-                        baralhos.splice(indexDestino, 0, item);
-                        if (navigator.vibrate) navigator.vibrate([30, 50]);
-                        salvar();
+                        if (indexDestino !== -1 && indexOrigem !== indexDestino) {
+                            const item = baralhos.splice(indexOrigem, 1)[0];
+                            baralhos.splice(indexDestino, 0, item);
+                            if (navigator.vibrate) navigator.vibrate([30, 50]);
+                            salvar();
+                        }
                     }
                 }
-                renderizar();
+                renderizar(); // Força a atualização da lista na ordem nova
             }
+            
             itemArrastadoIdx = null;
             elementoAtivo = null;
         }
