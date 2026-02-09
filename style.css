@@ -172,9 +172,17 @@ h1 { color: var(--accent-gold); margin: 0; font-size: 1.4rem; letter-spacing: 2p
 /* LISTA DE BARALHOS */
 .deck-list { overflow-y: auto; flex-grow: 1; }
 .deck-item {
-    background: rgba(255,255,255,0.08); border: 1px solid rgba(244, 233, 193, 0.3);
-    padding: 20px; border-radius: 18px; margin-bottom: 12px; 
-    display: flex; justify-content: space-between; align-items: center; position: relative;
+    /* Mantenha as cores e paddings que você já tem e adicione estas: */
+    transition: transform 0.3s cubic-bezier(0.2, 0, 0.2, 1), box-shadow 0.2s ease;
+    user-select: none;
+    -webkit-user-select: none;
+    will-change: transform;
+    position: relative; /* Garante que o z-index funcione bem */
+}
+
+/* Esta regra é CRUCIAL para o efeito "preso ao dedo" */
+.deck-item.arrastando {
+    transition: none !important;
 }
 
 .deck-item.premium {

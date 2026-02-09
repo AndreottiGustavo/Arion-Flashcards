@@ -289,18 +289,23 @@ function atualizarStreak() {
             };
         }
 
+
+
+
+
+
         function renderizar() {
             let totalNovos = 0;
             let totalRevisao = 0;
             const agora = Date.now();
         
-            // 1. Cálculo dos totais (mantendo sua lógica original)
+            // 1. Cálculo dos totais
             baralhos.forEach(d => {
                 totalNovos += d.cards.filter(c => c.state === 'new' && (d.premium ? c.liberado : true)).length;
                 totalRevisao += d.cards.filter(c => c.state !== 'new' && c.rev <= agora && (d.premium ? c.liberado : true)).length;
             });
         
-            // 2. Botão Geral (Estático, Grosso e Alinhado)
+            // 2. Botão Geral (Estático)
             const btnEstudarTudo = `
                 <div class="deck-item study-all" onclick="estudarTudo()" style="background: linear-gradient(135deg, #2185d0, #1678c2); color: white; margin-bottom: 20px; border: none; cursor: pointer; padding: 25px 45px 25px 15px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
@@ -312,7 +317,7 @@ function atualizarStreak() {
                 </div>
             `;
         
-            // 3. Lista de Baralhos (Arrastáveis e com Touch para celular)
+            // 3. Lista de Baralhos (Com os novos eventos de fluidez)
             const listaHtml = baralhos.map((b, i) => {
                 const n = b.cards.filter(c => c.state === 'new' && (b.premium ? c.liberado : true)).length;
                 const r = b.cards.filter(c => c.state !== 'new' && c.rev <= agora && (b.premium ? c.liberado : true)).length;
@@ -327,7 +332,7 @@ function atualizarStreak() {
                          ontouchstart="handleTouchStart(event, ${i})"
                          ontouchmove="handleTouchMove(event)"
                          ontouchend="handleTouchEnd(event, ${i})"
-                         style="padding: 12px 15px; min-height: auto; cursor: grab; touch-action: none;">
+                         style="padding: 12px 15px; min-height: auto; cursor: grab; touch-action: none; transition: transform 0.2s ease, box-shadow 0.2s ease;">
                         ${b.premium ? '<div class="premium-badge">PREMIUM</div>' : ''}
                         <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                             <strong style="${b.premium ? 'color:var(--premium-gold)' : ''}">${b.nome}</strong>
@@ -348,21 +353,14 @@ function atualizarStreak() {
             document.getElementById('deck-list').innerHTML = btnEstudarTudo + listaHtml;
         }
         
-       
+        // --- SUPORTE TÉCNICO PARA MOVIMENTAÇÃO ---
         
-
-        let touchTimer = null; // Para diferenciar clique de segurar
-
-        // --- SUPORTE DESKTOP ---
-        function allowDrop(ev) {
-            ev.preventDefault();
-        }
+        let touchTimer = null;
+        let elementoAtivo = null;
+        let startY = 0;
         
-        function drag(ev, index) {
-            itemArrastadoIdx = index;
-            ev.dataTransfer.effectAllowed = "move";
-        }
-        
+        function allowDrop(ev) { ev.preventDefault(); }
+        function drag(ev, index) { itemArrastadoIdx = index; ev.dataTransfer.effectAllowed = "move"; }
         function drop(ev, indexDestino) {
             ev.preventDefault();
             if (itemArrastadoIdx !== null && itemArrastadoIdx !== indexDestino) {
@@ -374,32 +372,68 @@ function atualizarStreak() {
             itemArrastadoIdx = null;
         }
         
-        // --- SUPORTE MOBILE (TOUCH) ---
         function handleTouchStart(ev, index) {
-            // Inicia um timer: se segurar por 200ms, entende que é para arrastar
+            elementoAtivo = ev.currentTarget;
+            startY = ev.touches[0].clientY;
+            
             touchTimer = setTimeout(() => {
                 itemArrastadoIdx = index;
-                if (navigator.vibrate) navigator.vibrate(60); // Vibração de "selecionado"
-                ev.target.closest('.deck-item').style.opacity = "0.7";
-            }, 200); 
+                if (navigator.vibrate) navigator.vibrate(60);
+                
+                elementoAtivo.style.zIndex = "1000";
+                elementoAtivo.style.boxShadow = "0 15px 30px rgba(0,0,0,0.4)";
+                elementoAtivo.style.transform = "scale(1.05)";
+                elementoAtivo.style.transition = "none"; 
+                elementoAtivo.classList.add('arrastando');
+            }, 250); 
         }
         
         function handleTouchMove(ev) {
-            // Se o dedo começou a mover antes dos 200ms, cancela o arrastar para permitir o scroll
             if (itemArrastadoIdx === null) {
                 clearTimeout(touchTimer);
-            } else {
-                ev.preventDefault(); // Impede o scroll se já estiver arrastando
+                return;
             }
+            
+            ev.preventDefault();
+            const currentY = ev.touches[0].clientY;
+            const deltaY = currentY - startY;
+        
+            // Move o card preso ao dedo
+            elementoAtivo.style.transform = `translateY(${deltaY}px) scale(1.05)`;
+        
+            // Efeito de "Abrir Espaço" nos outros decks
+            const listaDecks = [...document.querySelectorAll('.deck-item:not(.study-all):not(.arrastando)')];
+            listaDecks.forEach(deck => {
+                const rect = deck.getBoundingClientRect();
+                const deckCentroY = rect.top + rect.height / 2;
+        
+                if (currentY > rect.top && currentY < rect.bottom) {
+                     deck.style.transition = "transform 0.3s ease";
+                     if (currentY > deckCentroY) {
+                         deck.style.transform = "translateY(-15px)"; // Empurra para cima
+                     } else {
+                         deck.style.transform = "translateY(15px)";  // Empurra para baixo
+                     }
+                } else {
+                    deck.style.transform = "translateY(0)";
+                }
+            });
         }
         
         function handleTouchEnd(ev, indexOrigem) {
-            clearTimeout(touchTimer); // Limpa o timer independente do que aconteça
+            clearTimeout(touchTimer);
             
             if (itemArrastadoIdx !== null) {
                 const touch = ev.changedTouches[0];
                 const el = document.elementFromPoint(touch.clientX, touch.clientY);
                 const targetDeck = el ? el.closest('.deck-item:not(.study-all)') : null;
+        
+                // Limpa visual de todos
+                document.querySelectorAll('.deck-item').forEach(d => {
+                    d.style.transform = "";
+                    d.style.boxShadow = "";
+                    d.style.zIndex = "";
+                });
         
                 if (targetDeck) {
                     const nomeAlvo = targetDeck.querySelector('strong').innerText;
@@ -410,17 +444,18 @@ function atualizarStreak() {
                         baralhos.splice(indexDestino, 0, item);
                         if (navigator.vibrate) navigator.vibrate([30, 50]);
                         salvar();
-                        renderizar();
                     }
                 }
+                renderizar();
             }
             itemArrastadoIdx = null;
+            elementoAtivo = null;
         }
 
 
 
 
-        
+
 
         function toggleMenu(i) {
             const menus = document.querySelectorAll('.options-menu');
