@@ -351,68 +351,76 @@ function atualizarStreak() {
        
         
 
-        // --- FUNÇÕES PARA DESKTOP (MOUSE) ---
-function allowDrop(ev) {
-    ev.preventDefault();
-}
+        let touchTimer = null; // Para diferenciar clique de segurar
 
-function drag(ev, index) {
-    itemArrastadoIdx = index;
-    ev.dataTransfer.effectAllowed = "move";
-    
-    // Vibração ao começar a arrastar no navegador mobile que suporte drag nativo
-    if (navigator.vibrate) navigator.vibrate(50);
-}
-
-function drop(ev, indexDestino) {
-    ev.preventDefault();
-    if (itemArrastadoIdx !== null && itemArrastadoIdx !== indexDestino) {
-        const item = baralhos.splice(itemArrastadoIdx, 1)[0];
-        baralhos.splice(indexDestino, 0, item);
-        
-        if (navigator.vibrate) navigator.vibrate([30, 30, 30]);
-        salvar();
-        renderizar();
-    }
-    itemArrastadoIdx = null;
-}
-
-// --- FUNÇÕES PARA MOBILE (TOUCH) ---
-function handleTouchStart(ev, index) {
-    itemArrastadoIdx = index;
-    if (navigator.vibrate) navigator.vibrate(50);
-    ev.currentTarget.style.background = "rgba(255,255,255,0.1)";
-}
-
-function handleTouchMove(ev) {
-    // Impede o scroll da tela enquanto o dedo se move no deck
-    ev.preventDefault();
-}
-
-function handleTouchEnd(ev, indexOrigem) {
-    const touch = ev.changedTouches[0];
-    ev.currentTarget.style.background = "";
-
-    // Localiza o elemento onde o dedo foi levantado
-    const el = document.elementFromPoint(touch.clientX, touch.clientY);
-    const targetDeck = el ? el.closest('.deck-item:not(.study-all)') : null;
-
-    if (targetDeck) {
-        // Encontra o index do baralho alvo pelo nome contido no strong
-        const nomeAlvo = targetDeck.querySelector('strong').innerText;
-        const indexDestino = baralhos.findIndex(b => b.nome === nomeAlvo);
-
-        if (indexDestino !== -1 && indexOrigem !== indexDestino) {
-            const item = baralhos.splice(indexOrigem, 1)[0];
-            baralhos.splice(indexDestino, 0, item);
-            
-            if (navigator.vibrate) navigator.vibrate([30, 30, 30]);
-            salvar();
-            renderizar();
+        // --- SUPORTE DESKTOP ---
+        function allowDrop(ev) {
+            ev.preventDefault();
         }
-    }
-    itemArrastadoIdx = null;
-}
+        
+        function drag(ev, index) {
+            itemArrastadoIdx = index;
+            ev.dataTransfer.effectAllowed = "move";
+        }
+        
+        function drop(ev, indexDestino) {
+            ev.preventDefault();
+            if (itemArrastadoIdx !== null && itemArrastadoIdx !== indexDestino) {
+                const item = baralhos.splice(itemArrastadoIdx, 1)[0];
+                baralhos.splice(indexDestino, 0, item);
+                salvar();
+                renderizar();
+            }
+            itemArrastadoIdx = null;
+        }
+        
+        // --- SUPORTE MOBILE (TOUCH) ---
+        function handleTouchStart(ev, index) {
+            // Inicia um timer: se segurar por 200ms, entende que é para arrastar
+            touchTimer = setTimeout(() => {
+                itemArrastadoIdx = index;
+                if (navigator.vibrate) navigator.vibrate(60); // Vibração de "selecionado"
+                ev.target.closest('.deck-item').style.opacity = "0.7";
+            }, 200); 
+        }
+        
+        function handleTouchMove(ev) {
+            // Se o dedo começou a mover antes dos 200ms, cancela o arrastar para permitir o scroll
+            if (itemArrastadoIdx === null) {
+                clearTimeout(touchTimer);
+            } else {
+                ev.preventDefault(); // Impede o scroll se já estiver arrastando
+            }
+        }
+        
+        function handleTouchEnd(ev, indexOrigem) {
+            clearTimeout(touchTimer); // Limpa o timer independente do que aconteça
+            
+            if (itemArrastadoIdx !== null) {
+                const touch = ev.changedTouches[0];
+                const el = document.elementFromPoint(touch.clientX, touch.clientY);
+                const targetDeck = el ? el.closest('.deck-item:not(.study-all)') : null;
+        
+                if (targetDeck) {
+                    const nomeAlvo = targetDeck.querySelector('strong').innerText;
+                    const indexDestino = baralhos.findIndex(b => b.nome === nomeAlvo);
+        
+                    if (indexDestino !== -1 && indexOrigem !== indexDestino) {
+                        const item = baralhos.splice(indexOrigem, 1)[0];
+                        baralhos.splice(indexDestino, 0, item);
+                        if (navigator.vibrate) navigator.vibrate([30, 50]);
+                        salvar();
+                        renderizar();
+                    }
+                }
+            }
+            itemArrastadoIdx = null;
+        }
+
+
+
+
+        
 
         function toggleMenu(i) {
             const menus = document.querySelectorAll('.options-menu');
