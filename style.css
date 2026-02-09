@@ -45,13 +45,10 @@ body, html {
 }
 
 .brand-text-container {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: flex-start !important; /* Força tudo para a esquerda */
-    justify-content: center !important;
-    gap: 0 !important; /* Remove qualquer espaço automático entre os spans */
-    margin: 0 !important;
-    padding: 0 !important;
+    display: grid; /* Força o empilhamento em linhas */
+    grid-template-columns: 1fr;
+    justify-items: start; /* Justifica tudo à esquerda */
+    line-height: 1; /* Tira o espaço entre as linhas */
 }
 
 
@@ -72,14 +69,12 @@ body, html {
     font-family: var(--font-main);
     font-weight: 600;
     color: var(--white);
-    font-size: 0.55rem; /* Proporção clássica de subtítulo */
-    letter-spacing: 3.5px; /* Letras espalhadas como no splash */
+    font-size: 0.55rem; /* Tamanho pequeno proporcional */
+    letter-spacing: 3.5px; /* Espaçamento largo de logo */
     text-transform: uppercase;
     opacity: 0.9;
-    margin-top: -2px !important; /* "Gruda" no Árion para parecer um logo único */
-    display: block !important;
-    text-align: left !important;
-    width: 100%; /* Garante que o alinhamento siga o pai */
+    text-align: left;
+    margin-top: -2px; /* Ajuste fino para grudar no nome acima */
 }
 
 .app-logo-img {
