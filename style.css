@@ -41,32 +41,42 @@ body, html {
 .header-brand {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
 }
 
-.app-logo-img {
-    width: 42px;
-    height: 42px;
-    object-fit: contain;
-    display: block !important; /* Força o logo a aparecer */
+.brand-text-container {
+    display: flex;
+    flex-direction: column; /* Joga o texto para baixo */
+    justify-content: center;
+    line-height: 1;
 }
+
 
 .app-brand-name {
     font-family: serif;
     font-weight: bold;
     color: var(--accent-gold);
-    font-size: 1.4rem;
-    letter-spacing: 2px;
+    font-size: 1.3rem;
+    letter-spacing: 1px;
+    margin: 0;
+    padding: 0;
 }
 
 .app-brand-subtitle {
     font-family: var(--font-main);
-    font-weight: 600;
+    font-weight: 500;
     color: var(--white);
-    font-size: 0.65rem; /* Menor e proporcional */
-    letter-spacing: 3px; /* Espaçamento largo igual ao splash screen */
+    font-size: 0.5rem; /* Bem pequeno para ser proporcional */
+    letter-spacing: 2.5px; /* Espaçamento largo de logo */
     text-transform: uppercase;
-    opacity: 0.9;
+    opacity: 0.8;
+    margin-top: -2px; /* Sobe um pouquinho para grudar no Árion */
+}
+.app-logo-img {
+    width: 35px;
+    height: 35px;
+    object-fit: contain;
+    display: block !important; /* Força o logo a aparecer */
 }
 
 .hamburger-btn {
@@ -181,49 +191,10 @@ h1 { color: var(--accent-gold); margin: 0; font-size: 1.4rem; letter-spacing: 2p
 
 /* LISTA DE BARALHOS */
 .deck-list { overflow-y: auto; flex-grow: 1; }
-/* LISTA DE BARALHOS */
-.deck-list { overflow-y: auto; flex-grow: 1; }
-
 .deck-item {
-    background-color: var(--white); /* Restaura o fundo branco original */
-    color: var(--text-dark);       /* Restaura o texto escuro original */
-    padding: 20px;
-    margin-bottom: 15px;
-    border-radius: 12px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    cursor: pointer;
-    position: relative;
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-
-    /* --- ADIÇÕES PARA O MOVIMENTO FLUIDO --- */
-    transition: transform 0.3s cubic-bezier(0.2, 0, 0.2, 1), box-shadow 0.2s ease, opacity 0.2s ease;
-    user-select: none;
-    -webkit-user-select: none;
-    will-change: transform;
-    touch-action: none; /* Bloqueia o scroll nativo para não bugar o arrasto */
-}
-
-/* Esta regra garante o efeito "preso ao dedo" sem lag */
-.deck-item.arrastando {
-    transition: none !important;
-    opacity: 0.9;
-    z-index: 1000;
-    cursor: grabbing;
-}
-
-/* Impede que cliques acidentais no texto cancelem o toque no mobile */
-.deck-item > div {
-    pointer-events: none;
-}
-
-/* Garante que o botão de opções (os três pontinhos) continue clicável */
-.deck-item .deck-options-btn, 
-.deck-item .options-menu,
-.deck-item .options-menu button {
-    pointer-events: auto;
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(244, 233, 193, 0.3);
+    padding: 20px; border-radius: 18px; margin-bottom: 12px; 
+    display: flex; justify-content: space-between; align-items: center; position: relative;
 }
 
 .deck-item.premium {
