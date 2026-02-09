@@ -319,6 +319,29 @@ h1 { color: var(--accent-gold); margin: 0; font-size: 1.4rem; letter-spacing: 2p
     justify-content: center;
 }
 
+/* Placeholder para o input de data no mobile */
+input[type="date"]::before {
+    content: attr(placeholder);
+    width: 100%;
+    color: #999;
+    display: inline-block;
+}
+
+input[type="date"]:focus::before,
+input[type="date"]:valid::before {
+    display: none;
+    content: ""; /* Esconde o placeholder quando o usuário clica ou escolhe a data */
+}
+
+/* Ajuste para alinhar o texto no iOS */
+input[type="date"] {
+    min-height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
 /* Caixa Branca do Modal */
 .modal-content {
     background-color: white;
@@ -336,9 +359,17 @@ h1 { color: var(--accent-gold); margin: 0; font-size: 1.4rem; letter-spacing: 2p
     border: 1px solid #ddd;
     border-radius: 10px;
     font-size: 1rem;
-    box-sizing: border-box; /* Garante que o padding não estoure a largura */
+    box-sizing: border-box; 
+    display: block;
+    color: var(--text-dark); /* Garante que o texto digitado seja visível */
+    background-color: white; /* Garante que o fundo não mude no mobile */
+    -webkit-appearance: none; /* Remove sombras internas estranhas do iOS */
+    appearance: none;
 }
 
+input[type="date"] {
+    min-height: 45px; /* Facilita o toque no celular */
+}
 .modal-buttons {
     display: flex;
     gap: 10px;
