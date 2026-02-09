@@ -319,13 +319,7 @@ h1 { color: var(--accent-gold); margin: 0; font-size: 1.4rem; letter-spacing: 2p
     justify-content: center;
 }
 
-/* Placeholder para o input de data no mobile */
-input[type="date"]::before {
-    content: attr(placeholder);
-    width: 100%;
-    color: #999;
-    display: inline-block;
-}
+
 
 input[type="date"]:focus::before,
 input[type="date"]:valid::before {
@@ -341,6 +335,18 @@ input[type="date"] {
     justify-content: center;
 }
 
+input::-webkit-datepicker-indicator {
+    background: transparent;
+    bottom: 0;
+    color: transparent;
+    cursor: pointer;
+    height: auto;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: auto;
+}
 
 /* Caixa Branca do Modal */
 .modal-content {
