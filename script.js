@@ -294,11 +294,13 @@ function atualizarStreak() {
             let totalRevisao = 0;
             const agora = Date.now();
         
+            // 1. Cálculo dos totais (mantendo sua lógica original)
             baralhos.forEach(d => {
                 totalNovos += d.cards.filter(c => c.state === 'new' && (d.premium ? c.liberado : true)).length;
                 totalRevisao += d.cards.filter(c => c.state !== 'new' && c.rev <= agora && (d.premium ? c.liberado : true)).length;
             });
         
+            // 2. Botão Geral (Estático, Grosso e Alinhado)
             const btnEstudarTudo = `
                 <div class="deck-item study-all" onclick="estudarTudo()" style="background: linear-gradient(135deg, #2185d0, #1678c2); color: white; margin-bottom: 20px; border: none; cursor: pointer; padding: 25px 45px 25px 15px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
@@ -310,6 +312,7 @@ function atualizarStreak() {
                 </div>
             `;
         
+            // 3. Lista de Baralhos (Arrastáveis e com Touch para celular)
             const listaHtml = baralhos.map((b, i) => {
                 const n = b.cards.filter(c => c.state === 'new' && (b.premium ? c.liberado : true)).length;
                 const r = b.cards.filter(c => c.state !== 'new' && c.rev <= agora && (b.premium ? c.liberado : true)).length;
@@ -321,7 +324,10 @@ function atualizarStreak() {
                          ondragstart="drag(event, ${i})" 
                          ondragover="allowDrop(event)" 
                          ondrop="drop(event, ${i})"
-                         style="padding: 12px 15px; min-height: auto; cursor: grab;">
+                         ontouchstart="handleTouchStart(event, ${i})"
+                         ontouchmove="handleTouchMove(event)"
+                         ontouchend="handleTouchEnd(event, ${i})"
+                         style="padding: 12px 15px; min-height: auto; cursor: grab; touch-action: none;">
                         ${b.premium ? '<div class="premium-badge">PREMIUM</div>' : ''}
                         <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                             <strong style="${b.premium ? 'color:var(--premium-gold)' : ''}">${b.nome}</strong>
@@ -342,38 +348,71 @@ function atualizarStreak() {
             document.getElementById('deck-list').innerHTML = btnEstudarTudo + listaHtml;
         }
         
-        // Funções de Suporte ao Drag and Drop (Coloque logo abaixo da renderizar)
+       
+        
+
+        // --- FUNÇÕES PARA DESKTOP (MOUSE) ---
+function allowDrop(ev) {
+    ev.preventDefault();
+}
+
+function drag(ev, index) {
+    itemArrastadoIdx = index;
+    ev.dataTransfer.effectAllowed = "move";
     
+    // Vibração ao começar a arrastar no navegador mobile que suporte drag nativo
+    if (navigator.vibrate) navigator.vibrate(50);
+}
+
+function drop(ev, indexDestino) {
+    ev.preventDefault();
+    if (itemArrastadoIdx !== null && itemArrastadoIdx !== indexDestino) {
+        const item = baralhos.splice(itemArrastadoIdx, 1)[0];
+        baralhos.splice(indexDestino, 0, item);
         
-        function allowDrop(ev) {
-            ev.preventDefault();
+        if (navigator.vibrate) navigator.vibrate([30, 30, 30]);
+        salvar();
+        renderizar();
+    }
+    itemArrastadoIdx = null;
+}
+
+// --- FUNÇÕES PARA MOBILE (TOUCH) ---
+function handleTouchStart(ev, index) {
+    itemArrastadoIdx = index;
+    if (navigator.vibrate) navigator.vibrate(50);
+    ev.currentTarget.style.background = "rgba(255,255,255,0.1)";
+}
+
+function handleTouchMove(ev) {
+    // Impede o scroll da tela enquanto o dedo se move no deck
+    ev.preventDefault();
+}
+
+function handleTouchEnd(ev, indexOrigem) {
+    const touch = ev.changedTouches[0];
+    ev.currentTarget.style.background = "";
+
+    // Localiza o elemento onde o dedo foi levantado
+    const el = document.elementFromPoint(touch.clientX, touch.clientY);
+    const targetDeck = el ? el.closest('.deck-item:not(.study-all)') : null;
+
+    if (targetDeck) {
+        // Encontra o index do baralho alvo pelo nome contido no strong
+        const nomeAlvo = targetDeck.querySelector('strong').innerText;
+        const indexDestino = baralhos.findIndex(b => b.nome === nomeAlvo);
+
+        if (indexDestino !== -1 && indexOrigem !== indexDestino) {
+            const item = baralhos.splice(indexOrigem, 1)[0];
+            baralhos.splice(indexDestino, 0, item);
+            
+            if (navigator.vibrate) navigator.vibrate([30, 30, 30]);
+            salvar();
+            renderizar();
         }
-        
-        function drag(ev, index) {
-            itemArrastadoIdx = index;
-            ev.dataTransfer.effectAllowed = "move";
-        
-            // Adiciona uma vibração curta de 50ms ao segurar o item
-            if (navigator.vibrate) {
-                navigator.vibrate(50);
-            }
-        }
-        function drop(ev, indexDestino) {
-            ev.preventDefault();
-            if (itemArrastadoIdx !== null && itemArrastadoIdx !== indexDestino) {
-                const item = baralhos.splice(itemArrastadoIdx, 1)[0];
-                baralhos.splice(indexDestino, 0, item);
-                
-                // Vibração dupla bem curta para confirmar a troca (30ms vibra, 30ms pausa, 30ms vibra)
-                if (navigator.vibrate) {
-                    navigator.vibrate([30, 30, 30]);
-                }
-        
-                salvar();
-                renderizar();
-            }
-            itemArrastadoIdx = null;
-        }
+    }
+    itemArrastadoIdx = null;
+}
 
         function toggleMenu(i) {
             const menus = document.querySelectorAll('.options-menu');
