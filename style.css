@@ -663,7 +663,7 @@ box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 /* Design diferenciado para o card de Estudo Geral */
 .deck-item.study-all {
     border: none !important;
-    box-shadow: 0 4px 15px rgba(33, 133, 208, 0.4);
+    box-shadow: 0 4px 15px rgba(68, 131, 61, 0.4);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     cursor: pointer;
     position: relative;
@@ -674,21 +674,51 @@ box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     transform: scale(0.98);
 }
 
-/* Efeito de brilho passando pelo card para chamar atenção */
-.deck-item.study-all::after {
+/* =========================================== 
+   SISTEMA DE BRILHO REUTILIZÁVEL 
+   =========================================== */
+
+.deck-item.study-all, 
+.efeito-brilho {
+    position: relative !important;
+    overflow: hidden !important;
+    z-index: 1 !important;
+}
+
+
+.deck-item.study-all::after,
+.efeito-brilho::after {
     content: '';
     position: absolute;
     top: -50%;
-    left: -50%;
+    left: -150%;
     width: 200%;
     height: 200%;
     background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
     transform: rotate(45deg);
     animation: shine 4s infinite;
+    pointer-events: none; 
+    z-index: 99 !important;
 }
 
 @keyframes shine {
     0% { left: -100%; }
     20% { left: 100%; }
     100% { left: 100%; }
+}
+
+.main-input[contenteditable="true"]:empty:before {
+    content: attr(data-placeholder);
+    color: #999;
+    font-style: italic;
+    opacity: 0.7;
+    pointer-events: none;
+    display: block;
+}
+
+
+.main-input[contenteditable="true"] {
+    cursor: text;
+    outline: none;
+    white-space: pre-wrap;
 }

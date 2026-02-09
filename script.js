@@ -301,9 +301,9 @@ function atualizarStreak() {
         
             // GERAL: Padding-right de 45px para compensar a falta do botão ⋮ e alinhar os números
             const btnEstudarTudo = `
-                <div class="deck-item study-all" onclick="estudarTudo()" style="background: linear-gradient(135deg, #2185d0, #1678c2); color: white; margin-bottom: 20px; border: none; cursor: pointer; padding: 25px 45px 25px 15px;">
+                <div class="deck-item study-all" onclick="estudarTudo()" style="background: linear-gradient(315deg,rgb(68, 131, 61),rgb(90, 138, 85)); color: white; margin-bottom: 20px; border: none; cursor: pointer; padding: 25px 45px 25px 15px;border-radius: 18px; overflow: hidden;">
                     <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                        <strong style="font-size: 1.1em;">🔥 Estudar Tudo (Geral)</strong>
+                        <strong style="font-size: 1.1em;">🔥 Estudar Tudo</strong>
                         <small style="opacity: 1; color: white; white-space: nowrap;">
                             <span style="color: #90caf9; font-weight: bold;">${totalNovos}</span> novos | <span style="color: #a5d6a7; font-weight: bold;">${totalRevisao}</span> revisões
                         </small>

@@ -42,7 +42,7 @@
                     <button class="nav-btn" id="nav-decks" onclick="mudarTela('deck-screen'); atualizarNav('nav-decks')">🃏 Baralhos</button>
                     <button class="nav-btn" onclick="abrirVestibulares()">📅 Meus Vestibulares</button>
                     <button class="nav-btn" id="nav-browse" onclick="abrirPainel(); atualizarNav('nav-browse')">📁 Painel (Cards)</button>
-                    <button class="nav-btn" id="nav-store" onclick="mudarTela('store-screen'); atualizarNav('nav-store')" style="color:var(--premium-gold); border-color:var(--premium-gold)">✨ Loja</button>
+                    <button class="nav-btn efeito brilho" id="nav-store" onclick="mudarTela('store-screen'); atualizarNav('nav-store')" style="color:var(--premium-gold); border-color:var(--premium-gold)">✨ Loja</button>
                 </nav>
             </div>
         </header>
@@ -120,7 +120,6 @@
         <div class="deck-list" id="deck-list"></div>
         <div style="text-align:center; padding:20px; display: flex; flex-direction: column; gap: 10px; align-items: center;">
             <button class="btn-gold" style="width:auto; padding:15px 40px; border-radius:50px;" onclick="abrirModalCriar()">+ Novo Baralho</button>
-            
             <button class="btn-anki" style="background: #2185d0; color: white; width:auto; padding:12px 30px; border-radius:50px; border:none; font-weight:bold; font-size: 0.9em; cursor:pointer;" onclick="dispararImportacao()">
                 📥 Importar do Anki (.txt)
             </button>
@@ -237,7 +236,7 @@
         <div id="back" class="main-input" contenteditable="true" data-placeholder="Resposta (Verso)"></div>
     </div>
 
-    <button class="btn-gold" onclick="salvarCard()">SALVAR E CONTINUAR</button>
+    <button class="btn-gold efeito brilho" onclick="salvarCard()" style="margin-top: 30px;">SALVAR E CONTINUAR</button>
     <button onclick="abrirDetalhes(dIdx)" style="background:none; border:1px solid white; color:white; margin-top:10px; padding:15px; border-radius:15px; cursor:pointer; width:100%">FINALIZAR / VOLTAR</button>
 </div>
 
