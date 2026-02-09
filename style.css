@@ -45,10 +45,13 @@ body, html {
 }
 
 .brand-text-container {
-    display: flex;
-    flex-direction: column; /* Joga o texto para baixo */
-    justify-content: center;
-    line-height: 1;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important; /* Força tudo para a esquerda */
+    justify-content: center !important;
+    gap: 0 !important; /* Remove qualquer espaço automático entre os spans */
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
 
@@ -60,18 +63,25 @@ body, html {
     letter-spacing: 1px;
     margin: 0;
     padding: 0;
+    line-height: 1 !important; /* Tira o respiro de cima e baixo */
+    display: block !important;
+    text-align: left !important;
 }
 
 .app-brand-subtitle {
     font-family: var(--font-main);
-    font-weight: 500;
+    font-weight: 600;
     color: var(--white);
-    font-size: 0.5rem; /* Bem pequeno para ser proporcional */
-    letter-spacing: 2.5px; /* Espaçamento largo de logo */
+    font-size: 0.55rem; /* Proporção clássica de subtítulo */
+    letter-spacing: 3.5px; /* Letras espalhadas como no splash */
     text-transform: uppercase;
-    opacity: 0.8;
-    margin-top: -2px; /* Sobe um pouquinho para grudar no Árion */
+    opacity: 0.9;
+    margin-top: -2px !important; /* "Gruda" no Árion para parecer um logo único */
+    display: block !important;
+    text-align: left !important;
+    width: 100%; /* Garante que o alinhamento siga o pai */
 }
+
 .app-logo-img {
     width: 35px;
     height: 35px;
