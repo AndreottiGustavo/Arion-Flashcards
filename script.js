@@ -779,8 +779,10 @@ function salvarVestibular() {
 function fecharModalVestibular() {
     document.getElementById('modal-vestibular').style.display = 'none';
     document.getElementById('vest-nome').value = '';
-    document.getElementById('vest-data').value = '';
-    corSelecionada = '#ffffff'; // Reseta para branco
+    const campoData = document.getElementById('vest-data');
+    campoData.value = '';
+    campoData.type = 'text'; 
+    corSelecionada = '#ffffff'; 
 }
 
 // 5. Função para remover um vestibular da lista
