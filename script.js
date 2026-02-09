@@ -90,12 +90,19 @@ function atualizarStreak() {
             }
         }
 
-        function atualizarNav(id) {
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active-nav'));
-            const btn = document.getElementById(id);
-            if(btn) btn.classList.add('active-nav');
+        function atualizarNav(idAtivo) {
+            // Remove o destaque de todos os botões
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active-nav');
+            });
+            // Destaca o botão atual
+            const botaoAtivo = document.getElementById(idAtivo);
+            if (botaoAtivo) botaoAtivo.classList.add('active-nav');
+            
+            // FECHA O MENU AUTOMATICAMENTE APÓS CLICAR (Para o mobile)
+            const menu = document.getElementById('main-nav');
+            if (menu) menu.classList.remove('show');
         }
-
         function fecharModal() { document.getElementById('modal-overlay').style.display = 'none'; }
 
         function abrirPainel() {
@@ -670,7 +677,7 @@ cardBox.addEventListener('touchmove', e => {
         // ================swipe de voltar do iPhone===============
 
 
-//////////////////// GESTO DE VOLTAR (IPHONE) - VERSÃO FINAL ///////////////////
+//////////////////// GESTO DE VOLTAR (IPHONE) - VERSÃO CORRIGIDA ///////////////////
 (function() {
     let touchStartX = 0;
     let initialLeft = 0; 
@@ -680,6 +687,10 @@ cardBox.addEventListener('touchmove', e => {
     const distanciaMinima = 100;
 
     window.addEventListener('touchstart', e => {
+        // Bloqueia swipe se o menu sanduíche estiver aberto
+        const menu = document.getElementById('main-nav');
+        if (menu && menu.classList.contains('show')) return;
+
         touchStartX = e.changedTouches[0].screenX;
         telaAtual = document.querySelector('.screen.active');
 
@@ -689,7 +700,6 @@ cardBox.addEventListener('touchmove', e => {
         }
 
         if (touchStartX < bordaSensivel) {
-            // Captura onde a tela está agora para evitar o pulo
             initialLeft = telaAtual.getBoundingClientRect().left;
             telaAtual.style.transition = 'none';
 
@@ -700,7 +710,6 @@ cardBox.addEventListener('touchmove', e => {
                 telaFundo.style.display = 'flex'; 
                 telaFundo.style.transition = 'none';
                 telaFundo.style.opacity = '0.5'; 
-                // Fixa em pixels durante o movimento
                 telaFundo.style.left = initialLeft + 'px';
                 telaFundo.style.transform = 'translateX(0) scale(0.95)'; 
                 telaFundo.style.zIndex = '1';
@@ -719,7 +728,6 @@ cardBox.addEventListener('touchmove', e => {
         const deslocamento = Math.max(0, currentX - touchStartX);
         const progresso = Math.min(1, deslocamento / window.innerWidth);
 
-        // Move a tela
         telaAtual.style.transform = `translateX(${deslocamento}px)`;
         telaAtual.style.boxShadow = '-10px 0 20px rgba(0,0,0,0.2)';
 
@@ -739,9 +747,7 @@ cardBox.addEventListener('touchmove', e => {
         if (telaFundo) telaFundo.style.transition = 'all 0.3s ease-out';
         
         if (deslocamentoFinal > distanciaMinima) {
-            if (navigator.vibrate) navigator.vibrate(20);
             telaAtual.style.transform = 'translateX(100vw)'; 
-            
             if (telaFundo) {
                 telaFundo.style.opacity = '1';
                 telaFundo.style.transform = 'scale(1)';
@@ -764,7 +770,6 @@ cardBox.addEventListener('touchmove', e => {
                 });
             }, 300);
         } else {
-            // Cancela o swipe
             telaAtual.style.transform = 'translateX(0)';
             if (telaFundo) {
                 telaFundo.style.opacity = '0.5';
@@ -778,33 +783,103 @@ cardBox.addEventListener('touchmove', e => {
             }
         }
     }, { passive: true });
+})(); // <-- AQUI ESTAVA O ERRO: Faltava fechar a função!
 
-    // A FUNÇÃO QUE RESOLVE A ESCORREGADA:
-    function resetEstilos(el) {
-        if (!el) return;
-        
-        // Se a tela já é a ativa, o reset deve ser invisível
-        if (el.classList.contains('active')) {
-            el.style.transition = 'none';
-            el.style.left = '';
-            el.style.transform = '';
-            el.style.boxShadow = '';
-            el.style.zIndex = '';
-            el.style.opacity = '';
-            return;
-        }
-
-        // Para a tela que saiu, limpamos de forma que ela fique pronta para a próxima
+function resetEstilos(el) {
+    if (!el) return;
+    if (el.classList.contains('active')) {
         el.style.transition = 'none';
-        el.style.left = '50%';
-        el.style.transform = 'translateX(-50%)'; 
+        el.style.left = '';
+        el.style.transform = '';
         el.style.boxShadow = '';
         el.style.zIndex = '';
         el.style.opacity = '';
-
-        setTimeout(() => {
-            el.style.left = '';
-            el.style.transition = '';
-        }, 0);
+        return;
     }
-})();
+    el.style.transition = 'none';
+    el.style.left = '50%';
+    el.style.transform = 'translateX(-50%)'; 
+    el.style.boxShadow = '';
+    el.style.zIndex = '';
+    el.style.opacity = '';
+    setTimeout(() => {
+        el.style.left = '';
+        el.style.transition = '';
+    }, 0);
+}
+
+// ATIVAÇÃO DO MENU SANDUÍCHE
+document.addEventListener('DOMContentLoaded', () => {
+    const btn = document.getElementById('menu-toggle');
+    const menu = document.getElementById('main-nav');
+
+    if (btn && menu) {
+        btn.onclick = (e) => {
+            e.stopPropagation();
+            menu.classList.toggle('show');
+        };
+
+        document.addEventListener('click', (e) => {
+            if (menu.classList.contains('show') && !menu.contains(e.target) && e.target !== btn) {
+                menu.classList.remove('show');
+            }
+        });
+        
+        menu.querySelectorAll('.nav-btn').forEach(b => {
+            b.addEventListener('click', () => menu.classList.remove('show'));
+        });
+    }
+});
+
+
+// =============================== LÓGICA DE SWIPE PARA VOLTAR ===========================================
+let touchStartX = 0;
+let touchEndX = 0;
+let currentSwipeEl = null;
+
+document.addEventListener('touchstart', e => {
+    // Só permite swipe se o menu sanduíche estiver fechado
+    const menu = document.getElementById('main-nav');
+    if (menu && menu.classList.contains('show')) return;
+
+    touchStartX = e.changedTouches[0].screenX;
+    currentSwipeEl = e.target.closest('.screen.active');
+}, {passive: true});
+
+document.addEventListener('touchmove', e => {
+    if (!currentSwipeEl || touchStartX > 80) return; // Só ativa se começar no canto esquerdo (0-80px)
+
+    let moveX = e.changedTouches[0].screenX - touchStartX;
+    if (moveX > 0) {
+        currentSwipeEl.style.transform = `translateX(calc(-50% + ${moveX}px))`;
+        currentSwipeEl.style.transition = 'none';
+    }
+}, {passive: true});
+
+document.addEventListener('touchend', e => {
+    if (!currentSwipeEl || touchStartX > 80) return;
+
+    touchEndX = e.changedTouches[0].screenX;
+    let diff = touchEndX - touchStartX;
+
+    if (diff > 100) {
+        // Ação de voltar dependendo da tela atual
+        const idAtual = currentSwipeEl.id;
+        if (idAtual === 'details-screen' || idAtual === 'store-screen' || idAtual === 'browse-screen' || idAtual === 'create-screen') {
+            mudarTela('deck-screen');
+        } else if (idAtual === 'study-screen') {
+            abrirDetalhes(dIdx);
+        } else {
+            resetSwipe(currentSwipeEl);
+        }
+    } else {
+        resetSwipe(currentSwipeEl);
+    }
+    currentSwipeEl = null;
+}, {passive: true});
+
+function resetSwipe(el) {
+    if (!el) return;
+    el.style.transition = 'transform 0.3s ease';
+    el.style.transform = 'translateX(-50%)';
+}
