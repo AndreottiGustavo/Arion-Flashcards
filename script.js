@@ -299,7 +299,6 @@ function atualizarStreak() {
                 totalRevisao += d.cards.filter(c => c.state !== 'new' && c.rev <= agora && (d.premium ? c.liberado : true)).length;
             });
         
-            // GERAL: Padding-right de 45px para compensar a falta do botão ⋮ e alinhar os números
             const btnEstudarTudo = `
                 <div class="deck-item study-all" onclick="estudarTudo()" style="background: linear-gradient(135deg, #2185d0, #1678c2); color: white; margin-bottom: 20px; border: none; cursor: pointer; padding: 25px 45px 25px 15px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
@@ -316,7 +315,13 @@ function atualizarStreak() {
                 const r = b.cards.filter(c => c.state !== 'new' && c.rev <= agora && (b.premium ? c.liberado : true)).length;
         
                 return `
-                    <div class="deck-item ${b.premium ? 'premium' : ''}" onclick="abrirDetalhes(${i})" style="padding: 12px 15px; min-height: auto;">
+                    <div class="deck-item ${b.premium ? 'premium' : ''}" 
+                         onclick="abrirDetalhes(${i})" 
+                         draggable="true" 
+                         ondragstart="drag(event, ${i})" 
+                         ondragover="allowDrop(event)" 
+                         ondrop="drop(event, ${i})"
+                         style="padding: 12px 15px; min-height: auto; cursor: grab;">
                         ${b.premium ? '<div class="premium-badge">PREMIUM</div>' : ''}
                         <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                             <strong style="${b.premium ? 'color:var(--premium-gold)' : ''}">${b.nome}</strong>
@@ -335,6 +340,39 @@ function atualizarStreak() {
             }).join('');
         
             document.getElementById('deck-list').innerHTML = btnEstudarTudo + listaHtml;
+        }
+        
+        // Funções de Suporte ao Drag and Drop (Coloque logo abaixo da renderizar)
+    
+        
+        function allowDrop(ev) {
+            ev.preventDefault();
+        }
+        
+        function drag(ev, index) {
+            itemArrastadoIdx = index;
+            ev.dataTransfer.effectAllowed = "move";
+        
+            // Adiciona uma vibração curta de 50ms ao segurar o item
+            if (navigator.vibrate) {
+                navigator.vibrate(50);
+            }
+        }
+        function drop(ev, indexDestino) {
+            ev.preventDefault();
+            if (itemArrastadoIdx !== null && itemArrastadoIdx !== indexDestino) {
+                const item = baralhos.splice(itemArrastadoIdx, 1)[0];
+                baralhos.splice(indexDestino, 0, item);
+                
+                // Vibração dupla bem curta para confirmar a troca (30ms vibra, 30ms pausa, 30ms vibra)
+                if (navigator.vibrate) {
+                    navigator.vibrate([30, 30, 30]);
+                }
+        
+                salvar();
+                renderizar();
+            }
+            itemArrastadoIdx = null;
         }
 
         function toggleMenu(i) {
@@ -887,6 +925,35 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+// Variável global para saber qual item está sendo movido
+let itemArrastadoIdx = null;
+
+function allowDrop(ev) {
+    ev.preventDefault(); // Necessário para permitir o drop
+}
+
+function drag(ev, index) {
+    itemArrastadoIdx = index;
+    // Adiciona uma classe visual opcional para feedback
+    ev.target.style.opacity = "0.5";
+}
+
+function drop(ev, indexDestino) {
+    ev.preventDefault();
+    
+    if (itemArrastadoIdx !== null && itemArrastadoIdx !== indexDestino) {
+        // Move o baralho no array:
+        // 1. Remove o item da posição antiga
+        const [reovido] = baralhos.splice(itemArrastadoIdx, 1);
+        // 2. Insere na posição nova
+        baralhos.splice(indexDestino, 0, reovido);
+        
+        // 3. Salva e renderiza a nova ordem
+        salvar();
+        renderizar();
+    }
+    itemArrastadoIdx = null;
+}
 
 // =============================== LÓGICA DE SWIPE PARA VOLTAR ===========================================
 let touchStartX = 0;
