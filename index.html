@@ -29,8 +29,10 @@
          <header class="top-header">
             <div class="header-brand">
                 <img src="LOGO ÁRION.png" alt="Logo Árion" class="app-logo-img">
-                <div class="app-brand-name">ÁRION</div>
-                <div class="app-brand-subtitle">FLASHCARDS</div>
+                <div class="brand-text-container">
+                    <div class="app-brand-name">ÁRION</div>
+                    <div class="app-brand-subtitle">FLASHCARDS</div>
+                </div>
             </div>
         
             <div class="menu-container">
@@ -38,6 +40,7 @@
                 
                 <nav class="nav-menu-dropdown" id="main-nav">
                     <button class="nav-btn" id="nav-decks" onclick="mudarTela('deck-screen'); atualizarNav('nav-decks')">Baralhos</button>
+                    <button class="nav-btn" onclick="abrirVestibulares()">📅 Meus Vestibulares</button>
                     <button class="nav-btn" id="nav-browse" onclick="abrirPainel(); atualizarNav('nav-browse')">Painel (Cards)</button>
                     <button class="nav-btn" id="nav-store" onclick="mudarTela('store-screen'); atualizarNav('nav-store')" style="color:var(--premium-gold); border-color:var(--premium-gold)">✨ Loja</button>
                 </nav>
@@ -52,6 +55,54 @@
                 <text x="200" y="80" text-anchor="middle" font-family="serif" font-weight="bold" font-size="75" letter-spacing="8" fill="#f4e9c1">ÁRION</text>
                 <text x="200" y="120" text-anchor="middle" font-family="sans-serif" font-size="20" letter-spacing="4" opacity="0.8" fill="#f4e9c1">FLASHCARDS</text>
             </svg>
+        </div>
+    </div>
+
+
+
+    <div id="vestibulares-screen" class="screen">
+        <header>
+            <button onclick="mudarTela('deck-screen')" class="hamburger-btn">←</button>
+            <h1>Calendário de Provas</h1>
+            <div style="width: 40px;"></div> </header>
+    
+        <div style="padding: 15px 15px 0 15px;">
+            <button onclick="abrirModalVestibular()" class="btn-adicionar-largo" style="background-color: var(--accent-gold); color: var(--primary-green);">
+                + ADICIONAR NOVA PROVA
+            </button>
+        </div>
+    
+        <div id="lista-vestibulares" class="vestibulares-grid">
+            </div>
+    </div>
+
+
+
+
+
+
+    <div id="modal-vestibular" class="modal">
+        <div class="modal-content">
+            <h3 style="margin-top: 0; color: var(--primary-green);">Novo Vestibular</h3>
+            
+            <input type="text" id="vest-nome" placeholder="Prova (Ex: Enem, UFSC...)">
+            <input type="date" id="vest-data">
+            
+            <p style="font-size: 0.8rem; margin-bottom: 5px; text-align: left;">Escolha uma cor para o card:</p>
+            <div class="color-options">
+                <div class="color-dot selected" style="background: #ffffff;" onclick="selectColor(this, '#ffffff')"></div>
+                <div class="color-dot" style="background: #f4e9c1;" onclick="selectColor(this, '#f4e9c1')"></div>
+                <div class="color-dot" style="background: #add8e6;" onclick="selectColor(this, '#add8e6')"></div>
+                <div class="color-dot" style="background: #ffb6c1;" onclick="selectColor(this, '#ffb6c1')"></div>
+                <div class="color-dot" style="background: #90ee90;" onclick="selectColor(this, '#90ee90')"></div>
+                <div class="color-dot" style="background: #000000;" onclick="selectColor(this, '#000000')"></div>
+                <div class="color-dot" style="background: #d4af37;" onclick="selectColor(this, '#d4af37')"></div>
+            </div>
+    
+            <div class="modal-buttons">
+                <button onclick="fecharModalVestibular()" class="btn-cancelar">Cancelar</button>
+                <button onclick="salvarVestibular()" class="btn-confirmar">Salvar</button>
+            </div>
         </div>
     </div>
 
@@ -190,10 +241,33 @@
     <button onclick="abrirDetalhes(dIdx)" style="background:none; border:1px solid white; color:white; margin-top:10px; padding:15px; border-radius:15px; cursor:pointer; width:100%">FINALIZAR / VOLTAR</button>
 </div>
 
-    
+
+
+
+
+
+
+
     <script src="script.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
+    <div id="modal-vestibular" class="modal">
+        <div class="modal-content">
+            <h3 style="margin-top: 0; color: var(--primary-green);">Novo Vestibular</h3>
+            
+            <label style="display:block; text-align:left; font-size:0.8rem; margin-bottom:5px;">Nome da Instituição:</label>
+            <input type="text" id="vest-nome" placeholder="Ex: ENEM, USP, FUVEST">
+            
+            <label style="display:block; text-align:left; font-size:0.8rem; margin-bottom:5px; margin-top:10px;">Data da Prova:</label>
+            <input type="date" id="vest-data">
+            
+            <div class="modal-buttons">
+                <button onclick="fecharModalVestibular()" class="btn-cancelar">Cancelar</button>
+                <button onclick="salvarVestibular()" class="btn-confirmar">Salvar</button>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>
 

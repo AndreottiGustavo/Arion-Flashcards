@@ -227,6 +227,204 @@ h1 { color: var(--accent-gold); margin: 0; font-size: 1.4rem; letter-spacing: 2p
 }
 .price-tag { color: #2e7d32; font-weight: bold; font-size: 1.2rem; }
 
+
+
+
+/* --- ==============================ESTILO DA TELA DE VESTIBULARES========================= --- */
+
+
+/* Botão Largo e Bonito */
+.btn-adicionar-largo {
+    width: 100%;
+    border: none;
+    padding: 15px;
+    border-radius: 12px;
+    font-weight: 800; /* Texto bem forte */
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    cursor: pointer;
+}
+
+/* ========SELECIONAR COR DO CARD DE DATA DA PROVA ==========*/
+.color-options {
+    display: flex;
+    justify-content: space-around;
+    margin: 15px 0;
+}
+
+.color-dot {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 2px solid #ddd;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.color-dot.selected {
+    border: 3px solid var(--primary-green);
+    transform: scale(1.2);
+}
+
+/* ========== muda cor do texto par dar contradte ==========*/ 
+
+/* Garante que o texto dentro do card colorido seja legível */
+.vestibular-card {
+    position: relative;
+    border: none; /* Removendo bordas para ficar mais limpo com as cores */
+}
+
+/* Quando o fundo for escuro, o texto fica branco */
+.vestibular-card.dark-mode {
+    color: white !important;
+}
+
+.vestibular-card.dark-mode strong {
+    color: var(--accent-gold) !important; /* O nome da prova fica dourado para destacar */
+}
+
+.vestibular-card.dark-mode .btn-remover-vest {
+    color: rgba(255,255,255,0.6); /* O X fica branquinho transparente */
+}   
+
+
+.btn-remover-vest {
+    position: absolute;
+    top: 5px;
+    right: 8px;
+    background: transparent;
+    border: none;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: rgba(0,0,0,0.3); /* Cor suave para não brigar com o visual */
+    cursor: pointer;
+    line-height: 1;
+    padding: 5px;
+}
+
+.btn-remover-vest:hover {
+    color: #d9534f; /* Fica vermelho ao passar o mouse ou tocar */
+}
+
+
+/* Estilo do Modal (Fundo escuro) */
+.modal {
+    display: none; 
+    position: fixed;
+    z-index: 1000;
+    left: 0; top: 0; width: 100%; height: 100%;
+    background-color: rgba(0,0,0,0.6);
+    align-items: center;
+    justify-content: center;
+}
+
+/* Caixa Branca do Modal */
+.modal-content {
+    background-color: white;
+    padding: 25px;
+    border-radius: 20px;
+    width: 85%;
+    max-width: 400px;
+    text-align: center;
+}
+
+.modal-content input {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    font-size: 1rem;
+    box-sizing: border-box; /* Garante que o padding não estoure a largura */
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.btn-cancelar { background: #eee; border: none; flex: 1; padding: 12px; border-radius: 10px; }
+.btn-confirmar { background: var(--primary-green); color: white; border: none; flex: 1; padding: 12px; border-radius: 10px; font-weight: bold; }
+
+
+
+
+
+.vestibulares-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* 2 quadradinhos por linha */
+    gap: 15px;
+    padding: 15px;
+}
+
+.vestibular-card {
+    background: white;
+    color: #333;
+    padding: 15px;
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.vestibular-card:active {
+    transform: scale(0.95); /* Efeito de clique */
+}
+
+.vestibular-card strong {
+    font-size: 0.8rem;
+    color: var(--primary-green, #0a3d3a);
+    text-transform: uppercase;
+    margin-bottom: 5px;
+}
+
+.vestibular-card .dias-count {
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: #d9534f; /* Vermelho para alerta */
+}
+
+.vestibular-card .dias-label {
+    font-size: 0.6rem;
+    font-weight: bold;
+    opacity: 0.6;
+}
+
+/* --- AJUSTE DO LOGO NO HEADER (EMBAIXO UM DO OUTRO) --- */
+.brand-text-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    line-height: 1;
+    gap: 1px;
+}
+
+.app-brand-name {
+    font-family: serif;
+    font-weight: bold;
+    font-size: 1.2rem;
+    color: var(--accent-gold, #f4e9c1);
+    margin: 0;
+}
+
+.app-brand-subtitle {
+    font-size: 0.5rem;
+    letter-spacing: 2px;
+    color: white;
+    opacity: 0.8;
+    margin: 0;
+}
+
+
+
+
 /* PAINEL / BROWSE */
 .tabs-container { display: flex; gap: 10px; margin-bottom: 15px; }
 .tab-btn { flex: 1; padding: 10px; border-radius: 10px; border: 1px solid var(--accent-gold); background: none; color: var(--accent-gold); font-weight: bold; cursor: pointer; font-size: 0.8rem; }
