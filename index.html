@@ -124,12 +124,17 @@
         </header>
     
         <div id="study-container">
-            <div class="card-box" onclick="virarCard()">
+            <div class="card-box">
                 <div id="display-front" style="font-size:1.4rem"></div>
+                
                 <div class="divider" id="card-divider"></div>
+                
                 <div id="display-back" style="font-size:1.4rem; font-weight:bold; color:var(--primary-green); display:none"></div>
-            </div>
             
+                <button id="btn-show-answer" class="btn-gold" style="margin-top: 20px; width: 100%;" onclick="virarCard()">
+                    MOSTRAR RESPOSTA
+                </button>
+            </div>
             <div class="anki-footer" id="anki-btns">
                 <div class="btn-group"><span class="time-label"></span><button class="btn-anki" style="background:#f0f0f0; color:#666" onclick="abrirModalEditarCard()">✎ Editar</button></div>
                 <div class="btn-group"><span class="time-label" id="t0"></span><button class="btn-anki" style="color:#d9534f" onclick="responder(0)">De novo</button></div>

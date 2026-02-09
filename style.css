@@ -328,28 +328,54 @@ box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 
 
 /* ESTUDO */ 
-.card-box { 
-width: 100%; 
-max-width: none; 
-margin: 0px 0px 20px 0px;
-/* Mude para height fixa para manter os dois iguais */
-height: 380px; 
-
-background: var(--white); 
-color: var(--text-dark); 
-border-radius: 25px; 
-display: flex; 
-flex-direction: column; 
-align-items: center; 
-justify-content: center; /* Centraliza a pergunta no meio do retângulo fixo */
-text-align: center; 
-padding: 20px; 
-position: relative; 
-box-sizing: border-box; 
-box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+.card-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start; /* Alinha tudo no topo */
+    text-align: center;
+    padding: 30px 20px;
+    background: var(--white);
+    color: var(--text-dark);
+    border-radius: 20px;
+    width: 100%;
+    min-height: 280px; /* Dá uma altura mínima estável */
+    position: relative;
+    box-sizing: border-box;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.18);
 }
-.divider { width: 80%; height: 2px; background: #eee; margin: 25px 0; display: none; }
+.divider { 
+    width: 100%;            /* Ocupa toda a largura interna */
+    height: 1px;            /* Espessura de linha fina */
+    background: #eeeeee;    /* Cor cinza bem clara e sutil */
+    margin: 20px 0;         /* Espaço entre pergunta e resposta */
+    display: none;          /* O JS vai mudar para 'block' */
+}
+#btn-show-answer {
+    /* FIXA O BOTÃO NO FUNDO DO CARTÃO */
+    position: absolute;
+    bottom: 20px;   /* Distância da borda de baixo */
+    left: 50%;      /* Move para o meio */
+    transform: translateX(-50%); /* Centraliza perfeitamente */
+    
+    /* ESTILO VISUAL (AZUL IGUAL AO ESTUDAR AGORA) */
+    width: 85%;
+    max-width: 260px;
+    background: #2185d0;
+    color: white;
+    padding: 14px;
+    border: none;
+    border-radius: 15px;
+    font-weight: bold;
+    font-size: 0.9rem;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    z-index: 10; /* Garante que fique por cima de outros elementos */
+}
 
+#btn-show-answer:active {
+    opacity: 0.8; /* Efeito de clique */
+}
 .anki-footer { display: none; width: 100%; gap: 6px; margin-top: 20px; padding-bottom: 10px; }
 .btn-group { flex: 1; display: flex; flex-direction: column; align-items: center; }
 .btn-anki { width: 100%; padding: 15px 0; border: none; border-radius: 12px; background: var(--white); font-weight: bold; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.1); font-size: 0.85rem; height: 50px; display: flex; align-items: center; justify-content: center; font-family: var(--font-main); }
