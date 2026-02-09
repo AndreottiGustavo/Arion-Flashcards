@@ -1,6 +1,6 @@
 {
   "name": "Árion Flashcards",
-  "short_name": "Árion",
+  "short_name": "Árion Flashcards",
   "description": "Sistema de repetição espaçada para estudantes premium.",
   "start_url": "index.html",
   "display": "standalone",
@@ -15,4 +15,5 @@
       "purpose": "any maskable"
     }
   ]
+
 }
