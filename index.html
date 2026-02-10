@@ -58,6 +58,26 @@
         </div>
     </div>
 
+<!-- ============== TELA DE LOGIN =============================-->
+
+    <div id="login-forced-screen">
+        <div class="login-card">
+            <img src="LOGO ÁRION.png" alt="Logo Árion">
+            <h2>ÁRION</h2>
+            <p>Sincronize seus flashcards entre o iPhone e iPad.</p>
+            
+            <div class="btn-login btn-google" onclick="loginComGoogle()">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg">
+                Entrar com Google
+            </div>
+    
+            <div class="btn-login btn-apple" onclick="loginComApple()">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg">
+                Entrar com Apple
+            </div>
+        </div>
+    </div>
+
 
 
     <div id="vestibulares-screen" class="screen">
@@ -242,8 +262,39 @@
 
 
 
+<!-- ======= parte do login com firebase google e apple  ==========-->
 
 
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+    import { getAuth, GoogleAuthProvider, OAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
+
+    // Substitua pelos seus dados do Console do Firebase
+    const firebaseConfig = {
+        apiKey: "SUA_API_KEY",
+        authDomain: "seu-projeto.firebaseapp.com",
+        projectId: "seu-projeto",
+        storageBucket: "seu-projeto.appspot.com",
+        messagingSenderId: "SEU_ID",
+        appId: "SEU_APP_ID"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    // Exporta para o script.js (Exatamente como o JS espera)
+    window.db = db;
+    window.auth = auth;
+    window.doc = doc;
+    window.setDoc = setDoc;
+    window.getDoc = getDoc;
+    window.GoogleAuthProvider = GoogleAuthProvider;
+    window.OAuthProvider = OAuthProvider; 
+    window.signInWithPopup = signInWithPopup;
+    window.onAuthStateChanged = onAuthStateChanged;
+</script>
 
 
 

@@ -3,21 +3,109 @@ let baralhos = JSON.parse(localStorage.getItem('arion_db_v4')) || [];
         let dIdx = 0, fila = [], respondido = false;
         let corAtual = "#ff0000";
         let onboardingFeito = localStorage.getItem('arion_onboarding') === 'true';
+        let usuarioLogado = null;
+
+        // No topo do seu script.js
+setTimeout(() => {
+    if (window.auth) {
+        window.onAuthStateChanged(window.auth, (user) => {
+            if (user) {
+                usuarioLogado = user;
+                sincronizarComNuvem().then(() => {
+                    // Se estiver logado, garante que a tela de login suma e mostre os baralhos
+                    const loginScreen = document.getElementById('login-forced-screen');
+                    const splash = document.getElementById('splash-screen');
+                    
+                    if(loginScreen) loginScreen.style.display = 'none';
+                    if(splash) splash.style.display = 'none';
+                    
+                    mudarTela('deck-screen');
+                    renderizar();
+                });
+            } else {
+                // Se NÃO estiver logado, mostra a tela de login forçado após o splash
+                const splash = document.getElementById('splash-screen');
+                const loginScreen = document.getElementById('login-forced-screen');
+                
+                if(splash) splash.style.opacity = '0';
+                setTimeout(() => {
+                    if(splash) splash.style.display = 'none';
+                    if(loginScreen) {
+                        loginScreen.style.display = 'flex';
+                        loginScreen.style.opacity = '1';
+                    }
+                }, 500);
+            }
+        });
+    }
+}, 1000);
+        
+        async function loginComGoogle() {
+            if (!window.auth) return alert("Erro: Firebase não carregado.");
+            const provider = new window.GoogleAuthProvider();
+            try {
+                const result = await window.signInWithPopup(window.auth, provider);
+                usuarioLogado = result.user;
+                await sincronizarComNuvem();
+                alert(`Sincronizado como: ${usuarioLogado.displayName}`);
+            } catch (error) {
+                console.error("Erro no login:", error);
+            }
+        }
+        async function loginComApple() {
+            if (!window.auth) return alert("Erro: Firebase não carregado.");
+            
+            // O Firebase usa o OAuthProvider para o login da Apple
+            const provider = new window.OAuthProvider('apple.com');
+            
+            try {
+                const result = await window.signInWithPopup(window.auth, provider);
+                usuarioLogado = result.user;
+                
+                // Esconde a tela de login (que criaremos no HTML)
+                const loginScreen = document.getElementById('login-forced-screen');
+                if(loginScreen) loginScreen.style.display = 'none';
+        
+                await sincronizarComNuvem();
+                renderizar();
+                console.log("Logado com Apple:", usuarioLogado.displayName);
+            } catch (error) {
+                console.error("Erro no login Apple:", error);
+                // O erro 'auth/operation-not-allowed' acontece se você não ativar no console do Firebase
+                alert("Erro ao logar com Apple. Verifique se o provedor está ativo no console.");
+            }
+        }
+        
+        async function sincronizarComNuvem() {
+            if (!usuarioLogado) return;
+            try {
+                const docRef = window.doc(window.db, "usuarios", usuarioLogado.uid);
+                const docSnap = await window.getDoc(docRef);
+                if (docSnap.exists()) {
+                    const dadosNuvem = docSnap.data().baralhos;
+                    if (dadosNuvem && JSON.stringify(dadosNuvem) !== JSON.stringify(baralhos)) {
+                        baralhos = dadosNuvem;
+                        localStorage.setItem('arion_db_v4', JSON.stringify(baralhos));
+                        renderizar();
+                    }
+                }
+            } catch (e) { console.log("Erro ao baixar dados:", e); }
+        }
 
         window.onload = () => {
-            setTimeout(() => {
-                document.getElementById('splash-screen').style.opacity = '0';
-                setTimeout(() => { 
-                    document.getElementById('splash-screen').style.display = 'none'; 
-                    mudarTela('deck-screen');
-                    renderizar(); 
-                }, 500);
-            }, 1500);
+            // A lógica do Splash e do Login agora é controlada pelo Firebase (onAuthStateChanged)
+            // que você já colocou no topo do arquivo.
             
             document.addEventListener('selectionchange', () => {
                 if(document.getElementById('create-screen').classList.contains('active')){
-                    document.getElementById('btn-sup').classList.toggle('active-tool', document.queryCommandState('superscript'));
-                    document.getElementById('btn-sub').classList.toggle('active-tool', document.queryCommandState('subscript'));
+                    const isSup = document.queryCommandState('superscript');
+                    const isSub = document.queryCommandState('subscript');
+                    
+                    const btnSup = document.getElementById('btn-sup');
+                    const btnSub = document.getElementById('btn-sub');
+                    
+                    if(btnSup) btnSup.classList.toggle('active-tool', isSup);
+                    if(btnSub) btnSub.classList.toggle('active-tool', isSub);
                 }
             });
         };
@@ -71,7 +159,21 @@ function atualizarStreak() {
         function formatar(cmd, val = null) { document.execCommand(cmd, false, val); }
         function atualizarCorPadrao(cor) { corAtual = cor; document.getElementById('current-color').style.background = cor; }
         function aplicarCorPadrao() { document.execCommand('foreColor', false, corAtual); }
-        function salvar() { localStorage.setItem('arion_db_v4', JSON.stringify(baralhos)); renderizar(); }
+        function salvar() {
+            localStorage.setItem('arion_db_v4', JSON.stringify(baralhos));
+            renderizar();
+        
+            // Sincronização com Firebase
+            if (usuarioLogado && window.db && window.setDoc) {
+                const userRef = window.doc(window.db, "usuarios", usuarioLogado.uid);
+                window.setDoc(userRef, {
+                    baralhos: baralhos,
+                    ultimaAtualizacao: Date.now()
+                }, { merge: true })
+                .then(() => console.log("Nuvem atualizada"))
+                .catch(e => console.error("Erro nuvem:", e));
+            }
+        }
         
         
         function mudarTela(id) {

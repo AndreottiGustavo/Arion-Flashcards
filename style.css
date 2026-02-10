@@ -603,6 +603,69 @@ box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     position: relative;
     box-sizing: border-box;
     box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+    font-weight: 400 !important;
+}
+
+#display-front, #display-back {
+    width: 100%;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    text-align: center;
+    word-wrap: break-word;
+    font-weight: 400 !important;
+}
+
+/* RESPEITAR FORMATAÇÕES MANUAIS (Botões do Editor) */
+
+/* Negrito */
+#display-front b, #display-front strong,
+#display-back b, #display-back strong {
+    font-weight: 700 !important;
+}
+
+/* Itálico */
+#display-front i, #display-front em,
+#display-back i, #display-back em {
+    font-style: italic !important;
+}
+
+/* Sublinhado */
+#display-front u, #display-back u {
+    text-decoration: underline !important;
+}
+
+/* Sobrescrito e Subescrito (Muito usado em fórmulas) */
+#display-front sub, #display-back sub {
+    vertical-align: sub;
+    font-size: smaller;
+    line-height: 0;
+}
+#display-front sup, #display-back sup {
+    vertical-align: super;
+    font-size: smaller;
+    line-height: 0;
+}
+
+/* Respeitar Cores (Inline Styles do editor) */
+#display-front [style*="color"], 
+#display-back [style*="color"] {
+    color: inherit; /* Garante que o span style do editor mande na cor */
+}
+
+/* COMPORTAMENTO DE PARÁGRAFOS (Igual Anki) */
+#display-front div, #display-back div,
+#display-front p, #display-back p {
+    margin: 0;
+    padding: 0;
+    min-height: 1em;
+}
+
+/* Listas centralizadas mas alinhadas à esquerda entre si */
+#display-back ul, #display-back ol {
+    display: inline-block;
+    text-align: left;
+    margin: 10px 0;
+    padding-left: 25px;
 }
 .divider { 
     width: 100%;            /* Ocupa toda a largura interna */
@@ -721,4 +784,119 @@ box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     cursor: text;
     outline: none;
     white-space: pre-wrap;
+}
+
+
+
+
+
+
+/* ============================================================================================
+   =======================SISTEMA DE LOGIN E SINCRONIZAÇÃO (FIREBASE) =========================
+   ============================================================================================ */
+
+/* Fundo da tela de login que bloqueia o app */
+#login-forced-screen {
+    display: none; /* Controlado pelo JS */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #0a3d3a; /* Cor principal Árion */
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+/* Retângulo (Card) central do Login */
+.login-card {
+    background: white;
+    padding: 40px 30px;
+    border-radius: 25px;
+    width: 100%;
+    max-width: 350px;
+    text-align: center;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+    animation: fadeIn 0.5s ease;
+}
+
+.login-card img {
+    width: 80px;
+    margin-bottom: 15px;
+}
+
+.login-card h2 {
+    color: #0a3d3a;
+    font-family: 'Poppins', sans-serif;
+    margin-bottom: 5px;
+    letter-spacing: 1px;
+}
+
+.login-card p {
+    color: #666;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    margin-bottom: 30px;
+}
+
+/* Botões de Login (Google e Apple) */
+.btn-login {
+    width: 100%;
+    padding: 14px;
+    border-radius: 12px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    cursor: pointer;
+    border: 1px solid #ddd;
+    transition: transform 0.2s, background 0.3s;
+    font-size: 0.95rem;
+}
+
+.btn-login:active {
+    transform: scale(0.98);
+}
+
+.btn-google {
+    background: white;
+    color: #333;
+}
+
+.btn-apple {
+    background: #000;
+    color: white;
+    border: none;
+}
+
+.btn-apple img {
+    filter: invert(1); /* Deixa o logo da maçã branco */
+}
+
+/* =========================================================
+   MENSAGEM DE FINALIZAÇÃO (RETÂNGULO DE PARABÉNS)
+   ========================================================= */
+
+.congratulations-rect {
+    background: #f4e9c1; /* Tom de ouro suave */
+    color: #5d4037;
+    padding: 25px;
+    border-radius: 15px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 1.1em;
+    border: 2px solid #FFD700;
+    margin: 20px auto;
+    width: 90%;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+/* Animação simples de entrada */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
