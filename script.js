@@ -1,114 +1,145 @@
 // ========== CONFIGURAÇÕES DADOS (localStorage)==========
 let baralhos = JSON.parse(localStorage.getItem('arion_db_v4')) || [];
-        let dIdx = 0, fila = [], respondido = false;
-        let corAtual = "#ff0000";
-        let onboardingFeito = localStorage.getItem('arion_onboarding') === 'true';
-        let usuarioLogado = null;
+let dIdx = 0, fila = [], respondido = false;
+let corAtual = "#ff0000";
+let onboardingFeito = localStorage.getItem('arion_onboarding') === 'true';
+let usuarioLogado = null;
 
-        // No topo do seu script.js
-setTimeout(() => {
+function inicializarApp() {
     if (window.auth) {
         window.onAuthStateChanged(window.auth, (user) => {
+            const loginScreen = document.getElementById('login-forced-screen');
+            const splash = document.getElementById('splash-screen');
+
             if (user) {
                 usuarioLogado = user;
                 sincronizarComNuvem().then(() => {
-                    // Se estiver logado, garante que a tela de login suma e mostre os baralhos
-                    const loginScreen = document.getElementById('login-forced-screen');
-                    const splash = document.getElementById('splash-screen');
-                    
-                    if(loginScreen) loginScreen.style.display = 'none';
-                    if(splash) splash.style.display = 'none';
-                    
-                    mudarTela('deck-screen');
-                    renderizar();
+                    setTimeout(() => {
+                        if(loginScreen) loginScreen.style.display = 'none';
+                        if(splash) splash.style.display = 'none';
+                        mudarTela('deck-screen');
+                        renderizar();
+                    }, 1500); 
                 });
             } else {
-                // Se NÃO estiver logado, mostra a tela de login forçado após o splash
-                const splash = document.getElementById('splash-screen');
-                const loginScreen = document.getElementById('login-forced-screen');
-                
-                if(splash) splash.style.opacity = '0';
-                setTimeout(() => {
-                    if(splash) splash.style.display = 'none';
-                    if(loginScreen) {
-                        loginScreen.style.display = 'flex';
-                        loginScreen.style.opacity = '1';
-                    }
-                }, 500);
+                if(splash) splash.style.display = 'none';
+                if(loginScreen) {
+                    loginScreen.style.display = 'flex';
+                    loginScreen.style.opacity = '1';
+                    mudarTela('login-forced-screen');
+                }
             }
         });
+    } else {
+        // Se o Firebase ainda não carregou, tenta novamente rápido (50ms)
+        setTimeout(inicializarApp, 50);
     }
-}, 1000);
-        
-        async function loginComGoogle() {
-            if (!window.auth) return alert("Erro: Firebase não carregado.");
-            const provider = new window.GoogleAuthProvider();
-            try {
-                const result = await window.signInWithPopup(window.auth, provider);
-                usuarioLogado = result.user;
-                await sincronizarComNuvem();
-                alert(`Sincronizado como: ${usuarioLogado.displayName}`);
-            } catch (error) {
-                console.error("Erro no login:", error);
-            }
-        }
-        async function loginComApple() {
-            if (!window.auth) return alert("Erro: Firebase não carregado.");
-            
-            // O Firebase usa o OAuthProvider para o login da Apple
-            const provider = new window.OAuthProvider('apple.com');
-            
-            try {
-                const result = await window.signInWithPopup(window.auth, provider);
-                usuarioLogado = result.user;
-                
-                // Esconde a tela de login (que criaremos no HTML)
-                const loginScreen = document.getElementById('login-forced-screen');
-                if(loginScreen) loginScreen.style.display = 'none';
-        
-                await sincronizarComNuvem();
-                renderizar();
-                console.log("Logado com Apple:", usuarioLogado.displayName);
-            } catch (error) {
-                console.error("Erro no login Apple:", error);
-                // O erro 'auth/operation-not-allowed' acontece se você não ativar no console do Firebase
-                alert("Erro ao logar com Apple. Verifique se o provedor está ativo no console.");
-            }
-        }
-        
-        async function sincronizarComNuvem() {
-            if (!usuarioLogado) return;
-            try {
-                const docRef = window.doc(window.db, "usuarios", usuarioLogado.uid);
-                const docSnap = await window.getDoc(docRef);
-                if (docSnap.exists()) {
-                    const dadosNuvem = docSnap.data().baralhos;
-                    if (dadosNuvem && JSON.stringify(dadosNuvem) !== JSON.stringify(baralhos)) {
-                        baralhos = dadosNuvem;
-                        localStorage.setItem('arion_db_v4', JSON.stringify(baralhos));
-                        renderizar();
-                    }
-                }
-            } catch (e) { console.log("Erro ao baixar dados:", e); }
-        }
+}
+inicializarApp();
 
-        window.onload = () => {
-            // A lógica do Splash e do Login agora é controlada pelo Firebase (onAuthStateChanged)
-            // que você já colocou no topo do arquivo.
+// GESTÃO DE ACESSO (Firebase Auth)
+if (window.auth) {
+window.onAuthStateChanged(window.auth, (user) => {
+const loginScreen = document.getElementById('login-forced-screen');
+const splash = document.getElementById('splash-screen');
+
+if (user) {
+    // --- CENÁRIO: USUÁRIO JÁ LOGADO ---
+    usuarioLogado = user;
+    
+    sincronizarComNuvem().then(() => {
+        // Mantém o Splash por 1.5s para carregar visualmente o app
+        setTimeout(() => {
+            if(loginScreen) loginScreen.style.display = 'none';
+            if(splash) splash.style.display = 'none';
             
-            document.addEventListener('selectionchange', () => {
-                if(document.getElementById('create-screen').classList.contains('active')){
-                    const isSup = document.queryCommandState('superscript');
-                    const isSub = document.queryCommandState('subscript');
-                    
-                    const btnSup = document.getElementById('btn-sup');
-                    const btnSub = document.getElementById('btn-sub');
-                    
-                    if(btnSup) btnSup.classList.toggle('active-tool', isSup);
-                    if(btnSub) btnSub.classList.toggle('active-tool', isSub);
-                }
-            });
-        };
+            mudarTela('deck-screen');
+            renderizar();
+        }, 1500); 
+    });
+} else {
+    // --- CENÁRIO: USUÁRIO DESLOGADO ---
+    // Esconde o splash na hora para mostrar o login Tinder
+    if(splash) splash.style.display = 'none';
+    
+    if(loginScreen) {
+        loginScreen.style.display = 'flex';
+        loginScreen.style.opacity = '1';
+        mudarTela('login-forced-screen'); // Garante que o Header suma
+    }
+}
+});
+}
+
+
+async function loginComGoogle() {
+    if (!window.auth) return alert("Erro: Firebase não carregado.");
+    const provider = new window.GoogleAuthProvider();
+    try {
+        const result = await window.signInWithPopup(window.auth, provider);
+        usuarioLogado = result.user;
+        await sincronizarComNuvem();
+        alert(`Sincronizado como: ${usuarioLogado.displayName}`);
+    } catch (error) {
+        console.error("Erro no login:", error);
+    }
+}
+async function loginComApple() {
+    if (!window.auth) return alert("Erro: Firebase não carregado.");
+    
+    // O Firebase usa o OAuthProvider para o login da Apple
+    const provider = new window.OAuthProvider('apple.com');
+    
+    try {
+        const result = await window.signInWithPopup(window.auth, provider);
+        usuarioLogado = result.user;
+        
+        // Esconde a tela de login (que criaremos no HTML)
+        const loginScreen = document.getElementById('login-forced-screen');
+        if(loginScreen) loginScreen.style.display = 'none';
+
+        await sincronizarComNuvem();
+        renderizar();
+        console.log("Logado com Apple:", usuarioLogado.displayName);
+    } catch (error) {
+        console.error("Erro no login Apple:", error);
+        // O erro 'auth/operation-not-allowed' acontece se você não ativar no console do Firebase
+        alert("Erro ao logar com Apple. Verifique se o provedor está ativo no console.");
+    }
+}
+
+async function sincronizarComNuvem() {
+    if (!usuarioLogado) return;
+    try {
+        const docRef = window.doc(window.db, "usuarios", usuarioLogado.uid);
+        const docSnap = await window.getDoc(docRef);
+
+        // CORREÇÃO AQUI ↓↓↓↓↓
+        if (docSnap.exists) {
+            const dadosNuvem = docSnap.data().baralhos;
+            if (dadosNuvem && JSON.stringify(dadosNuvem) !== JSON.stringify(baralhos)) {
+                baralhos = dadosNuvem;
+                localStorage.setItem('arion_db_v4', JSON.stringify(baralhos));
+                renderizar();
+            }
+        }
+    } catch (e) { 
+        console.log("Erro ao baixar dados:", e); 
+    }
+}   
+
+window.onload = () => {
+    document.addEventListener('selectionchange', () => {
+        if(document.getElementById('create-screen').classList.contains('active')){
+            const isSup = document.queryCommandState('superscript');
+            const isSub = document.queryCommandState('subscript');
+            const btnSup = document.getElementById('btn-sup');
+            const btnSub = document.getElementById('btn-sub');
+            if(btnSup) btnSup.classList.toggle('active-tool', isSup);
+            if(btnSub) btnSub.classList.toggle('active-tool', isSub);
+        }
+    });
+};
 
 
 // =============================== atualizar streak ===========================================
@@ -179,17 +210,21 @@ function atualizarStreak() {
         function mudarTela(id) {
             document.querySelectorAll('.screen').forEach(s => {
                 s.classList.remove('active');
-                s.style.transform = ''; // LIMPA O SWIPE: Garante que a tela comece centralizada
+                s.style.transform = ''; 
             });
-            
-            document.getElementById(id).classList.add('active');
+            const target = document.getElementById(id);
+            if(target) target.classList.add('active');
             const nav = document.getElementById('main-nav');
-            if(id === 'splash-screen') {
-                nav.style.display = 'none';
+            const header = document.querySelector('.top-header');
+            if(id === 'splash-screen' || id === 'login-forced-screen') {
+                if(nav) nav.style.display = 'none';
+                if(header) header.style.display = 'none';
             } else {
-                nav.style.display = 'flex';
+                if(nav) nav.style.display = 'flex';
+                if(header) header.style.display = 'flex';
                 if(id === 'deck-screen') atualizarNav('nav-decks');
             }
+            window.scrollTo(0,0);
         }
 
         function atualizarNav(idAtivo) {

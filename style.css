@@ -797,84 +797,117 @@ box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 
 /* Fundo da tela de login que bloqueia o app */
 #login-forced-screen {
-    display: none; /* Controlado pelo JS */
+    display: none; /* Controlado pelo JS como 'flex' */
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: #0a3d3a; /* Cor principal Árion */
-    z-index: 9999;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    /* Degradê sutil para profundidade */
+    background: linear-gradient(180deg, #0a3d3a 0%, #155e5a 100%);
+    /* Z-index 10001 garante que fique ACIMA do Header (que é 10000) */
+    z-index: 10005; 
     align-items: center;
     justify-content: center;
-    padding: 20px;
-}
-
-/* Retângulo (Card) central do Login */
-.login-card {
-    background: white;
-    padding: 40px 30px;
-    border-radius: 25px;
-    width: 100%;
-    max-width: 350px;
-    text-align: center;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.3);
-    animation: fadeIn 0.5s ease;
-}
-
-.login-card img {
-    width: 80px;
-    margin-bottom: 15px;
-}
-
-.login-card h2 {
-    color: #0a3d3a;
     font-family: 'Poppins', sans-serif;
-    margin-bottom: 5px;
-    letter-spacing: 1px;
 }
 
-.login-card p {
-    color: #666;
-    font-size: 0.9rem;
-    line-height: 1.4;
-    margin-bottom: 30px;
+.login-wrapper {
+    width: 85%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
 }
 
-/* Botões de Login (Google e Apple) */
-.btn-login {
+.login-logo-img {
+    width: 200px;
+    height: 200px;
+    object-fit: contain;
+    margin-bottom: 10px;
+    /* Suaviza o fundo caso o logo não seja PNG transparente */
+    border-radius: 20px; 
+}
+
+.login-title {
+    /* Atributos do seu código <text> */
+    font-family: sans-serif;           /* font-family="sans-serif" */
+    font-size: 20px;                   /* font-size="20" */
+    letter-spacing: 4px;               /* letter-spacing="4" */
+    color:rgb(238, 229, 201);                    /* fill="#f4e9c1" */
+    opacity: 0.8;                      /* opacity="0.8" */
+    
+    /* Alinhamento e Estilo */
+    text-align: center;                /* text-anchor="middle" */
+    font-weight: normal;               /* Texto sans-serif puro costuma ser normal */
+    text-transform: uppercase;         /* Garante que fique em CAIXA ALTA */
+    margin-top: 1px;                  /* Espaço entre o Logo e o texto */
+    margin-bottom: 50px;               /* Espaço até os botões */
+    display: block;
     width: 100%;
-    padding: 14px;
-    border-radius: 12px;
-    font-weight: 600;
-    margin-bottom: 12px;
+}
+
+.login-buttons-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 40px;
+}
+
+/* Botões Estilo Pílula (Tinder) */
+.btn-login-pill {
+    width: 100%;
+    padding: 16px;
+    border-radius: 50px; 
+    border: 2px solid white;
+    background: transparent;
+    color: white;
+    font-weight: 700;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 12px;
+    gap: 15px;
     cursor: pointer;
-    border: 1px solid #ddd;
-    transition: transform 0.2s, background 0.3s;
-    font-size: 0.95rem;
+    transition: all 0.3s ease;
 }
 
-.btn-login:active {
-    transform: scale(0.98);
+.btn-login-pill.google { background: white; color: #333; border: none; }
+.btn-login-pill.apple { background: transparent; color: white; border: 2px solid white; }
+
+.btn-login-pill img { width: 20px; height: 20px; }
+.btn-login-pill.apple img { filter: invert(1); }
+
+.login-footer-text {
+    color: rgba(255,255,255,0.7);
+    font-size: 0.7rem;
+    line-height: 1.6;
+    margin-bottom: 20px;
 }
 
-.btn-google {
-    background: white;
-    color: #333;
-}
+.login-footer-text span { text-decoration: underline; font-weight: 600; }
 
-.btn-apple {
-    background: #000;
+.login-trouble-link {
     color: white;
-    border: none;
+    font-size: 0.8rem;
+    text-decoration: none;
+    opacity: 0.9;
 }
 
-.btn-apple img {
-    filter: invert(1); /* Deixa o logo da maçã branco */
+/* Mantenha este abaixo que você já tinha */
+.congratulations-rect {
+    background: #f4e9c1;
+    color: #5d4037;
+    padding: 25px;
+    border-radius: 15px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 1.1em;
+    border: 2px solid #FFD700;
+    margin: 20px auto;
+    width: 90%;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
 
 /* =========================================================
