@@ -1,5 +1,6 @@
 // ========== CONFIGURAÇÕES DADOS (localStorage)==========
-let meusVestibulares = JSON.parse(localStorage.getItem('meusVestibulares')) || []; // ADICIONE ESTA LINHA
+let baralhos = JSON.parse(localStorage.getItem('arion_db_v4')) || [];
+let meusVestibulares = JSON.parse(localStorage.getItem('meusVestibulares')) || [];
 let dIdx = 0, fila = [], respondido = false;
 let corAtual = "#ff0000";
 let onboardingFeito = localStorage.getItem('arion_onboarding') === 'true';
@@ -1384,3 +1385,4 @@ function dispararImportacao() {
     };
     input.click();
 }
+
