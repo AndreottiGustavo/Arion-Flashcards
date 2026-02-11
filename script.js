@@ -1,5 +1,5 @@
 // ========== CONFIGURAÇÕES DADOS (localStorage)==========
-let baralhos = JSON.parse(localStorage.getItem('arion_db_v4')) || [];
+let meusVestibulares = JSON.parse(localStorage.getItem('meusVestibulares')) || []; // ADICIONE ESTA LINHA
 let dIdx = 0, fila = [], respondido = false;
 let corAtual = "#ff0000";
 let onboardingFeito = localStorage.getItem('arion_onboarding') === 'true';
@@ -183,7 +183,6 @@ async function deslogar() {
 
 
 async function sincronizarComNuvem() {
-    // Verifica se temos usuário e se o banco de dados (db) está pronto
     if (!usuarioLogado || !window.db || !window.db.collection) return;
 
     try {
@@ -191,19 +190,30 @@ async function sincronizarComNuvem() {
         const docSnap = await docRef.get();
 
         if (docSnap.exists) {
-            const dadosNuvem = docSnap.data().baralhos;
+            const dados = docSnap.data();
             
-            if (dadosNuvem && Array.isArray(dadosNuvem)) {
-                baralhos = dadosNuvem;
+            // Sincroniza Baralhos
+            if (dados.baralhos) {
+                baralhos = dados.baralhos;
                 localStorage.setItem('arion_db_v4', JSON.stringify(baralhos));
-                renderizar();
-                console.log("Nuvem -> Local: Sincronizado com sucesso.");
             }
-        } else {
-            console.log("Nenhum dado encontrado na nuvem para este usuário.");
+
+            // Sincroniza Vestibulares (A linha que faltava no seu modelo)
+            if (dados.meusVestibulares) {
+                meusVestibulares = dados.meusVestibulares;
+                localStorage.setItem('meusVestibulares', JSON.stringify(meusVestibulares));
+            }
+
+            // Sincroniza Streak
+            if (dados.dadosStreak) {
+                localStorage.setItem('arion_streak_data', JSON.stringify(dados.dadosStreak));
+            }
+            
+            renderizar();
+            if (typeof renderizarVestibulares === 'function') renderizarVestibulares();
         }
     } catch (e) {
-        console.error("Erro crítico na sincronização:", e);
+        console.error("Erro na sincronização:", e);
     }
 }
 
