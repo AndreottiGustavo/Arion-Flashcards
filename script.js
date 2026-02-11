@@ -335,6 +335,31 @@ function atualizarStreak() {
             window.scrollTo(0,0);
         }
 
+        /* ============================================================================
+   INTERAÇÕES DE INTERFACE (SCROLL, BOTÕES FLUTUANTES, ETC)
+   ============================================================================ */
+
+let lastScrollTop = 0;
+document.addEventListener('DOMContentLoaded', () => {
+    const deckList = document.getElementById('deck-list');
+    
+    if (deckList) {
+        deckList.addEventListener('scroll', function() {
+            const fab = document.querySelector('.fab-button');
+            if (!fab) return;
+
+            let scrollTop = deckList.scrollTop;
+            if (scrollTop > lastScrollTop && scrollTop > 50) {
+                fab.classList.add('fab-hidden');
+            } else {
+                fab.classList.remove('fab-hidden');
+            }
+            
+            lastScrollTop = scrollTop <= 0 ? 0 : scrollTop; 
+        }, { passive: true });
+    }
+});
+
         function atualizarNav(idAtivo) {
             // Remove o destaque de todos os botões
             document.querySelectorAll('.nav-btn').forEach(btn => {
@@ -559,26 +584,36 @@ function atualizarStreak() {
             const listaHtml = baralhos.map((b, i) => {
                 const n = b.cards.filter(c => c.state === 'new' && (b.premium ? c.liberado : true)).length;
                 const r = b.cards.filter(c => c.state !== 'new' && c.rev <= agora && (b.premium ? c.liberado : true)).length;
-        
+            
                 return `
-                    <div class="deck-item ${b.premium ? 'premium' : ''}" onclick="abrirDetalhes(${i})" style="padding: 12px 15px; min-height: auto;">
-                        ${b.premium ? '<div class="premium-badge">PREMIUM</div>' : ''}
-                        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                            <strong style="${b.premium ? 'color:var(--premium-gold)' : ''}">${b.nome}</strong>
-                            <small style="white-space: nowrap; color: white;">
-                                <span style="color: #2185d0; font-weight: bold;">${n}</span> novos 
-                                <span style="color: #ccc; margin: 0 2px;">|</span> 
-                                <span style="color: #21ba45; font-weight: bold;">${r}</span> revisões
-                            </small>
+                    <div class="deck-item ${b.premium ? 'premium' : ''}">
+                        <div class="deck-actions">
+                            <div class="action-btn btn-pin" onclick="fixarDeck(${i})">FIXAR</div>
+                            <div style="display:flex">
+                                <div class="action-btn btn-rename" onclick="prepararRenomear(${i})">EDITAR</div>
+                                <div class="action-btn btn-delete" onclick="prepararExclusao(${i})">APAGAR</div>
+                            </div>
                         </div>
-                        <div class="deck-options-btn" onclick="event.stopPropagation(); toggleMenu(${i})">⋮</div>
-                        <div class="options-menu" id="menu-${i}">
-                            <button onclick="event.stopPropagation(); prepararRenomear(${i})">Renomear</button>
-                            <button style="color:red" onclick="event.stopPropagation(); prepararExclusao(${i})">Excluir</button>
+                        <div class="deck-content efeito-brilho" 
+                             onclick="abrirDetalhes(${i})"
+                             ontouchstart="handleSwipeStart(event)" 
+                             ontouchmove="handleSwipeMove(event)" 
+                             ontouchend="handleSwipeEnd(event)">
+                            <div style="display: flex; flex-direction: column; width: 100%;">
+                                ${b.premium ? '<div class="premium-badge">PREMIUM</div>' : ''}
+                                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                                    <strong style="${b.premium ? 'color:var(--premium-gold)' : 'color: white;'}">${b.nome}</strong>
+                                    <small style="white-space: nowrap; color: white;">
+                                        <span style="${n === 0 ? 'color:rgba(255,255,255,0.2); font-weight:400;' : 'color:#2185d0; font-weight:bold;'}">${n}</span> novos 
+                                        <span style="color: rgba(255,255,255,0.2); margin: 0 2px;">|</span> 
+                                        <span style="${r === 0 ? 'color:rgba(255,255,255,0.2); font-weight:400;' : 'color:#21ba45; font-weight:bold;'}">${r}</span> revisões
+                                    </small>
+                                </div>
+                            </div>
                         </div>
                     </div>`;
             }).join('');
-        
+            
             document.getElementById('deck-list').innerHTML = btnEstudarTudo + listaHtml;
         }
 
@@ -1309,6 +1344,46 @@ function resetSwipe(el) {
     el.style.transition = 'transform 0.3s ease';
     el.style.transform = 'translateX(-50%)';
 }
+
+//=====================================================//
+// LÓGICA DE SWIPE PARA ABRIR OPÇÕES
+//=======================================================
+
+let swipeStartX = 0;
+let currentSwipeX = 0;
+
+function handleSwipeStart(e) {
+    swipeStartX = e.touches[0].clientX;
+    e.currentTarget.style.transition = 'none';
+}
+
+function handleSwipeMove(e) {
+    currentSwipeX = e.touches[0].clientX;
+    let diff = currentSwipeX - swipeStartX;
+    if (diff > 100) diff = 100; // Limite Fixar
+    if (diff < -180) diff = -180; // Limite Editar/Apagar
+    e.currentTarget.style.transform = `translateX(${diff}px)`;
+}
+
+function handleSwipeEnd(e) {
+    const el = e.currentTarget;
+    el.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+    const finalDiff = currentSwipeX - swipeStartX;
+
+    if (finalDiff < -70) el.style.transform = 'translateX(-150px)';
+    else if (finalDiff > 50) el.style.transform = 'translateX(80px)';
+    else el.style.transform = 'translateX(0)';
+}
+
+function fixarDeck(i) {
+    const deck = baralhos.splice(i, 1)[0];
+    baralhos.unshift(deck);
+    salvar();
+    renderizar();
+}
+
+
+
 
 
 // ============================================================================

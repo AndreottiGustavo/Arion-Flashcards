@@ -174,11 +174,15 @@ body, html {
     transition: transform 0.3s ease; /* Permite que o reset do swipe seja suave */
     will-change: transform;
     background: var(--primary-green);
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
+    overflow-y: auto; 
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
     z-index: 1;
 }
-
+.screen::-webkit-scrollbar {
+    display: none !important;
+    width: 0;
+}
 .active { 
     display: flex !important; 
     z-index: 2; 
@@ -195,21 +199,74 @@ body, html {
 h1 { color: var(--accent-gold); margin: 0; font-size: 1.4rem; letter-spacing: 2px; text-transform: uppercase; }
 
 /* LISTA DE BARALHOS */
-.deck-list { overflow-y: auto; flex-grow: 1; }
+.deck-list { overflow-y: auto; flex-grow: 1; padding-bottom: 70px;}
+.deck-list::-webkit-scrollbar {
+    display: none !important;
+    width: 0;
+    height: 0;
+}
 .deck-item {
-    background: rgba(255,255,255,0.08); border: 1px solid rgba(244, 233, 193, 0.3);
-    padding: 20px; border-radius: 18px; margin-bottom: 12px; 
-    display: flex; justify-content: space-between; align-items: center; position: relative;
+    position: relative;
+    overflow: hidden; 
+    margin-bottom: 12px;
+    border-radius: 18px;
+    background: #007aff; /* Fundo azul para o 'Fixar' */
+    border: 1px solid rgba(244, 233, 193, 0.3);
+    display: block; /* Importante para o swipe */
+}
+/* O CONTEÚDO QUE DESLIZA (O que o usuário vê) */
+.deck-content {
+    background-color: var(--primary-green);
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    z-index: 2;
+    transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    width: 100%;
+    box-sizing: border-box;
+    cursor: pointer;
 }
 
-.deck-item.premium {
-    border: 2px solid var(--premium-gold);
-    background: linear-gradient(145deg, rgba(255, 215, 0, 0.1), rgba(0, 0, 0, 0.2));
+/* BOTÕES DE AÇÃO ATRÁS DO CARD */
+.deck-actions {
+    position: absolute;
+    top: 0; bottom: 0; left: 0; right: 0;
+    display: flex;
+    justify-content: space-between;
+    z-index: 1;
+    background: #ff3b30; /* Fundo vermelho para o 'Apagar' */
 }
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 75px;
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.btn-pin { background: #007aff; width: 80px; }
+.btn-rename { background: #ff9500; width: 75px; }
+.btn-delete { background: #ff3b30; width: 75px; }
+
+
 .premium-badge {
     background: var(--premium-gold); color: black; font-size: 0.6rem;
     padding: 2px 8px; border-radius: 10px; font-weight: bold;
-    position: absolute; top: -10px; left: 20px;
+    position: absolute; top: -10px; left: 20px; z-index: 3;
+}
+
+
+
+
+.premium {
+    border: 2px solid var(--premium-gold);
+    background: linear-gradient(145deg, rgba(255, 215, 0, 0.1), rgba(0, 0, 0, 0.2));
 }
 
 .deck-options-btn { padding: 10px; font-size: 1.5rem; color: var(--accent-gold); cursor: pointer; }
@@ -230,7 +287,7 @@ h1 { color: var(--accent-gold); margin: 0; font-size: 1.4rem; letter-spacing: 2p
 
 
 
-/* --- ==============================ESTILO DA TELA DE VESTIBULARES========================= --- */
+/* --- =========================.deck-item=====ESTILO DA TELA DE VESTIBULARES========================= --- */
 
 
 /* Botão Largo e Bonito */
@@ -706,6 +763,40 @@ box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 
 .btn-gold { background: var(--accent-gold); color: var(--primary-green); border: none; padding: 18px; border-radius: 15px; font-weight: bold; width: 100%; cursor: pointer; font-size: 1rem; font-family: var(--font-main);margin-bottom: 10px; }
 
+.fab-button { /* botão flutuante de novo baralho */
+    position: fixed !important;
+    bottom: 30px !important;
+    right: 20px !important;
+    width: auto !important; /* Aqui ele deixa de ser 100% para virar pílula */
+    padding: 14px 24px !important;
+    border-radius: 50px !important;
+    z-index: 999; /* Fica acima dos cards, mas abaixo do menu sanduíche */
+    box-shadow: 0 8px 25px rgba(0,0,0,0.5) !important;
+    margin: 0 !important;
+    display: flex;
+    align-items: center;
+    font-size: 0.9rem !important;
+    white-space: nowrap;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease !important;
+}
+
+.fab-hidden {
+    transform: translateY(100px) scale(0.8) !important;
+    opacity: 0 !important;
+    pointer-events: none;
+}
+
+
+
+
+.screen:not(.active) .fab-button {
+    display: none !important;
+}
+
+
+
+
+
 .main-input { 
     width: 100%; min-height: 100px; border-radius: 15px; padding: 15px; border: none; 
     font-size: 16px; margin-bottom: 15px; background: #f5f5f5; outline: none; 
@@ -932,5 +1023,4 @@ box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
-
 }

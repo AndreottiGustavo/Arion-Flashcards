@@ -43,7 +43,8 @@
                     <button class="nav-btn" id="nav-decks" onclick="mudarTela('deck-screen'); atualizarNav('nav-decks')">🃏 Baralhos</button>
                     <button class="nav-btn" onclick="abrirVestibulares()">📅 Meus Vestibulares</button>
                     <button class="nav-btn" id="nav-browse" onclick="abrirPainel(); atualizarNav('nav-browse')">📁 Painel (Cards)</button>
-                    <button class="nav-btn efeito brilho" id="nav-store" onclick="mudarTela('store-screen'); atualizarNav('nav-store')" style="color:var(--premium-gold); border-color:var(--premium-gold)">✨ Loja</button>
+                    <button class="nav-btn efeito brilho" id="nav-store" onclick="mudarTela('store-screen'); atualizarNav('nav-store')" style="color:var(--premium-gold); border-color:var(--premium-gold)">✨ Baralhos Prontos</button>
+                    <button class="nav-btn" onclick="dispararImportacao()">📥 Importar do Anki</button>
                     <button class="nav-btn" id="nav-browse" onclick="deslogar()" style="color: #ff4d4d; font-weight: bold;">Sair</button>
                 </nav>
             </div>
@@ -158,15 +159,14 @@
             <button onclick="fecharModal()" style="background:none; border:none; margin-top:15px; color:gray; cursor:pointer; font-size:0.9rem">Cancelar</button>
         </div>
     </div>
+
+    <!-- ======== tela inicial baralhos =============-->
     <div id="deck-screen" class="screen">
         <header><h1>Meus Baralhos</h1></header>
         <div class="deck-list" id="deck-list"></div>
-        <div style="text-align:center; padding:20px; display: flex; flex-direction: column; gap: 10px; align-items: center;">
-            <button class="btn-gold" style="width:auto; padding:15px 40px; border-radius:50px;" onclick="abrirModalCriar()">+ Novo Baralho</button>
-            <button class="btn-anki" style="background: #2185d0; color: white; width:auto; padding:12px 30px; border-radius:50px; border:none; font-weight:bold; font-size: 0.9em; cursor:pointer;" onclick="dispararImportacao()">
-                📥 Importar do Anki (.txt)
-            </button>
-        </div>
+        <button class="btn-gold fab-button" onclick="abrirModalCriar()">
+            + Novo Baralho</button>    
+    </div>
     </div>
 
     <div id="store-screen" class="screen">
@@ -321,7 +321,6 @@
 <script src="script.js"></script>
 </body>
 </html>
-
 
 
 
