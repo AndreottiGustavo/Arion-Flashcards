@@ -571,26 +571,13 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         
             // GERAL: Padding-right de 45px para compensar a falta do botão ⋮ e alinhar os números
-            const btnEstudarTudo = `
-                <div class="deck-item study-all" onclick="estudarTudo()" style="background: linear-gradient(315deg,rgb(68, 131, 61),rgb(90, 138, 85)); color: white; margin-bottom: 20px; border: none; cursor: pointer; padding: 25px 45px 25px 15px;border-radius: 18px; overflow: hidden;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                        <strong style="font-size: 1.1em;">🔥 Estudar Tudo</strong>
-                        <small style="opacity: 1; color: white; white-space: nowrap;">
-                            <span style="color: #90caf9; font-weight: bold;">${totalNovos}</span> novos | <span style="color: #a5d6a7; font-weight: bold;">${totalRevisao}</span> revisões
-                        </small>
-                    </div>
-                </div>
-            `;
-        
-            const iconePinVetor = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="display:inline-block; vertical-align:middle; margin-right:5px;"><path d="M16,12V4H17V2H7V4H8V12L6,14V16H11.2V22H12.8V16H18V14L16,12Z" /></svg>`;
-
             const listaHtml = baralhos.map((b, i) => {
                 const n = b.cards.filter(c => c.state === 'new' && (b.premium ? c.liberado : true)).length;
                 const r = b.cards.filter(c => c.state !== 'new' && c.rev <= agora && (b.premium ? c.liberado : true)).length;
                 const estaFixado = b.fixado === true;
             
                 return `
-                    <div class="deck-item ${b.premium ? 'premium' : ''}" style="position: relative; margin-top: 25px; margin-bottom: 12px; background: transparent; border: none; padding: 0; min-height: auto; overflow: visible;">
+                    <div class="deck-item" style="position: relative; margin-top: 25px; margin-bottom: 12px; background: transparent; border: none; padding: 0; overflow: visible;">
                         
                         <div class="deck-actions" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: space-between; align-items: center; border-radius: 18px; overflow: hidden; z-index: 1;">
                             <div onclick="alternarFixar(${i})" style="background: ${estaFixado ? '#8e8e93' : '#007aff'}; width: 80px; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 0.65rem;">
@@ -609,7 +596,9 @@ document.addEventListener('DOMContentLoaded', () => {
                              ontouchstart="handleSwipeStart(event)" 
                              ontouchmove="handleSwipeMove(event)" 
                              ontouchend="handleSwipeEnd(event)"
-                             style="padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; width: 100%; position: relative; z-index: 2; transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94); background: var(--primary-green); border-radius: 18px; box-sizing: border-box; ${b.premium ? 'border: 2px solid var(--premium-gold);' : 'border: 1px solid rgba(244, 233, 193, 0.3);'}">
+                             style="padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; width: 100%; position: relative; z-index: 2; transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94); border-radius: 18px; box-sizing: border-box; 
+                             background: var(--primary-green); 
+                             ${b.premium ? 'border: 2px solid var(--premium-gold); box-shadow: 0 0 10px rgba(255, 215, 0, 0.2);' : 'border: 1px solid rgba(244, 233, 193, 0.3);'}">
                             
                             <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                                 <strong style="${b.premium ? 'color:var(--premium-gold)' : 'color: white;'}">
@@ -1409,7 +1398,17 @@ function fecharTodosSwipes() {
     });
 }
 
-
+// Monitora o scroll no container de baralhos
+const listaDecks = document.getElementById('deck-list');
+if (listaDecks) {
+    listaDecks.addEventListener('scroll', () => {
+        document.querySelectorAll('.deck-content').forEach(el => {
+            if (el.style.transform !== 'translateX(0px)') {
+                el.style.transform = 'translateX(0px)';
+            }
+        });
+    }, { passive: true });
+}
 
 // ============================================================================
 // BLOCO DE GESTÃO PREMIUM E IMPORTAÇÃO (ANKI .TXT)

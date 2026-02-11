@@ -205,32 +205,45 @@ h1 { color: var(--accent-gold); margin: 0; font-size: 1.4rem; letter-spacing: 2p
     width: 0;
     height: 0;
 }
+/* CONTAINER PAI: Agora ele é apenas um palco invisível */
 .deck-item {
     position: relative;
-    overflow: hidden; 
-    margin-top: 12px;
-    margin-bottom: 12px;
+    overflow: visible; /* IMPORTANTE: Permite que a badge flutue sem ser cortada */
+    margin-top: 25px;   /* Espaço para a badge não bater no card de cima */
+    margin-bottom: 15px;
     border-radius: 18px;
-    background: #007aff; /* Fundo azul para o 'Fixar' */
-    border: none; /* Remove a borda daqui para não duplicar */
+    background: transparent; /* Removemos a cor daqui para não vazar */
+    border: none;
 }
-/* O CONTEÚDO QUE DESLIZA (O que o usuário vê) */
+
+/* O CONTEÚDO QUE DESLIZA: Toda a estética fica aqui agora */
 .deck-content {
-    /* Estilo que você tinha no .deck-item antigo */
-    background: rgba(255,255,255,0.08); 
+    background: #0a3d3a; /* Fundo sólido para esconder os botões atrás */
     border: 1px solid rgba(244, 233, 193, 0.3);
     padding: 20px; 
     border-radius: 18px;
-    
     display: flex; 
     justify-content: space-between; 
     align-items: center; 
     position: relative;
-    z-index: 2;
+    z-index: 2; /* Fica acima dos botões */
     transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     width: 100%;
     box-sizing: border-box;
     cursor: pointer;
+}
+
+/* MOLDURA PREMIUM: Agora ela é aplicada ao CONTENT, para deslizar junto */
+.premium .deck-content {
+    border: 2px solid var(--premium-gold) !important;
+    background: linear-gradient(145deg, rgba(255, 215, 0, 0.15), #0a3d3a);
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.1);
+}
+
+/* Removemos estilos antigos que conflitam */
+.premium {
+    border: none !important;
+    background: none !important;
 }
 
 /* BOTÕES DE AÇÃO ATRÁS DO CARD */
@@ -239,38 +252,41 @@ h1 { color: var(--accent-gold); margin: 0; font-size: 1.4rem; letter-spacing: 2p
     top: 0; bottom: 0; left: 0; right: 0;
     display: flex;
     justify-content: space-between;
-    z-index: 1;
-    background: #ff3b30; /* Fundo vermelho para o 'Apagar' */
+    z-index: 1; /* Fica atrás do content */
+    border-radius: 18px;
+    overflow: hidden; /* Garante que os botões sigam o arredondado do card */
 }
 
+/* DESIGN DOS BOTÕES (iOS Style) */
 .action-btn {
     display: flex;
     align-items: center;
     justify-content: center;
     width: 75px;
     color: white;
-    font-size: 0.7rem;
+    font-size: 0.65rem;
     font-weight: 800;
     text-transform: uppercase;
+    height: 100%;
 }
 
 .btn-pin { background: #007aff; width: 80px; }
 .btn-rename { background: #ff9500; width: 75px; }
 .btn-delete { background: #ff3b30; width: 75px; }
 
-
+/* BADGE: Z-index alto para ficar sempre visível */
 .premium-badge {
-    background: var(--premium-gold); color: black; font-size: 0.6rem;
-    padding: 2px 8px; border-radius: 10px; font-weight: bold;
-    position: absolute; top: -10px; left: 20px; z-index: 3;
-}
-
-
-
-
-.premium {
-    border: 2px solid var(--premium-gold);
-    background: linear-gradient(145deg, rgba(255, 215, 0, 0.1), rgba(0, 0, 0, 0.2));
+    background: var(--premium-gold); 
+    color: black; 
+    font-size: 0.6rem;
+    padding: 2px 8px; 
+    border-radius: 10px; 
+    font-weight: bold;
+    position: absolute; 
+    top: -10px; 
+    left: 20px; 
+    z-index: 10; 
+    pointer-events: none; /* Não interfere no toque/swipe */
 }
 
 .deck-options-btn { padding: 10px; font-size: 1.5rem; color: var(--accent-gold); cursor: pointer; }
