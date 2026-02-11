@@ -559,6 +559,7 @@ document.addEventListener('DOMContentLoaded', () => {
             };
         }
 
+        
         function renderizar() {
             let totalNovos = 0;
             let totalRevisao = 0;
@@ -581,34 +582,44 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             `;
         
+            const iconePinVetor = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="display:inline-block; vertical-align:middle; margin-right:5px;"><path d="M16,12V4H17V2H7V4H8V12L6,14V16H11.2V22H12.8V16H18V14L16,12Z" /></svg>`;
+
             const listaHtml = baralhos.map((b, i) => {
                 const n = b.cards.filter(c => c.state === 'new' && (b.premium ? c.liberado : true)).length;
                 const r = b.cards.filter(c => c.state !== 'new' && c.rev <= agora && (b.premium ? c.liberado : true)).length;
+                const estaFixado = b.fixado === true;
             
                 return `
-                    <div class="deck-item ${b.premium ? 'premium' : ''}">
-                        <div class="deck-actions">
-                            <div class="action-btn btn-pin" onclick="fixarDeck(${i})">FIXAR</div>
-                            <div style="display:flex">
-                                <div class="action-btn btn-rename" onclick="prepararRenomear(${i})">EDITAR</div>
-                                <div class="action-btn btn-delete" onclick="prepararExclusao(${i})">APAGAR</div>
+                    <div class="deck-item ${b.premium ? 'premium' : ''}" style="padding: 0; min-height: auto; position: relative; margin-top: 12px;">
+                        
+                        <div class="deck-actions" style="position: absolute; width: 100%; height: 100%; display: flex; justify-content: space-between; align-items: center; border-radius: 18px; overflow: hidden;">
+                            <div class="action-btn ${estaFixado ? 'btn-unpin' : 'btn-pin'}" onclick="alternarFixar(${i})">
+                                ${estaFixado ? 'DESAFIXAR' : 'FIXAR'}
+                            </div>
+                            <div style="display:flex; height: 100%;">
+                                <div class="action-btn btn-rename" onclick="prepararRenomear(${i})">Renomear</div>
+                                <div class="action-btn btn-delete" onclick="prepararExclusao(${i})">Excluir</div>
                             </div>
                         </div>
-                        <div class="deck-content efeito-brilho" 
+            
+                        ${b.premium ? '<div class="premium-badge">PREMIUM</div>' : ''}
+                        
+                        <div class="deck-content" 
                              onclick="abrirDetalhes(${i})"
                              ontouchstart="handleSwipeStart(event)" 
                              ontouchmove="handleSwipeMove(event)" 
-                             ontouchend="handleSwipeEnd(event)">
-                            <div style="display: flex; flex-direction: column; width: 100%;">
-                                ${b.premium ? '<div class="premium-badge">PREMIUM</div>' : ''}
-                                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                                    <strong style="${b.premium ? 'color:var(--premium-gold)' : 'color: white;'}">${b.nome}</strong>
-                                    <small style="white-space: nowrap; color: white;">
-                                        <span style="${n === 0 ? 'color:rgba(255,255,255,0.2); font-weight:400;' : 'color:#2185d0; font-weight:bold;'}">${n}</span> novos 
-                                        <span style="color: rgba(255,255,255,0.2); margin: 0 2px;">|</span> 
-                                        <span style="${r === 0 ? 'color:rgba(255,255,255,0.2); font-weight:400;' : 'color:#21ba45; font-weight:bold;'}">${r}</span> revisões
-                                    </small>
-                                </div>
+                             ontouchend="handleSwipeEnd(event)"
+                             style="padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; width: 100%; position: relative; z-index: 2; transition: transform 0.3s ease; background: var(--primary-green); border-radius: 18px; ${b.premium ? 'border: none;' : 'border: 1px solid rgba(244, 233, 193, 0.3);'}">
+                            
+                            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                                <strong style="${b.premium ? 'color:var(--premium-gold)' : 'color: white;'}">
+                                    ${estaFixado ? iconePinVetor : ''}${b.nome}
+                                </strong>
+                                <small style="white-space: nowrap; color: white;">
+                                    <span style="color: #2185d0; font-weight: bold;">${n}</span> novos 
+                                    <span style="color: #ccc; margin: 0 2px;">|</span> 
+                                    <span style="color: #21ba45; font-weight: bold;">${r}</span> revisões
+                                </small>
                             </div>
                         </div>
                     </div>`;

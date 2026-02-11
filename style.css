@@ -208,19 +208,23 @@ h1 { color: var(--accent-gold); margin: 0; font-size: 1.4rem; letter-spacing: 2p
 .deck-item {
     position: relative;
     overflow: hidden; 
+    margin-top: 12px;
     margin-bottom: 12px;
     border-radius: 18px;
     background: #007aff; /* Fundo azul para o 'Fixar' */
-    border: 1px solid rgba(244, 233, 193, 0.3);
-    display: block; /* Importante para o swipe */
+    border: none; /* Remove a borda daqui para não duplicar */
 }
 /* O CONTEÚDO QUE DESLIZA (O que o usuário vê) */
 .deck-content {
-    background-color: var(--primary-green);
-    padding: 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    /* Estilo que você tinha no .deck-item antigo */
+    background: rgba(255,255,255,0.08); 
+    border: 1px solid rgba(244, 233, 193, 0.3);
+    padding: 20px; 
+    border-radius: 18px;
+    
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
     position: relative;
     z-index: 2;
     transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
