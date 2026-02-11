@@ -78,53 +78,84 @@ function inicializarApp() {
 inicializarApp();
 
 async function loginComGoogle() {
-    if (!window.auth) return alert("Erro: Firebase não carregado.");
+    // 1. Verifica se o Firebase global existe (Padrão Compat)
+    if (typeof firebase === 'undefined') return alert("Erro: Firebase não carregado.");
+    
+    // 2. Define o Provider
     const provider = new firebase.auth.GoogleAuthProvider();
     
     try {
-        const result = await window.auth.signInWithPopup(provider);
+        // 3. Login direto pelo objeto firebase (mais estável)
+        const result = await firebase.auth().signInWithPopup(provider);
         usuarioLogado = result.user;
+        
         console.log("Login OK para:", usuarioLogado.displayName);
 
-        // Aguarda os decks virem da nuvem antes de prosseguir
+        // 4. Aguarda os dados da nuvem
         await sincronizarComNuvem();
 
+        // 5. Esconde as telas de bloqueio
         const loginScreen = document.getElementById('login-forced-screen');
         const splash = document.getElementById('splash-screen');
 
-        if (loginScreen) loginScreen.style.display = 'none';
-        if (splash) splash.style.display = 'none';
+        if (loginScreen) {
+            loginScreen.style.display = 'none';
+        }
+        if (splash) {
+            splash.style.display = 'none';
+        }
 
+        // 6. Troca a tela e renderiza
         mudarTela('deck-screen');
         renderizar();
 
     } catch (error) {
         console.error("Erro no login:", error);
+        if (error.code !== 'auth/popup-closed-by-user') {
+            alert("Erro ao realizar login com Google.");
+        }
     }
 }
 
 
 async function loginComApple() {
-    if (!window.auth) return alert("Erro: Firebase não carregado.");
-    
-    // O Firebase usa o OAuthProvider para o login da Apple
-    const provider = new window.OAuthProvider('apple.com');
+    // 1. Verifica o Firebase global (Padrão Compat)
+    if (typeof firebase === 'undefined' || !firebase.auth) {
+        return alert("Erro: Firebase não carregado.");
+    }
+
+    // 2. Define o Provider da Apple no padrão Compat
+    const provider = new firebase.auth.OAuthProvider('apple.com');
     
     try {
-        const result = await window.signInWithPopup(window.auth, provider);
+        // 3. Login direto pelo objeto firebase
+        const result = await firebase.auth().signInWithPopup(provider);
         usuarioLogado = result.user;
         
-        // Esconde a tela de login (que criaremos no HTML)
-        const loginScreen = document.getElementById('login-forced-screen');
-        if(loginScreen) loginScreen.style.display = 'none';
-
-        await sincronizarComNuvem();
-        renderizar();
         console.log("Logado com Apple:", usuarioLogado.displayName);
+
+        // 4. Aguarda sincronização dos dados
+        await sincronizarComNuvem();
+
+        // 5. Esconde as telas de bloqueio
+        const loginScreen = document.getElementById('login-forced-screen');
+        const splash = document.getElementById('splash-screen');
+
+        if (loginScreen) {
+            loginScreen.style.display = 'none';
+            loginScreen.classList.remove('active');
+        }
+        if (splash) splash.style.display = 'none';
+
+        // 6. Muda a tela e renderiza
+        mudarTela('deck-screen');
+        renderizar();
+
     } catch (error) {
         console.error("Erro no login Apple:", error);
-        // O erro 'auth/operation-not-allowed' acontece se você não ativar no console do Firebase
-        alert("Erro ao logar com Apple. Verifique se o provedor está ativo no console.");
+        if (error.code !== 'auth/popup-closed-by-user') {
+            alert("Erro ao logar com Apple. Verifique se o provedor está ativo no console do Firebase.");
+        }
     }
 }
 
