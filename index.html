@@ -8,7 +8,7 @@
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0a3d3a">
-    <link rel="apple-touch-icon" href="ICONE DO APP.png">
+    <link rel="apple-touch-icon" href="ICONE DO APP HOME SCREEN.png">
     <link rel="icon" type="image/png" href="LOGO PRETO PNG.png">
     <script>
       if ('serviceWorker' in navigator) {
@@ -44,7 +44,7 @@
                     <button class="nav-btn" onclick="abrirVestibulares()">📅 Meus Vestibulares</button>
                     <button class="nav-btn" id="nav-browse" onclick="abrirPainel(); atualizarNav('nav-browse')">📁 Painel (Cards)</button>
                     <button class="nav-btn efeito brilho" id="nav-store" onclick="mudarTela('store-screen'); atualizarNav('nav-store')" style="color:var(--premium-gold); border-color:var(--premium-gold)">✨ Loja</button>
-                    <button class="nav-btn" id="nav-browse" onclick="deslogar()">Sair</button>
+                    <button class="nav-btn" id="nav-browse" onclick="deslogar()" style="color: #ff4d4d; font-weight: bold;">Sair</button>
                 </nav>
             </div>
         </header>
@@ -321,6 +321,7 @@
 <script src="script.js"></script>
 </body>
 </html>
+
 
 
 
