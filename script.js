@@ -287,6 +287,7 @@ function atualizarStreak() {
                 
                 docRef.set({
                     baralhos: baralhos,
+                    meusVestibulares: meusVestibulares,
                     ultimaAtualizacao: Date.now()
                 }, { merge: true })
                 .then(() => console.log("Nuvem atualizada com sucesso (Upload OK)"))
@@ -1378,4 +1379,5 @@ function dispararImportacao() {
         leitor.readAsText(arquivo);
     };
     input.click();
+
 }
