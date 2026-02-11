@@ -1,6 +1,5 @@
 // ========== CONFIGURAÇÕES DADOS (localStorage)==========
-let baralhos = JSON.parse(localStorage.getItem('arion_db_v4')) || [];
-let meusVestibulares = JSON.parse(localStorage.getItem('meusVestibulares')) || [];
+let meusVestibulares = JSON.parse(localStorage.getItem('meusVestibulares')) || []; // ADICIONE ESTA LINHA
 let dIdx = 0, fila = [], respondido = false;
 let corAtual = "#ff0000";
 let onboardingFeito = localStorage.getItem('arion_onboarding') === 'true';
@@ -918,7 +917,7 @@ function atualizarStreak() {
    /* ============================ ÁREA DE GERENCIADOR DE VESTIBULARES ---======================== */
 
 // 1. Carrega os dados salvos ou começa uma lista vazia (Padronizado para meusVestibulares)
-let meusVestibulares = JSON.parse(localStorage.getItem('meusVestibulares')) || [];
+
 
 // 2. Função para abrir a tela e mostrar os quadradinhos
 function abrirVestibulares() {
@@ -1385,4 +1384,3 @@ function dispararImportacao() {
     };
     input.click();
 }
-
