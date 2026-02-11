@@ -199,7 +199,7 @@ body, html {
 h1 { color: var(--accent-gold); margin: 0; font-size: 1.4rem; letter-spacing: 2px; text-transform: uppercase; }
 
 /* LISTA DE BARALHOS */
-.deck-list { overflow-y: auto; flex-grow: 1; padding-bottom: 70px;}
+.deck-list { overflow-y: auto; overflow-x: hidden;flex-grow: 1; padding-bottom: 70px;}
 .deck-list::-webkit-scrollbar {
     display: none !important;
     width: 0;

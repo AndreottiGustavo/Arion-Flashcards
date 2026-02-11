@@ -616,7 +616,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const container = document.getElementById('deck-list');
             if (container) {
                 const btnEstudarTudo = `
-                    <div class="deck-item study-all" onclick="estudarTudo()" style="background: linear-gradient(315deg,rgb(68, 131, 61),rgb(90, 138, 85)); color: white; margin-bottom: 20px; border: none; cursor: pointer; padding: 25px 45px 25px 15px;border-radius: 18px; overflow: hidden;">
+                    <div class="deck-item study-all" onclick="estudarTudo()" style="background: linear-gradient(315deg,rgb(68, 131, 61),rgb(90, 138, 85)); color: white; margin-bottom: 20px; border: none; cursor: pointer; padding: 25px 15px 25px 15px;border-radius: 18px; overflow: hidden;">
                         <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                             <strong style="font-size: 1.1em;">🔥 Estudar Tudo</strong>
                             <small style="opacity: 1; color: white; white-space: nowrap;">
@@ -1366,14 +1366,25 @@ let currentSwipeX = 0;
 
 function handleSwipeStart(e) {
     swipeStartX = e.touches[0].clientX;
+    swipeStartY = e.touches[0].clientY;
     e.currentTarget.style.transition = 'none';
 }
 
 function handleSwipeMove(e) {
+    let diffX = e.touches[0].clientX - swipeStartX;
+    let diffY = e.touches[0].clientY - (swipeStartY || 0);
+
+    // Se mover mais para cima/baixo do que para os lados, ignora o swipe
+    if (Math.abs(diffY) > Math.abs(diffX)) return;
+
+    // Trava o movimento horizontal da tela (o "samba")
+    if (e.cancelable) e.preventDefault(); 
+
+    // Seu código original abaixo:
+    let diff = diffX; 
+    if (diff > 100) diff = 100; 
+    if (diff < -180) diff = -180; 
     currentSwipeX = e.touches[0].clientX;
-    let diff = currentSwipeX - swipeStartX;
-    if (diff > 100) diff = 100; // Limite Fixar
-    if (diff < -180) diff = -180; // Limite Editar/Apagar
     e.currentTarget.style.transform = `translateX(${diff}px)`;
 }
 
