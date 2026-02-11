@@ -209,8 +209,8 @@ h1 { color: var(--accent-gold); margin: 0; font-size: 1.4rem; letter-spacing: 2p
 .deck-item {
     position: relative;
     overflow: visible; /* IMPORTANTE: Permite que a badge flutue sem ser cortada */
-    margin-top: 25px;   /* Espaço para a badge não bater no card de cima */
-    margin-bottom: 15px;
+    margin-top: 1px;   /* Espaço para a badge não bater no card de cima */
+    margin-bottom: 1px;
     border-radius: 18px;
     background: transparent; /* Removemos a cor daqui para não vazar */
     border: none;
@@ -220,7 +220,7 @@ h1 { color: var(--accent-gold); margin: 0; font-size: 1.4rem; letter-spacing: 2p
 .deck-content {
     background: #0a3d3a; /* Fundo sólido para esconder os botões atrás */
     border: 1px solid rgba(244, 233, 193, 0.3);
-    padding: 20px; 
+    padding: 25px; 
     border-radius: 18px;
     display: flex; 
     justify-content: space-between; 
