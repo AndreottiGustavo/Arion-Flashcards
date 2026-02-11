@@ -199,6 +199,14 @@ async function sincronizarComNuvem() {
                 renderizar();
                 console.log("Nuvem -> Local: Sincronizado com sucesso.");
             }
+            if (dados.meusVestibulares && Array.isArray(dados.meusVestibulares)) {
+                meusVestibulares = dados.meusVestibulares;
+                localStorage.setItem('meusVestibulares', JSON.stringify(meusVestibulares));
+            }
+            renderizar();
+            renderizarVestibulares(); 
+            
+            console.log("Nuvem -> Local: Baralhos e Vestibulares sincronizados.");
         } else {
             console.log("Nenhum dado encontrado na nuvem para este usuário.");
         }
@@ -1369,3 +1377,4 @@ function dispararImportacao() {
     };
     input.click();
 }
+
