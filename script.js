@@ -35,63 +35,63 @@ function inicializarApp() {
         setTimeout(inicializarApp, 50);
     }
 }
-inicializarApp();
+function inicializarApp() {
+    // 1. Verifica se o Firebase Auth está carregado
+    if (window.auth) {
+        window.auth.onAuthStateChanged((user) => {
+            const loginScreen = document.getElementById('login-forced-screen');
+            const splash = document.getElementById('splash-screen');
 
-// GESTÃO DE ACESSO (Firebase Auth)
-if (window.auth) {
-window.onAuthStateChanged(window.auth, (user) => {
-const loginScreen = document.getElementById('login-forced-screen');
-const splash = document.getElementById('splash-screen');
-
-if (user) {
-    // --- CENÁRIO: USUÁRIO JÁ LOGADO ---
-    usuarioLogado = user;
-    
-    sincronizarComNuvem().then(() => {
-        // Mantém o Splash por 1.5s para carregar visualmente o app
-        setTimeout(() => {
-            if(loginScreen) loginScreen.style.display = 'none';
-            if(splash) splash.style.display = 'none';
-            
-            mudarTela('deck-screen');
-            renderizar();
-        }, 1500); 
-    });
-} else {
-    // --- CENÁRIO: USUÁRIO DESLOGADO ---
-    // Esconde o splash na hora para mostrar o login Tinder
-    if(splash) splash.style.display = 'none';
-    
-    if(loginScreen) {
-        loginScreen.style.display = 'flex';
-        loginScreen.style.opacity = '1';
-        mudarTela('login-forced-screen'); // Garante que o Header suma
+            if (user) {
+                // --- CENÁRIO: USUÁRIO JÁ LOGADO ---
+                usuarioLogado = user;
+                console.log("Usuário detectado:", user.displayName);
+                
+                sincronizarComNuvem().then(() => {
+                    // Mantém o Splash por 1.5s para carregar visualmente o app
+                    setTimeout(() => {
+                        if(loginScreen) loginScreen.style.display = 'none';
+                        if(splash) splash.style.display = 'none';
+                        
+                        mudarTela('deck-screen');
+                        renderizar();
+                    }, 1500); 
+                });
+            } else {
+                // --- CENÁRIO: USUÁRIO DESLOGADO ---
+                if(splash) splash.style.display = 'none';
+                
+                if(loginScreen) {
+                    loginScreen.style.display = 'flex';
+                    loginScreen.style.opacity = '1';
+                    mudarTela('login-forced-screen');
+                }
+            }
+        });
+    } else {
+        // Caso o Firebase demore a carregar, tenta novamente em 50ms
+        setTimeout(inicializarApp, 50);
     }
 }
-});
-}
 
+// Chame a função para ela começar a rodar assim que o script carregar
+inicializarApp();
 
 async function loginComGoogle() {
     if (!window.auth) return alert("Erro: Firebase não carregado.");
-    
-    // Usando o Provider do modo Compat
     const provider = new firebase.auth.GoogleAuthProvider();
     
     try {
         const result = await window.auth.signInWithPopup(provider);
         usuarioLogado = result.user;
-
-        // Dispara a sincronização SEM o 'await' para entrar na hora
-        sincronizarComNuvem();
-
         console.log("Login OK para:", usuarioLogado.displayName);
+
+        // Aguarda os decks virem da nuvem antes de prosseguir
+        await sincronizarComNuvem();
 
         const loginScreen = document.getElementById('login-forced-screen');
         const splash = document.getElementById('splash-screen');
-        await sincronizarComNuvem();
 
-        // Remove os bloqueios de tela imediatamente
         if (loginScreen) loginScreen.style.display = 'none';
         if (splash) splash.style.display = 'none';
 
@@ -152,29 +152,27 @@ async function deslogar() {
 
 
 async function sincronizarComNuvem() {
-    if (!usuarioLogado || !window.db) return;
+    // Verifica se temos usuário e se o banco de dados (db) está pronto
+    if (!usuarioLogado || !window.db || !window.db.collection) return;
 
     try {
-        let docSnap;
+        const docRef = window.db.collection("usuarios").doc(usuarioLogado.uid);
+        const docSnap = await docRef.get();
 
-        if (window.getDoc && window.doc) {
-            const userRef = window.doc(window.db, "usuarios", usuarioLogado.uid);
-            docSnap = await window.getDoc(userRef);
-        } else if (window.db.collection) {
-            const docRef = window.db.collection("usuarios").doc(usuarioLogado.uid);
-            docSnap = await docRef.get();
-        }
-
-        if (docSnap && docSnap.exists) {
+        if (docSnap.exists) {
             const dadosNuvem = docSnap.data().baralhos;
-            if (dadosNuvem && JSON.stringify(dadosNuvem) !== JSON.stringify(baralhos)) {
+            
+            if (dadosNuvem && Array.isArray(dadosNuvem)) {
                 baralhos = dadosNuvem;
                 localStorage.setItem('arion_db_v4', JSON.stringify(baralhos));
                 renderizar();
+                console.log("Nuvem -> Local: Sincronizado com sucesso.");
             }
+        } else {
+            console.log("Nenhum dado encontrado na nuvem para este usuário.");
         }
     } catch (e) {
-        console.error("Erro ao sincronizar com a nuvem:", e);
+        console.error("Erro crítico na sincronização:", e);
     }
 }
 
@@ -245,31 +243,26 @@ function atualizarStreak() {
         function atualizarCorPadrao(cor) { corAtual = cor; document.getElementById('current-color').style.background = cor; }
         function aplicarCorPadrao() { document.execCommand('foreColor', false, corAtual); }
         function salvar() {
+            // 1. Salva no celular primeiro (sempre funciona)
             localStorage.setItem('arion_db_v4', JSON.stringify(baralhos));
             renderizar();
         
+            // 2. Se não estiver logado, para por aqui
             if (!usuarioLogado || !window.db) return;
         
             try {
-                if (window.setDoc && window.doc) {
-                    const userRef = window.doc(window.db, "usuarios", usuarioLogado.uid);
-                    window.setDoc(userRef, {
-                        baralhos: baralhos,
-                        ultimaAtualizacao: Date.now()
-                    }, { merge: true })
-                    .then(() => console.log("Nuvem atualizada"))
-                    .catch(e => console.error("Erro nuvem:", e));
-                } else if (window.db.collection) {
-                    const docRef = window.db.collection("usuarios").doc(usuarioLogado.uid);
-                    docRef.set({
-                        baralhos: baralhos,
-                        ultimaAtualizacao: Date.now()
-                    }, { merge: true })
-                    .then(() => console.log("Nuvem atualizada (compat)"))
-                    .catch(e => console.error("Erro nuvem (compat):", e));
-                }
+                // 3. Padrão Compat para salvar (Upload)
+                const docRef = window.db.collection("usuarios").doc(usuarioLogado.uid);
+                
+                docRef.set({
+                    baralhos: baralhos,
+                    ultimaAtualizacao: Date.now()
+                }, { merge: true })
+                .then(() => console.log("Nuvem atualizada com sucesso (Upload OK)"))
+                .catch(e => console.error("Erro ao enviar para nuvem:", e));
+                
             } catch (e) {
-                console.error("Erro ao salvar na nuvem:", e);
+                console.error("Erro na função salvar:", e);
             }
         }
         
