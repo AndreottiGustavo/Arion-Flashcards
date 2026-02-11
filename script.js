@@ -578,7 +578,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const estaFixado = b.fixado === true;
         
                 return `
-                    <div class="deck-item ${b.premium ? 'premium' : ''}" style="position: relative; margin-top: 25px; margin-bottom: 12px; background: transparent; border: none; padding: 0; min-height: auto; overflow: visible;">
+                    <div class="deck-item ${b.premium ? 'premium' : ''}" style="position: relative; margin-top: 10px; margin-bottom: 8px; background: transparent; border: none; padding: 0; min-height: auto; overflow: visible;">
                         
                         <div class="deck-actions" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: space-between; align-items: center; border-radius: 18px; overflow: hidden; z-index: 1;">
                             <div onclick="alternarFixar(${i})" style="background: ${estaFixado ? '#8e8e93' : '#007aff'}; width: 80px; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 0.65rem;">
@@ -597,7 +597,7 @@ document.addEventListener('DOMContentLoaded', () => {
                              ontouchstart="handleSwipeStart(event)" 
                              ontouchmove="handleSwipeMove(event)" 
                              ontouchend="handleSwipeEnd(event)"
-                             style="padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; width: 100%; position: relative; z-index: 2; transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94); background: var(--primary-green); border-radius: 18px; box-sizing: border-box; ${b.premium ? 'border: 2px solid var(--premium-gold);' : 'border: 1px solid rgba(244, 233, 193, 0.3);'}">
+                             style="padding: 22px 15px; display: flex; justify-content: space-between; align-items: center; width: 100%; position: relative; z-index: 2; transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94); background: var(--primary-green); border-radius: 18px; box-sizing: border-box; ${b.premium ? 'border: 2px solid var(--premium-gold);' : 'border: 1px solid rgba(244, 233, 193, 0.3);'}">
                             
                             <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                                 <strong style="${b.premium ? 'color:var(--premium-gold)' : 'color: white;'}">
@@ -613,10 +613,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>`;
             }).join('');
         
-            // Injeta o HTML no container
             const container = document.getElementById('deck-list');
             if (container) {
-                // GERAL: Padding-right de 45px para compensar a falta do botão ⋮ e alinhar os números
                 const btnEstudarTudo = `
                     <div class="deck-item study-all" onclick="estudarTudo()" style="background: linear-gradient(315deg,rgb(68, 131, 61),rgb(90, 138, 85)); color: white; margin-bottom: 20px; border: none; cursor: pointer; padding: 25px 45px 25px 15px;border-radius: 18px; overflow: hidden;">
                         <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
