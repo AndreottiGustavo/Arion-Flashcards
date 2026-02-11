@@ -89,6 +89,7 @@ async function loginComGoogle() {
 
         const loginScreen = document.getElementById('login-forced-screen');
         const splash = document.getElementById('splash-screen');
+        await sincronizarComNuvem();
 
         // Remove os bloqueios de tela imediatamente
         if (loginScreen) loginScreen.style.display = 'none';
@@ -146,28 +147,40 @@ async function deslogar() {
     }
 }
 
+
+// =============== backup nuvem ===================
+
+
 async function sincronizarComNuvem() {
     if (!usuarioLogado || !window.db) return;
-    try {
-        // Sintaxe 100% Compat
-        const docRef = window.db.collection("usuarios").doc(usuarioLogado.uid);
-        const docSnap = await docRef.get();
 
-        if (docSnap.exists) {
+    try {
+        let docSnap;
+
+        if (window.getDoc && window.doc) {
+            const userRef = window.doc(window.db, "usuarios", usuarioLogado.uid);
+            docSnap = await window.getDoc(userRef);
+        } else if (window.db.collection) {
+            const docRef = window.db.collection("usuarios").doc(usuarioLogado.uid);
+            docSnap = await docRef.get();
+        }
+
+        if (docSnap && docSnap.exists) {
             const dadosNuvem = docSnap.data().baralhos;
             if (dadosNuvem && JSON.stringify(dadosNuvem) !== JSON.stringify(baralhos)) {
                 baralhos = dadosNuvem;
                 localStorage.setItem('arion_db_v4', JSON.stringify(baralhos));
-                // Renderiza novamente para mostrar os dados que acabaram de chegar da nuvem
                 renderizar();
             }
         }
-    } catch (e) { 
-        console.log("Erro ao baixar dados:", e); 
+    } catch (e) {
+        console.error("Erro ao sincronizar com a nuvem:", e);
     }
 }
 
-window.onload = () => {
+window.addEventListener('DOMContentLoaded', () => {
+    sincronizarComNuvem();
+
     document.addEventListener('selectionchange', () => {
         if(document.getElementById('create-screen').classList.contains('active')){
             const isSup = document.queryCommandState('superscript');
@@ -178,7 +191,9 @@ window.onload = () => {
             if(btnSub) btnSub.classList.toggle('active-tool', isSub);
         }
     });
-};
+});
+
+
 
 
 // =============================== atualizar streak ===========================================
@@ -232,16 +247,32 @@ function atualizarStreak() {
         function salvar() {
             localStorage.setItem('arion_db_v4', JSON.stringify(baralhos));
             renderizar();
-            if (usuarioLogado && window.db && window.setDoc) {
-                const userRef = window.doc(window.db, "usuarios", usuarioLogado.uid);
-                window.setDoc(userRef, {
-                    baralhos: baralhos,
-                    ultimaAtualizacao: Date.now()
-                }, { merge: true })
-                .then(() => console.log("Nuvem atualizada"))
-                .catch(e => console.error("Erro nuvem:", e));
+        
+            if (!usuarioLogado || !window.db) return;
+        
+            try {
+                if (window.setDoc && window.doc) {
+                    const userRef = window.doc(window.db, "usuarios", usuarioLogado.uid);
+                    window.setDoc(userRef, {
+                        baralhos: baralhos,
+                        ultimaAtualizacao: Date.now()
+                    }, { merge: true })
+                    .then(() => console.log("Nuvem atualizada"))
+                    .catch(e => console.error("Erro nuvem:", e));
+                } else if (window.db.collection) {
+                    const docRef = window.db.collection("usuarios").doc(usuarioLogado.uid);
+                    docRef.set({
+                        baralhos: baralhos,
+                        ultimaAtualizacao: Date.now()
+                    }, { merge: true })
+                    .then(() => console.log("Nuvem atualizada (compat)"))
+                    .catch(e => console.error("Erro nuvem (compat):", e));
+                }
+            } catch (e) {
+                console.error("Erro ao salvar na nuvem:", e);
             }
         }
+        
         
         
         function mudarTela(id) {
