@@ -191,23 +191,14 @@ async function sincronizarComNuvem() {
         const docSnap = await docRef.get();
 
         if (docSnap.exists) {
-            const dados = docSnap.data();
+            const dadosNuvem = docSnap.data().baralhos;
             
-            // 1. Sincroniza os Baralhos
-            if (dados.baralhos && Array.isArray(dados.baralhos)) {
-                baralhos = dados.baralhos;
+            if (dadosNuvem && Array.isArray(dadosNuvem)) {
+                baralhos = dadosNuvem;
                 localStorage.setItem('arion_db_v4', JSON.stringify(baralhos));
+                renderizar();
+                console.log("Nuvem -> Local: Sincronizado com sucesso.");
             }
-
-            // 2. Sincroniza os Meus Vestibulares (O que estava faltando)
-            if (dados.meusVestibulares && Array.isArray(dados.meusVestibulares)) {
-                meusVestibulares = dados.meusVestibulares;
-                localStorage.setItem('meusVestibulares', JSON.stringify(meusVestibulares));
-            }
-            
-            console.log("Nuvem -> Local: Tudo sincronizado (Baralhos e Vestibulares).");
-            renderizar();
-            
         } else {
             console.log("Nenhum dado encontrado na nuvem para este usuário.");
         }
@@ -215,7 +206,6 @@ async function sincronizarComNuvem() {
         console.error("Erro crítico na sincronização:", e);
     }
 }
-
 
 window.addEventListener('DOMContentLoaded', () => {
     sincronizarComNuvem();
@@ -297,7 +287,6 @@ function atualizarStreak() {
                 
                 docRef.set({
                     baralhos: baralhos,
-                    meusVestibulares: meusVestibulares,
                     ultimaAtualizacao: Date.now()
                 }, { merge: true })
                 .then(() => console.log("Nuvem atualizada com sucesso (Upload OK)"))
