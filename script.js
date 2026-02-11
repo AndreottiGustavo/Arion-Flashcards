@@ -74,16 +74,35 @@ if (user) {
 
 async function loginComGoogle() {
     if (!window.auth) return alert("Erro: Firebase não carregado.");
-    const provider = new window.GoogleAuthProvider();
+    
+    // Usando o Provider do modo Compat
+    const provider = new firebase.auth.GoogleAuthProvider();
+    
     try {
-        const result = await window.signInWithPopup(window.auth, provider);
+        const result = await window.auth.signInWithPopup(provider);
         usuarioLogado = result.user;
-        await sincronizarComNuvem();
-        alert(`Sincronizado como: ${usuarioLogado.displayName}`);
+
+        // Dispara a sincronização SEM o 'await' para entrar na hora
+        sincronizarComNuvem();
+
+        console.log("Login OK para:", usuarioLogado.displayName);
+
+        const loginScreen = document.getElementById('login-forced-screen');
+        const splash = document.getElementById('splash-screen');
+
+        // Remove os bloqueios de tela imediatamente
+        if (loginScreen) loginScreen.style.display = 'none';
+        if (splash) splash.style.display = 'none';
+
+        mudarTela('deck-screen');
+        renderizar();
+
     } catch (error) {
         console.error("Erro no login:", error);
     }
 }
+
+
 async function loginComApple() {
     if (!window.auth) return alert("Erro: Firebase não carregado.");
     
@@ -108,25 +127,45 @@ async function loginComApple() {
     }
 }
 
-async function sincronizarComNuvem() {
-    if (!usuarioLogado) return;
-    try {
-        const docRef = window.doc(window.db, "usuarios", usuarioLogado.uid);
-        const docSnap = await window.getDoc(docRef);
 
-        // CORREÇÃO AQUI ↓↓↓↓↓
+async function deslogar() {
+    try {
+        await window.auth.signOut();
+        
+        // Limpa o usuário atual
+        usuarioLogado = null;
+
+       
+
+        // Voltar para a tela de login
+        mudarTela("login-forced-screen");
+
+        console.log("Usuário deslogado.");
+    } catch (e) {
+        console.error("Erro ao deslogar:", e);
+    }
+}
+
+async function sincronizarComNuvem() {
+    if (!usuarioLogado || !window.db) return;
+    try {
+        // Sintaxe 100% Compat
+        const docRef = window.db.collection("usuarios").doc(usuarioLogado.uid);
+        const docSnap = await docRef.get();
+
         if (docSnap.exists) {
             const dadosNuvem = docSnap.data().baralhos;
             if (dadosNuvem && JSON.stringify(dadosNuvem) !== JSON.stringify(baralhos)) {
                 baralhos = dadosNuvem;
                 localStorage.setItem('arion_db_v4', JSON.stringify(baralhos));
+                // Renderiza novamente para mostrar os dados que acabaram de chegar da nuvem
                 renderizar();
             }
         }
     } catch (e) { 
         console.log("Erro ao baixar dados:", e); 
     }
-}   
+}
 
 window.onload = () => {
     document.addEventListener('selectionchange', () => {
@@ -193,8 +232,6 @@ function atualizarStreak() {
         function salvar() {
             localStorage.setItem('arion_db_v4', JSON.stringify(baralhos));
             renderizar();
-        
-            // Sincronização com Firebase
             if (usuarioLogado && window.db && window.setDoc) {
                 const userRef = window.doc(window.db, "usuarios", usuarioLogado.uid);
                 window.setDoc(userRef, {
@@ -794,6 +831,7 @@ function atualizarStreak() {
                     particleCount: 180, // Quantidade de confetes
                     spread: 70,         // Ângulo da explosão
                     origin: { y: 0.6 }, // Altura de onde saem (0.6 é perto do troféu)
+                    zIndex: 999,
                     colors: ['#f4e9c1', '#FFD700', '#5bc0de', '#ff7eb9', 'ff0000', '#ffffff', '#22c55e'] // Cores do Árion
                 });
             }
