@@ -277,6 +277,9 @@ function atualizarStreak() {
         function salvar() {
             // 1. Salva no celular primeiro (sempre funciona)
             localStorage.setItem('arion_db_v4', JSON.stringify(baralhos));
+            localStorage.setItem('meusVestibulares', JSON.stringify(meusVestibulares));
+    
+    const streakAtual = JSON.parse(localStorage.getItem('arion_streak_data')) || { contagem: 0, ultimaData: null };
             renderizar();
         
             // 2. Se não estiver logado, para por aqui
