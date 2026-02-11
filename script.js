@@ -199,14 +199,6 @@ async function sincronizarComNuvem() {
                 renderizar();
                 console.log("Nuvem -> Local: Sincronizado com sucesso.");
             }
-            if (dados.meusVestibulares && Array.isArray(dados.meusVestibulares)) {
-                meusVestibulares = dados.meusVestibulares;
-                localStorage.setItem('meusVestibulares', JSON.stringify(meusVestibulares));
-            }
-            renderizar();
-            renderizarVestibulares(); 
-            
-            console.log("Nuvem -> Local: Baralhos e Vestibulares sincronizados.");
         } else {
             console.log("Nenhum dado encontrado na nuvem para este usuário.");
         }
@@ -267,6 +259,7 @@ function atualizarStreak() {
     }
 
     localStorage.setItem('arion_streak_data', JSON.stringify(dadosStreak));
+    salvar();
     
     const display = document.getElementById('streak-display');
     if (display) {
@@ -296,6 +289,7 @@ function atualizarStreak() {
                 docRef.set({
                     baralhos: baralhos,
                     ultimaAtualizacao: Date.now(),
+                    dadosStreak: streakAtual,
                     meusVestibulares: meusVestibulares,
                 }, { merge: true })
                 .then(() => console.log("Nuvem atualizada com sucesso (Upload OK)"))
@@ -1377,4 +1371,3 @@ function dispararImportacao() {
     };
     input.click();
 }
-
