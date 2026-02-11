@@ -590,26 +590,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 const estaFixado = b.fixado === true;
             
                 return `
-                    <div class="deck-item ${b.premium ? 'premium' : ''}" style="padding: 0; min-height: auto; position: relative; margin-top: 12px;">
+                    <div class="deck-item ${b.premium ? 'premium' : ''}" style="position: relative; margin-top: 25px; margin-bottom: 12px; background: transparent; border: none; padding: 0; min-height: auto; overflow: visible;">
                         
-                        <div class="deck-actions" style="position: absolute; width: 100%; height: 100%; display: flex; justify-content: space-between; align-items: center; border-radius: 18px; overflow: hidden;">
-                            <div class="action-btn ${estaFixado ? 'btn-unpin' : 'btn-pin'}" onclick="alternarFixar(${i})">
+                        <div class="deck-actions" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: space-between; align-items: center; border-radius: 18px; overflow: hidden; z-index: 1;">
+                            <div onclick="alternarFixar(${i})" style="background: ${estaFixado ? '#8e8e93' : '#007aff'}; width: 80px; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 0.65rem;">
                                 ${estaFixado ? 'DESAFIXAR' : 'FIXAR'}
                             </div>
                             <div style="display:flex; height: 100%;">
-                                <div class="action-btn btn-rename" onclick="prepararRenomear(${i})">Renomear</div>
-                                <div class="action-btn btn-delete" onclick="prepararExclusao(${i})">Excluir</div>
+                                <div onclick="prepararRenomear(${i})" style="background: #ff9500; width: 75px; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 0.65rem;">EDITAR</div>
+                                <div onclick="prepararExclusao(${i})" style="background: #ff3b30; width: 75px; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 0.65rem;">APAGAR</div>
                             </div>
                         </div>
             
-                        ${b.premium ? '<div class="premium-badge">PREMIUM</div>' : ''}
-                        
+                        ${b.premium ? '<div class="premium-badge" style="position: absolute; top: -10px; left: 15px; z-index: 10;">PREMIUM</div>' : ''}
+            
                         <div class="deck-content" 
                              onclick="abrirDetalhes(${i})"
                              ontouchstart="handleSwipeStart(event)" 
                              ontouchmove="handleSwipeMove(event)" 
                              ontouchend="handleSwipeEnd(event)"
-                             style="padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; width: 100%; position: relative; z-index: 2; transition: transform 0.3s ease; background: var(--primary-green); border-radius: 18px; ${b.premium ? 'border: none;' : 'border: 1px solid rgba(244, 233, 193, 0.3);'}">
+                             style="padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; width: 100%; position: relative; z-index: 2; transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94); background: var(--primary-green); border-radius: 18px; box-sizing: border-box; ${b.premium ? 'border: 2px solid var(--premium-gold);' : 'border: 1px solid rgba(244, 233, 193, 0.3);'}">
                             
                             <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                                 <strong style="${b.premium ? 'color:var(--premium-gold)' : 'color: white;'}">
@@ -623,10 +623,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             </div>
                         </div>
                     </div>`;
-            }).join('');
-            
-            document.getElementById('deck-list').innerHTML = btnEstudarTudo + listaHtml;
-        }
+            }).join('');}
 
         function toggleMenu(i) {
             const menus = document.querySelectorAll('.options-menu');
@@ -1393,7 +1390,24 @@ function fixarDeck(i) {
     renderizar();
 }
 
+// Fecha o swipe se o usuário rolar a tela
+document.addEventListener('scroll', fecharTodosSwipes, true);
 
+// Caso use um container com scroll específico (como o deck-list)
+const deckListElement = document.getElementById('deck-list');
+if (deckListElement) {
+    deckListElement.addEventListener('scroll', fecharTodosSwipes);
+}
+
+function fecharTodosSwipes() {
+    const todosCards = document.querySelectorAll('.deck-content');
+    todosCards.forEach(card => {
+        if (card.style.transform !== 'translateX(0px)' && card.style.transform !== '') {
+            card.style.transition = 'transform 0.3s ease';
+            card.style.transform = 'translateX(0px)';
+        }
+    });
+}
 
 
 
