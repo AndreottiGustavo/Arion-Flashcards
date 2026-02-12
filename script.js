@@ -1202,62 +1202,71 @@ function removerVestibular(index) {
 // ==========================================
 
 
-///=============== FUNÇÃO SWIPE DOS CARTÕES===============
-            
-        (function(){
-            const cardBox = document.querySelector('.card-box');
-            let startX = 0, startY = 0, isSwiping = false;
+///=============== FUNÇÃO SWIPE DOS CARTÕES (CORRIGIDA) ===============
+(function(){
+    const cardBox = document.querySelector('.card-box');
+    let startX = 0, startY = 0, isSwiping = false;
 
-            cardBox.addEventListener('touchstart', e => {
-                if (!respondido) { isSwiping = false; return; }
-                isSwiping = true;
-                startX = e.touches[0].clientX; startY = e.touches[0].clientY;
-                cardBox.style.transition = 'none';
-            }, {passive: true});
+    cardBox.addEventListener('touchstart', e => {
+        // Importante: usamos window.respondido para garantir que o valor atualizado é lido
+        if (!window.respondido) { 
+            isSwiping = false; 
+            return; 
+        }
+        isSwiping = true;
+        startX = e.touches[0].clientX; 
+        startY = e.touches[0].clientY;
+        cardBox.style.transition = 'none';
+    }, {passive: true});
 
-cardBox.addEventListener('touchmove', e => {
-                if (!isSwiping || !respondido) return;
-                const dx = e.touches[0].clientX - startX;
-                const dy = e.touches[0].clientY - startY;
-                if (Math.abs(dx) > 10 && e.cancelable) e.preventDefault();
-                if (e.cancelable) e.preventDefault();
-                cardBox.style.transform = `translate(${dx}px, ${dy}px) rotate(${dx * 0.05}deg)`;
-                
-                if (dx > 50) { 
-                    cardBox.style.border = '3px solid #5cb85c';
-                    cardBox.style.boxShadow = '0 10px 30px rgba(92, 184, 92, 0.4)'; // Sombra Verde
-                }
-                else if (dx < -50) { 
-                    cardBox.style.border = '3px solid #d9534f';
-                    cardBox.style.boxShadow = '0 10px 30px rgba(217, 83, 79, 0.4)'; // Sombra Vermelha
-                }
-                else {
-                    cardBox.style.border = 'none';
-                    cardBox.style.boxShadow = '0 10px 25px rgba(0,0,0,0.15)'; // Volta ao normal
-                }
-            }, {passive: false});
+    cardBox.addEventListener('touchmove', e => {
+        if (!isSwiping || !window.respondido) return;
+        
+        const dx = e.touches[0].clientX - startX;
+        const dy = e.touches[0].clientY - startY;
+        
+        // Impede o "samba" da página durante o swipe do card
+        if (Math.abs(dx) > 10 && e.cancelable) e.preventDefault();
+        
+        cardBox.style.transform = `translate(${dx}px, ${dy}px) rotate(${dx * 0.05}deg)`;
+        
+        if (dx > 50) { 
+            cardBox.style.border = '3px solid #5cb85c';
+            cardBox.style.boxShadow = '0 10px 30px rgba(92, 184, 92, 0.4)';
+        } else if (dx < -50) { 
+            cardBox.style.border = '3px solid #d9534f';
+            cardBox.style.boxShadow = '0 10px 30px rgba(217, 83, 79, 0.4)';
+        } else {
+            cardBox.style.border = 'none';
+            cardBox.style.boxShadow = '0 10px 25px rgba(0,0,0,0.15)';
+        }
+    }, {passive: false});
 
-            cardBox.addEventListener('touchend', e => {
-                if (!isSwiping) return;
-                isSwiping = false;
-                const dx = e.changedTouches[0].clientX - startX;
-                if (dx > 100) {
-                    cardBox.style.transition = 'transform 0.4s ease-out';
-                    cardBox.style.transform = `translate(1000px, 0) rotate(30deg)`;
-                    setTimeout(() => responder(2), 200);
-                } else if (dx < -100) {
-                    cardBox.style.transition = 'transform 0.4s ease-out';
-                    cardBox.style.transform = `translate(-1000px, 0) rotate(-30deg)`;
-                    setTimeout(() => responder(0), 200);
-                } else {
-                    cardBox.style.transition = 'transform 0.3s ease';
-                    cardBox.style.transform = 'translate(0,0) rotate(0)';
-                    cardBox.style.border = 'none';
-                    cardBox.style.boxShadow = '0 10px 25px rgba(0,0,0,0.15)';
-                }
-            });
-        })();
+    cardBox.addEventListener('touchend', e => {
+        if (!isSwiping) return;
+        isSwiping = false;
+        const dx = e.changedTouches[0].clientX - startX;
 
+        if (dx > 100) {
+            cardBox.style.transition = 'transform 0.4s ease-out';
+            cardBox.style.transform = `translate(1000px, 0) rotate(30deg)`;
+            setTimeout(() => {
+                if (typeof responder === 'function') responder(2); // BOM
+            }, 150);
+        } else if (dx < -100) {
+            cardBox.style.transition = 'transform 0.4s ease-out';
+            cardBox.style.transform = `translate(-1000px, 0) rotate(-30deg)`;
+            setTimeout(() => {
+                if (typeof responder === 'function') responder(0); // DE NOVO
+            }, 150);
+        } else {
+            cardBox.style.transition = 'transform 0.3s ease';
+            cardBox.style.transform = 'translate(0,0) rotate(0)';
+            cardBox.style.border = 'none';
+            cardBox.style.boxShadow = '0 10px 25px rgba(0,0,0,0.15)';
+        }
+    });
+})();
 
 
 
