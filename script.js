@@ -1219,6 +1219,7 @@ cardBox.addEventListener('touchmove', e => {
                 if (!isSwiping || !respondido) return;
                 const dx = e.touches[0].clientX - startX;
                 const dy = e.touches[0].clientY - startY;
+                if (Math.abs(dx) > 10 && e.cancelable) e.preventDefault();
                 if (e.cancelable) e.preventDefault();
                 cardBox.style.transform = `translate(${dx}px, ${dy}px) rotate(${dx * 0.05}deg)`;
                 
@@ -1486,6 +1487,7 @@ function handleSwipeStart(e) {
 }
 
 function handleSwipeMove(e) {
+    if (document.getElementById('study-screen').classList.contains('active')) return;
     let diffX = e.touches[0].clientX - swipeStartX;
     let diffY = e.touches[0].clientY - (swipeStartY || 0);
 
