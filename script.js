@@ -1,9 +1,161 @@
 // ========== CONFIGURAÇÕES DADOS (localStorage)==========
-let meusVestibulares = JSON.parse(localStorage.getItem('meusVestibulares')) || []; // ADICIONE ESTA LINHA
+let meusVestibulares = JSON.parse(localStorage.getItem('meusVestibulares')) || [];
+let baralhos = []; // ADICIONE ESTA LINHA
 let dIdx = 0, fila = [], respondido = false;
 let corAtual = "#ff0000";
 let onboardingFeito = localStorage.getItem('arion_onboarding') === 'true';
 let usuarioLogado = null;
+
+// FUNÇÃO PARA INJETAR TUTORIAL (Chame isso logo após carregar os dados do Firebase ou LocalStorage)
+function verificarTutorial() {
+    const tutorialInjetado = localStorage.getItem('arion_tutorial_v1');
+    if (!tutorialInjetado) {
+        const deckTutorial = {
+            nome: "🚀 Tutorial Rápido – Aprenda usar o Árion em 1min!",
+            premium: false,
+            isTutorial: true,
+            corEspecial: '#007aff',
+            cards: [
+
+                { f: `Como funciona um <b>flashcard</b>?`, 
+
+                  v: `Você lê a pergunta, tenta lembrar a resposta, vira a carta e escolhe se foi <i>fácil</i>, <i>médio </i> ou <i>difícil</i>.`,rev: 0, int: 0, ease: 2.5, liberado:true, state: 'new', step: 0, skipSRS: true
+
+                },
+
+        
+
+                { 
+
+                  f: `Para que serve cada botão de resposta?`, 
+
+                  v: `<div>Para dizer ao Árion <strong>como foi o seu esforço para lembrar</strong> — e assim ele escolhe quando te mostrar esse card de novo.</div>
+
+                    <ul>
+
+                    <li><span style="color: rgb(217, 83, 79);"><strong>De novo</strong></span> → Você errou. O card volta imediatamente.</li>
+
+                    <li><span style="color: rgb(240, 173, 78);"><strong>Difícil</strong></span> → Você acertou, mas com esforço. O card volta em pouco tempo.</li>
+
+                    <li><span style="color: rgb(92, 184, 92);"><strong>Bom</strong> </span>→ Você lembrou sem travar. Ele volta mais tarde.</li>
+
+                    <li><span style="color: rgb(91, 192, 222);"><strong>Fácil</strong> </span>→ Foi óbvio. Ele só vai reaparecer depois de bastante tempo.</li>
+
+                    </ul>`,rev: 0, int: 0, ease: 2.5, state: 'new', liberado:true, step: 0, skipSRS: true
+
+                },
+
+        
+
+                { 
+
+                  f: `👉 <strong>Sabia que também dá pra responder com Swipe?</strong>`, 
+
+                  v: `<div>No Árion, você pode responder ao <strong>arrastar o card para o lado.</strong></div>
+
+                    <div>⬅️ <strong>Esquerda?</strong> Marcar como "De novo"
+
+                    <li>➡️ <strong>Direita?</strong> Marcar como "Bom".</li></div>`,
+
+                    rev: 0, int: 0, ease: 2.5, state: 'new', step: 0,liberado:true, skipSRS: true
+
+                },
+
+        
+
+                { 
+
+                  f: `💡 <strong>O que é um bom flashcard?</strong>`, 
+
+                  v: `Aquele que tem <strong>resposta curta</strong>, <strong>direta</strong> e <strong>sem muita explicação</strong>. Ele testa <strong>uma informação por vez</strong>. ✔ Fácil de revisar e lembrar. Mais efetivo para aprender.`,
+
+                  rev: 0, int: 0, ease: 2.5, state: 'new', step: 0,liberado:true, skipSRS: true
+
+                },
+
+        
+
+                { 
+
+                  f: `🧬 <strong>Exemplo de um bom flashcard:</strong><br><em>Qual organela é responsável pela síntese de proteínas?</em>`, 
+
+                  v: `<div><strong>Ribossomo.</strong></div><sub>✔ Resposta curta e direta. Fácil de revisar</sub>`,
+
+                  rev: 0, int: 0, ease: 2.5, state: 'new', step: 0,liberado:true, skipSRS: true
+
+                },
+
+        
+
+                { 
+
+                  f: `⚠️ <strong>Exemplo de um flashcard ruim:</strong><br><em>Quais são todas as organelas envolvidas no processo de síntese, dobra, modificação e transporte de proteínas?</em>`, 
+
+                  v: `<strong>(Resposta enorme e confusa):</strong><br>“Os ribossomos sintetizam proteínas, mas o retículo endoplasmático rugoso faz a dobra inicial...” ❌ Resposta longa com muitos conceitos misturados.`,
+
+                  rev: 0, int: 0, ease: 2.5, state: 'new', step: 0,liberado:true, skipSRS: true
+
+                },
+
+        
+
+                { 
+
+                  f: `Por que devo responder com sinceridade?`, 
+
+                  v: `Porque a revisão funciona melhor quando você diz a <b>verdade </b>sobre sua dificuldade. Quanto <b>mais sincero</b>, mais o <b>Árion acerta</b> o seu tempo de estudo.`,
+
+                  rev: 0, int: 0, ease: 2.5, state: 'new', step: 0,liberado:true, skipSRS: true
+
+                },
+
+        
+
+                { 
+
+                  f: `Por que a <b>revisão espaçada</b> do Árion é tão poderosa?`, 
+
+                  v: `O Árion identifica quando você está quase esquecendo e traz o card de volta nesse momento exato. Ciência + prática usada para passar em medicina na UFSC.<b>Mas atenção:</b> para funcionar, você deve revisar <b>todos os dias!</b>`,
+
+                  rev: 0, int: 0, ease: 2.5, state: 'new', step: 0,liberado:true, skipSRS: true
+
+                },
+
+        
+
+                { 
+
+                  f: `🚀 <strong>O seu único trabalho?</strong>`, 
+
+                  v: `<div><strong>Responder com sinceridade e Constância.</strong></div><div>Esqueça a parte chata de programar revisões manualmente. O Árion cuida de <strong>todo o cronograma</strong> para você focar apenas no que importa: aprender.</div>`,
+
+                  rev: 0, int: 0, ease: 2.5, state: 'new', step: 0,liberado:true, skipSRS: true
+
+                },
+
+        
+
+                { 
+
+                  f: `🎯 <strong>Pronto para começar?</strong>`, 
+
+                  v: `O tutorial acabou! Agora, crie seus próprios cards ou explore nossos <b>Decks Premium</b>. Lembre-se: Sinceridade na resposta e constância diária. <br><br><b>Bons estudos!</b>`,
+
+                  rev: 0, int: 0, ease: 2.5, state: 'new', step: 0,liberado:true, skipSRS: true
+
+                }
+
+            ]
+        };
+        
+        if (!Array.isArray(baralhos)) baralhos = [];
+        
+        // Unshift coloca no topo da lista
+        baralhos.unshift(deckTutorial);
+        localStorage.setItem('arion_tutorial_v1', 'true');
+        salvar(); // Salva no LocalStorage e Firebase
+    }
+}
 
 function inicializarApp() {
     if (window.auth) {
@@ -14,6 +166,7 @@ function inicializarApp() {
             if (user) {
                 usuarioLogado = user;
                 sincronizarComNuvem().then(() => {
+                    verificarTutorial();
                     setTimeout(() => {
                         if(loginScreen) loginScreen.style.display = 'none';
                         if(splash) splash.style.display = 'none';
@@ -48,6 +201,7 @@ function inicializarApp() {
                 console.log("Usuário detectado:", user.displayName);
                 
                 sincronizarComNuvem().then(() => {
+                    verificarTutorial();
                     // Mantém o Splash por 1.5s para carregar visualmente o app
                     setTimeout(() => {
                         if(loginScreen) loginScreen.style.display = 'none';
@@ -177,6 +331,11 @@ async function deslogar() {
         console.error("Erro ao deslogar:", e);
     }
 }
+
+
+
+
+
 
 
 // =============== backup nuvem ===================
@@ -769,7 +928,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- Virar cartão (verso + textos De novo / Difícil / Bom / Fácil)
         function virarCard() {
             if(respondido) return;
-            respondido = true;
+            
             const c = fila[0];
             document.getElementById('btn-show-answer').style.display = 'none';
             document.getElementById('display-back').innerHTML = c.v;
@@ -808,8 +967,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // --- Responder (De novo / Difícil / Bom / Fácil — atualiza rev, int, ease, state)
         function responder(q) {
-
-           let c = fila.shift();
+            // 1. Só age se não respondeu ainda e se tem card na fila
+            if (respondido || fila.length === 0) return;
+        
+            // 2. APENAS OLHA o card (não remove ainda)
+            let c = fila[0]; 
+            if (!c) return;
+        
+            if (c.skipSRS) {
+                respondido = true;
+            
+                // Remove o card do tutorial da fila
+                fila.shift();
+            
+                setTimeout(() => {
+                    if (fila.length > 0) {
+                        carregarCard();      // Mostra o próximo card
+                        respondido = false;  // Destrava botões
+                    } else {
+                        mostrarParabens();   // Finaliza tutorial
+                    }
+                }, 150);
+            
+                return;
+            }
+            
+        
+        
+            // ======== LÓGICA ANKI NORMAL (Para os outros baralhos) ========
+            respondido = true; 
+            fila.shift();
+           
 
     // ======== CONSTANTES E FUNÇÕES AUXILIARES ========
     const agora = Date.now();
@@ -826,6 +1014,16 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!c.state) c.state = 'new';
 
     // ======== FUNÇÕES DE ESTADO ========
+
+    function proximo() {
+        respondido = false; // Importante para destravar os botões!
+        
+        if (fila.length === 0) {
+            finalizar(); // Chama a tela de parabéns
+        } else {
+            renderizarCard(); // Mostra o próximo card
+        }
+    }
 
     function processarNewOuLearning(c, q) {
         const steps = (c.prevInt != null) ? lapses : ls; // relearning usa lapseSteps
@@ -876,6 +1074,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return finalizar();
         }
     }
+    
 
     function processarReview(c, q) {
         // AGAIN → Lapse: ease -0.2, relearning; ao sair usa newInterval
