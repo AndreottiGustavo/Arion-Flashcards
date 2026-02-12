@@ -303,13 +303,25 @@
     appId: "1:145015637575:web:86f467e62f8b6531195362"
   };
 
-  // Inicializa e expõe para o window
+
   firebase.initializeApp(firebaseConfig);
-  
-  window.auth = firebase.auth();
-  window.db = firebase.firestore();
-  window.GoogleAuthProvider = firebase.auth.GoogleAuthProvider;
-  window.OAuthProvider = firebase.auth.OAuthProvider;
+firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+  .then(() => {
+      console.log("Persistência LOCAL ativada");
+      inicializarApp(); // só inicia depois da persistência
+  })
+  .catch((error) => {
+      console.error("Erro ao definir persistência:", error);
+      inicializarApp();
+  });
+
+window.auth = firebase.auth();
+window.db = firebase.firestore();
+window.GoogleAuthProvider = firebase.auth.GoogleAuthProvider;
+window.OAuthProvider = firebase.auth.OAuthProvider;
+
+
+
   
   // Atalhos para o seu script.js não dar erro
   window.signInWithPopup = (auth, provider) => auth.signInWithPopup(provider);
