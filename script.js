@@ -878,6 +878,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('t2').innerText = Math.max(1, Math.round(int * ease)) + "d";
                 document.getElementById('t3').innerText = Math.max(1, Math.round(int * ease * ANKI.easyBonus)) + "d";
             }
+            respondido = true;
         }
 
 
@@ -1635,3 +1636,4 @@ function dispararImportacao() {
     };
     input.click();
 }
+
