@@ -1488,9 +1488,11 @@ function resetSwipe(el) {
 //=======================================================
 
 let swipeStartX = 0;
+let swipeStartY = 0;
 let currentSwipeX = 0;
 
 function handleSwipeStart(e) {
+    if (document.getElementById('screen-estudo').classList.contains('active')) return;
     swipeStartX = e.touches[0].clientX;
     swipeStartY = e.touches[0].clientY;
     e.currentTarget.style.transition = 'none';
@@ -1498,6 +1500,7 @@ function handleSwipeStart(e) {
 
 function handleSwipeMove(e) {
     if (document.getElementById('study-screen').classList.contains('active')) return;
+    if (document.getElementById('screen-estudo').classList.contains('active')) return;
     let diffX = e.touches[0].clientX - swipeStartX;
     let diffY = e.touches[0].clientY - (swipeStartY || 0);
 
@@ -1516,6 +1519,7 @@ function handleSwipeMove(e) {
 }
 
 function handleSwipeEnd(e) {
+    if (document.getElementById('screen-estudo').classList.contains('active')) return;
     const el = e.currentTarget;
     el.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
     const finalDiff = currentSwipeX - swipeStartX;
@@ -1636,4 +1640,5 @@ function dispararImportacao() {
     };
     input.click();
 }
+
 
