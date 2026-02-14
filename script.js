@@ -1546,6 +1546,7 @@ document.addEventListener('touchmove', e => {
 }, {passive: true});
 
 document.addEventListener('touchend', e => {
+    if (telaAtiva !== 'estudo' || !cardVirado) return;
     if (!currentSwipeEl || touchStartX > 80) return;
 
     touchEndX = e.changedTouches[0].screenX;
@@ -1771,3 +1772,4 @@ function dispararImportacao() {
     };
     input.click();
 }
+
