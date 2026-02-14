@@ -753,9 +753,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
                         <div class="deck-content" 
                              onclick="abrirDetalhes(${i})"
-                             ontouchstart="handleSwipeStart(event)" 
-                             ontouchmove="handleSwipeMove(event)" 
-                             ontouchend="handleSwipeEnd(event)"
+                             data-deck-index="${i}"
                              style="padding: 22px 15px; display: flex; justify-content: space-between; align-items: center; width: 100%; position: relative; z-index: 2; transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94); background: var(--primary-green); border-radius: 18px; box-sizing: border-box; ${b.premium ? 'border: 2px solid var(--premium-gold);' : 'border: 1px solid rgba(244, 233, 193, 0.3);'}">
                             
                             <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
@@ -1290,17 +1288,18 @@ function removerVestibular(index) {
             
         (function(){
             const cardBox = document.querySelector('.card-box');
+            if (!cardBox) return;
             let startX = 0, startY = 0, isSwiping = false;
 
             cardBox.addEventListener('touchstart', e => {
-                if (!respondido) { isSwiping = false; return; }
+                if (respondido) { isSwiping = false; return; } // Só permite swipe quando ainda não respondeu (cartão virado)
                 isSwiping = true;
                 startX = e.touches[0].clientX; startY = e.touches[0].clientY;
                 cardBox.style.transition = 'none';
             }, {passive: true});
 
-cardBox.addEventListener('touchmove', e => {
-                if (!isSwiping || !respondido) return;
+            cardBox.addEventListener('touchmove', e => {
+                if (!isSwiping || respondido) return;
                 const dx = e.touches[0].clientX - startX;
                 const dy = e.touches[0].clientY - startY;
                 if (e.cancelable) e.preventDefault();
@@ -1363,8 +1362,8 @@ cardBox.addEventListener('touchmove', e => {
         const menu = document.getElementById('main-nav');
         if (menu && menu.classList.contains('show')) return;
 
-        // Não ativar gesto de voltar se o toque foi em um card de deck
-        if (e.target.closest('.deck-content')) {
+        // Não ativar gesto de voltar se o toque foi em um card de deck ou no cartão de estudo
+        if (e.target.closest('.deck-content') || e.target.closest('.card-box')) {
             telaAtual = null;
             return;
         }
@@ -1401,7 +1400,7 @@ cardBox.addEventListener('touchmove', e => {
 
     window.addEventListener('touchmove', e => {
         if (!telaAtual || touchStartX >= bordaSensivel) return;
-        if (e.target.closest('.deck-content')) return;
+        if (e.target.closest('.deck-content') || e.target.closest('.card-box')) return;
 
         const touch = (e.touches && e.touches[0]) ? e.touches[0] : e.changedTouches[0];
         const currentX = touch.screenX;
@@ -1522,8 +1521,8 @@ document.addEventListener('touchstart', e => {
     const menu = document.getElementById('main-nav');
     if (menu && menu.classList.contains('show')) return;
 
-    // Não ativar swipe para voltar se o toque foi em um card de deck (deixa o swipe do deck responder)
-    if (e.target.closest('.deck-content')) {
+    // Não ativar swipe para voltar se o toque foi em um card de deck ou no cartão de estudo (resposta por swipe)
+    if (e.target.closest('.deck-content') || e.target.closest('.card-box')) {
         currentSwipeEl = null;
         return;
     }
@@ -1534,8 +1533,8 @@ document.addEventListener('touchstart', e => {
 
 document.addEventListener('touchmove', e => {
     if (!currentSwipeEl || touchStartX > 80) return; // Só ativa se começar no canto esquerdo (0-80px)
-    // Não arrastar a tela se o usuário estiver deslizando um deck
-    if (e.target.closest('.deck-content')) return;
+    // Não arrastar a tela se o usuário estiver deslizando deck ou cartão de estudo
+    if (e.target.closest('.deck-content') || e.target.closest('.card-box')) return;
 
     const touch = (e.touches && e.touches[0]) ? e.touches[0] : e.changedTouches[0];
     let moveX = touch.screenX - touchStartX;
@@ -1578,7 +1577,9 @@ function resetSwipe(el) {
 //=======================================================
 
 let swipeStartX = 0;
+let swipeStartY = 0;
 let currentSwipeX = 0;
+let deckSwipeEl = null; // elemento .deck-content sendo arrastado (delegação)
 
 function handleSwipeStart(e) {
     swipeStartX = e.touches[0].clientX;
@@ -1596,7 +1597,6 @@ function handleSwipeMove(e) {
     // Trava o movimento horizontal da tela (o "samba")
     if (e.cancelable) e.preventDefault(); 
 
-    // Seu código original abaixo:
     let diff = diffX; 
     if (diff > 100) diff = 100; 
     if (diff < -180) diff = -180; 
@@ -1613,6 +1613,51 @@ function handleSwipeEnd(e) {
     else if (finalDiff > 50) el.style.transform = 'translateX(80px)';
     else el.style.transform = 'translateX(0)';
 }
+
+// Delegação no #deck-list: captura o touch em fase de captura para ganhar do scroll
+(function initDeckSwipeDelegation() {
+    const list = document.getElementById('deck-list');
+    if (!list) return;
+
+    list.addEventListener('touchstart', e => {
+        const card = e.target.closest('.deck-content');
+        if (!card) return;
+        deckSwipeEl = card;
+        swipeStartX = e.touches[0].clientX;
+        swipeStartY = e.touches[0].clientY;
+        card.style.transition = 'none';
+    }, { passive: true, capture: true });
+
+    list.addEventListener('touchmove', e => {
+        if (!deckSwipeEl) return;
+        const card = e.target.closest('.deck-content');
+        if (!card || card !== deckSwipeEl) return;
+
+        const diffX = e.touches[0].clientX - swipeStartX;
+        const diffY = e.touches[0].clientY - swipeStartY;
+        if (Math.abs(diffY) > Math.abs(diffX)) return; // vertical = deixa scrollar
+
+        if (e.cancelable) e.preventDefault();
+        let diff = diffX;
+        if (diff > 100) diff = 100;
+        if (diff < -180) diff = -180;
+        currentSwipeX = e.touches[0].clientX;
+        deckSwipeEl.style.transform = `translateX(${diff}px)`;
+    }, { passive: false, capture: true });
+
+    list.addEventListener('touchend', () => {
+        if (!deckSwipeEl) return;
+        const el = deckSwipeEl;
+        deckSwipeEl = null;
+        el.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+        const finalDiff = currentSwipeX - swipeStartX;
+        if (finalDiff < -70) el.style.transform = 'translateX(-150px)';
+        else if (finalDiff > 50) el.style.transform = 'translateX(80px)';
+        else el.style.transform = 'translateX(0)';
+    }, { passive: true, capture: true });
+
+    list.addEventListener('touchcancel', () => { deckSwipeEl = null; }, { passive: true, capture: true });
+})();
 
 function fixarDeck(i) {
     const deck = baralhos.splice(i, 1)[0];
