@@ -199,7 +199,14 @@ body, html {
 h1 { color: var(--accent-gold); margin: 0; font-size: 1.4rem; letter-spacing: 2px; text-transform: uppercase; }
 
 /* LISTA DE BARALHOS */
-.deck-list { overflow-y: auto; overflow-x: hidden;flex-grow: 1; padding-bottom: 70px;}
+.deck-list { 
+    overflow-y: auto; 
+    overflow-x: hidden;
+    flex-grow: 1; 
+    padding-bottom: 70px;
+    touch-action: pan-y; /* Só scroll vertical; horizontal fica para o swipe dos cards */
+    -webkit-overflow-scrolling: touch; /* Scroll suave no iOS */
+}
 .deck-list::-webkit-scrollbar {
     display: none !important;
     width: 0;
@@ -231,6 +238,7 @@ h1 { color: var(--accent-gold); margin: 0; font-size: 1.4rem; letter-spacing: 2p
     width: 100%;
     box-sizing: border-box;
     cursor: pointer;
+    touch-action: pan-y; /* Só scroll vertical: deixa o swipe horizontal para o JS */
 }
 
 /* MOLDURA PREMIUM: Agora ela é aplicada ao CONTENT, para deslizar junto */
@@ -681,6 +689,7 @@ box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     box-sizing: border-box;
     box-shadow: 0 10px 30px rgba(0,0,0,0.18);
     font-weight: 400 !important;
+    touch-action: pan-y; /* Swipe horizontal fica para o JS (responder esquerda/direita) */
 }
 
 #display-front, #display-back {
