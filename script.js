@@ -157,120 +157,53 @@ function verificarTutorial() {
     }
 }
 
+
 function inicializarApp() {
-    if (window.auth) {
-        window.onAuthStateChanged(window.auth, (user) => {
-            const loginScreen = document.getElementById('login-forced-screen');
-            const splash = document.getElementById('splash-screen');
+    if (typeof firebase !== 'undefined' && firebase.auth) {
 
-            if (user) {
-                usuarioLogado = user;
-                sincronizarComNuvem().then(() => {
-                    verificarTutorial();
-                    setTimeout(() => {
-                        if(loginScreen) loginScreen.style.display = 'none';
-                        if(splash) splash.style.display = 'none';
-                        mudarTela('deck-screen');
-                        renderizar();
-                    }, 1500); 
-                });
-            } else {
-                if(splash) splash.style.display = 'none';
-                if(loginScreen) {
-                    loginScreen.style.display = 'flex';
-                    loginScreen.style.opacity = '1';
-                    mudarTela('login-forced-screen');
-                }
-            }
-        });
-    } else {
-        // Se o Firebase ainda não carregou, tenta novamente rápido (50ms)
-        setTimeout(inicializarApp, 50);
-    }
-}
-function inicializarApp() {
-    // 1. Verifica se o Firebase Auth está carregado
-    if (window.auth) {
-        window.auth.onAuthStateChanged((user) => {
-            const loginScreen = document.getElementById('login-forced-screen');
-            const splash = document.getElementById('splash-screen');
-
-            if (user) {
-                // --- CENÁRIO: USUÁRIO JÁ LOGADO ---
-                usuarioLogado = user;
-                console.log("Usuário detectado:", user.displayName);
-                
-                sincronizarComNuvem().then(() => {
-                    verificarTutorial();
-                    // Mantém o Splash por 1.5s para carregar visualmente o app
-                    setTimeout(() => {
-                        if(loginScreen) loginScreen.style.display = 'none';
-                        if(splash) splash.style.display = 'none';
-                        
-                        mudarTela('deck-screen');
-                        renderizar();
-                    }, 1500); 
-                });
-            } else {
-                // --- CENÁRIO: USUÁRIO DESLOGADO ---
-                if(splash) splash.style.display = 'none';
-                
-                if(loginScreen) {
-                    loginScreen.style.display = 'flex';
-                    loginScreen.style.opacity = '1';
-                    mudarTela('login-forced-screen');
-                }
-            }
-        });
-    } else {
-        // Caso o Firebase demore a carregar, tenta novamente em 50ms
-        setTimeout(inicializarApp, 50);
-    }
-}
-
-// Chame a função para ela começar a rodar assim que o script carregar
-inicializarApp();
-
-async function loginComGoogle() {
-    // 1. Verifica se o Firebase global existe (Padrão Compat)
-    if (typeof firebase === 'undefined') return alert("Erro: Firebase não carregado.");
-    
-    // 2. Define o Provider
-    const provider = new firebase.auth.GoogleAuthProvider();
-    
-    try {
-        // 3. Login direto pelo objeto firebase (mais estável)
-        const result = await firebase.auth().signInWithPopup(provider);
-        usuarioLogado = result.user;
-        
-        console.log("Login OK para:", usuarioLogado.displayName);
-
-        // 4. Aguarda os dados da nuvem
-        await sincronizarComNuvem();
-
-        // 5. Esconde as telas de bloqueio
         const loginScreen = document.getElementById('login-forced-screen');
         const splash = document.getElementById('splash-screen');
 
-        if (loginScreen) {
-            loginScreen.style.display = 'none';
-        }
-        if (splash) {
-            splash.style.display = 'none';
-        }
+        firebase.auth().onAuthStateChanged((user) => {
 
-        // 6. Troca a tela e renderiza
-        mudarTela('deck-screen');
-        renderizar();
+            if (user) {
+                usuarioLogado = user;
+                console.log("Usuário autenticado:", user.displayName);
 
-    } catch (error) {
-        console.error("Erro no login:", error);
-        if (error.code !== 'auth/popup-closed-by-user') {
-            alert("Erro ao realizar login com Google.");
-        }
+                sincronizarComNuvem().then(() => {
+                    verificarTutorial();
+
+                    if (loginScreen) loginScreen.style.display = 'none';
+                    if (splash) splash.style.display = 'none';
+
+                    mudarTela('deck-screen');
+                    renderizar();
+                });
+
+            } else {
+                if (splash) splash.style.display = 'none';
+
+                if (loginScreen) {
+                    loginScreen.style.display = 'flex';
+                    loginScreen.style.opacity = '1';
+                    mudarTela('login-forced-screen');
+                }
+            }
+        });
+
+    } else {
+        setTimeout(inicializarApp, 50);
     }
 }
 
+
+
+
+function loginComGoogle() {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    firebase.auth().signInWithPopup(provider)
+        .catch(err => console.error(err));
+}
 
 async function loginComApple() {
     // 1. Verifica o Firebase global (Padrão Compat)
@@ -278,45 +211,28 @@ async function loginComApple() {
         return alert("Erro: Firebase não carregado.");
     }
 
-    // 2. Define o Provider da Apple no padrão Compat
+    // 2. Define o Provider da Apple
     const provider = new firebase.auth.OAuthProvider('apple.com');
     
     try {
-        // 3. Login direto pelo objeto firebase
-        const result = await firebase.auth().signInWithPopup(provider);
-        usuarioLogado = result.user;
-        
-        console.log("Logado com Apple:", usuarioLogado.displayName);
+        // 3. Usa Redirect em vez de Popup
+        await firebase.auth().signInWithRedirect(provider);
 
-        // 4. Aguarda sincronização dos dados
-        await sincronizarComNuvem();
-
-        // 5. Esconde as telas de bloqueio
-        const loginScreen = document.getElementById('login-forced-screen');
-        const splash = document.getElementById('splash-screen');
-
-        if (loginScreen) {
-            loginScreen.style.display = 'none';
-            loginScreen.classList.remove('active');
-        }
-        if (splash) splash.style.display = 'none';
-
-        // 6. Muda a tela e renderiza
-        mudarTela('deck-screen');
-        renderizar();
+        // A página será redirecionada.
+        // onAuthStateChanged cuidará do resto.
+        return;
 
     } catch (error) {
         console.error("Erro no login Apple:", error);
-        if (error.code !== 'auth/popup-closed-by-user') {
-            alert("Erro ao logar com Apple. Verifique se o provedor está ativo no console do Firebase.");
-        }
+        alert("Erro ao logar com Apple. Verifique se o provedor está ativo no console do Firebase.");
     }
 }
 
 
+
 async function deslogar() {
     try {
-        await window.auth.signOut();
+        await firebase.auth().signOut();
         
         // Limpa o usuário atual
         usuarioLogado = null;
@@ -1363,6 +1279,9 @@ cardBox.addEventListener('touchmove', e => {
         const menu = document.getElementById('main-nav');
         if (menu && menu.classList.contains('show')) return;
 
+        // Não ativar gesto de voltar quando toque for no cartão de estudo (swipe dos cartões)
+        if (e.target.closest('.card-box')) return;
+
         touchStartX = e.changedTouches[0].screenX;
         telaAtual = document.querySelector('.screen.active');
 
@@ -1514,6 +1433,9 @@ document.addEventListener('touchstart', e => {
     const menu = document.getElementById('main-nav');
     if (menu && menu.classList.contains('show')) return;
 
+    // Não capturar swipe de voltar quando o toque for no cartão de estudo (evita conflito com swipe dos cartões)
+    if (e.target.closest('.card-box')) return;
+
     touchStartX = e.changedTouches[0].screenX;
     currentSwipeEl = e.target.closest('.screen.active');
 }, {passive: true});
@@ -1561,6 +1483,7 @@ function resetSwipe(el) {
 //=======================================================
 
 let swipeStartX = 0;
+let swipeStartY = 0;
 let currentSwipeX = 0;
 
 function handleSwipeStart(e) {
