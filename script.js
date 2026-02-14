@@ -1,7 +1,7 @@
 // ========== CONFIGURAÇÕES DADOS (localStorage)==========
 let meusVestibulares = JSON.parse(localStorage.getItem('meusVestibulares')) || [];
 let baralhos = []; // ADICIONE ESTA LINHA
-let dIdx = 0, fila = [], respondido = false;
+let dIdx = 0, fila = [], respondido = false, cardVirado = false;
 let corAtual = "#ff0000";
 let onboardingFeito = localStorage.getItem('arion_onboarding') === 'true';
 let usuarioLogado = null;
@@ -909,6 +909,7 @@ document.addEventListener('DOMContentLoaded', () => {
         function carregarCard() {
             const c = fila[0];
             respondido = false;
+            cardVirado = false; // Trava o swipe na tela da pergunta
             document.getElementById('btn-show-answer').style.display = 'block';
             const cardBox = document.querySelector('.card-box');
             cardBox.style.transform = 'translate(0,0) rotate(0)';
@@ -926,7 +927,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- Virar cartão (verso + textos De novo / Difícil / Bom / Fácil)
         function virarCard() {
             if(respondido) return;
-            
+            cardVirado = true; // Libera o swipe para responder
             const c = fila[0];
             document.getElementById('btn-show-answer').style.display = 'none';
             document.getElementById('display-back').innerHTML = c.v;
@@ -1292,14 +1293,14 @@ function removerVestibular(index) {
             let startX = 0, startY = 0, isSwiping = false;
 
             cardBox.addEventListener('touchstart', e => {
-                if (respondido) { isSwiping = false; return; } // Só permite swipe quando ainda não respondeu (cartão virado)
+                if (!cardVirado || respondido) { isSwiping = false; return; } // Só permite swipe depois de virar o cartão (resposta visível)
                 isSwiping = true;
                 startX = e.touches[0].clientX; startY = e.touches[0].clientY;
                 cardBox.style.transition = 'none';
             }, {passive: true});
 
             cardBox.addEventListener('touchmove', e => {
-                if (!isSwiping || respondido) return;
+                if (!isSwiping || !cardVirado || respondido) return;
                 const dx = e.touches[0].clientX - startX;
                 const dy = e.touches[0].clientY - startY;
                 if (e.cancelable) e.preventDefault();
