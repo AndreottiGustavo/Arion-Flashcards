@@ -157,53 +157,120 @@ function verificarTutorial() {
     }
 }
 
-
 function inicializarApp() {
-    if (typeof firebase !== 'undefined' && firebase.auth) {
-
-        const loginScreen = document.getElementById('login-forced-screen');
-        const splash = document.getElementById('splash-screen');
-
-        firebase.auth().onAuthStateChanged((user) => {
+    if (window.auth) {
+        window.onAuthStateChanged(window.auth, (user) => {
+            const loginScreen = document.getElementById('login-forced-screen');
+            const splash = document.getElementById('splash-screen');
 
             if (user) {
                 usuarioLogado = user;
-                console.log("Usuário autenticado:", user.displayName);
-
                 sincronizarComNuvem().then(() => {
                     verificarTutorial();
-
-                    if (loginScreen) loginScreen.style.display = 'none';
-                    if (splash) splash.style.display = 'none';
-
-                    mudarTela('deck-screen');
-                    renderizar();
+                    setTimeout(() => {
+                        if(loginScreen) loginScreen.style.display = 'none';
+                        if(splash) splash.style.display = 'none';
+                        mudarTela('deck-screen');
+                        renderizar();
+                    }, 1500); 
                 });
-
             } else {
-                if (splash) splash.style.display = 'none';
-
-                if (loginScreen) {
+                if(splash) splash.style.display = 'none';
+                if(loginScreen) {
                     loginScreen.style.display = 'flex';
                     loginScreen.style.opacity = '1';
                     mudarTela('login-forced-screen');
                 }
             }
         });
-
     } else {
+        // Se o Firebase ainda não carregou, tenta novamente rápido (50ms)
+        setTimeout(inicializarApp, 50);
+    }
+}
+function inicializarApp() {
+    // 1. Verifica se o Firebase Auth está carregado
+    if (window.auth) {
+        window.auth.onAuthStateChanged((user) => {
+            const loginScreen = document.getElementById('login-forced-screen');
+            const splash = document.getElementById('splash-screen');
+
+            if (user) {
+                // --- CENÁRIO: USUÁRIO JÁ LOGADO ---
+                usuarioLogado = user;
+                console.log("Usuário detectado:", user.displayName);
+                
+                sincronizarComNuvem().then(() => {
+                    verificarTutorial();
+                    // Mantém o Splash por 1.5s para carregar visualmente o app
+                    setTimeout(() => {
+                        if(loginScreen) loginScreen.style.display = 'none';
+                        if(splash) splash.style.display = 'none';
+                        
+                        mudarTela('deck-screen');
+                        renderizar();
+                    }, 1500); 
+                });
+            } else {
+                // --- CENÁRIO: USUÁRIO DESLOGADO ---
+                if(splash) splash.style.display = 'none';
+                
+                if(loginScreen) {
+                    loginScreen.style.display = 'flex';
+                    loginScreen.style.opacity = '1';
+                    mudarTela('login-forced-screen');
+                }
+            }
+        });
+    } else {
+        // Caso o Firebase demore a carregar, tenta novamente em 50ms
         setTimeout(inicializarApp, 50);
     }
 }
 
+// Chame a função para ela começar a rodar assim que o script carregar
+inicializarApp();
 
-
-
-function loginComGoogle() {
+async function loginComGoogle() {
+    // 1. Verifica se o Firebase global existe (Padrão Compat)
+    if (typeof firebase === 'undefined') return alert("Erro: Firebase não carregado.");
+    
+    // 2. Define o Provider
     const provider = new firebase.auth.GoogleAuthProvider();
-    firebase.auth().signInWithPopup(provider)
-        .catch(err => console.error(err));
+    
+    try {
+        // 3. Login direto pelo objeto firebase (mais estável)
+        const result = await firebase.auth().signInWithPopup(provider);
+        usuarioLogado = result.user;
+        
+        console.log("Login OK para:", usuarioLogado.displayName);
+
+        // 4. Aguarda os dados da nuvem
+        await sincronizarComNuvem();
+
+        // 5. Esconde as telas de bloqueio
+        const loginScreen = document.getElementById('login-forced-screen');
+        const splash = document.getElementById('splash-screen');
+
+        if (loginScreen) {
+            loginScreen.style.display = 'none';
+        }
+        if (splash) {
+            splash.style.display = 'none';
+        }
+
+        // 6. Troca a tela e renderiza
+        mudarTela('deck-screen');
+        renderizar();
+
+    } catch (error) {
+        console.error("Erro no login:", error);
+        if (error.code !== 'auth/popup-closed-by-user') {
+            alert("Erro ao realizar login com Google.");
+        }
+    }
 }
+
 
 async function loginComApple() {
     // 1. Verifica o Firebase global (Padrão Compat)
@@ -211,28 +278,45 @@ async function loginComApple() {
         return alert("Erro: Firebase não carregado.");
     }
 
-    // 2. Define o Provider da Apple
+    // 2. Define o Provider da Apple no padrão Compat
     const provider = new firebase.auth.OAuthProvider('apple.com');
     
     try {
-        // 3. Usa Redirect em vez de Popup
-        await firebase.auth().signInWithRedirect(provider);
+        // 3. Login direto pelo objeto firebase
+        const result = await firebase.auth().signInWithPopup(provider);
+        usuarioLogado = result.user;
+        
+        console.log("Logado com Apple:", usuarioLogado.displayName);
 
-        // A página será redirecionada.
-        // onAuthStateChanged cuidará do resto.
-        return;
+        // 4. Aguarda sincronização dos dados
+        await sincronizarComNuvem();
+
+        // 5. Esconde as telas de bloqueio
+        const loginScreen = document.getElementById('login-forced-screen');
+        const splash = document.getElementById('splash-screen');
+
+        if (loginScreen) {
+            loginScreen.style.display = 'none';
+            loginScreen.classList.remove('active');
+        }
+        if (splash) splash.style.display = 'none';
+
+        // 6. Muda a tela e renderiza
+        mudarTela('deck-screen');
+        renderizar();
 
     } catch (error) {
         console.error("Erro no login Apple:", error);
-        alert("Erro ao logar com Apple. Verifique se o provedor está ativo no console do Firebase.");
+        if (error.code !== 'auth/popup-closed-by-user') {
+            alert("Erro ao logar com Apple. Verifique se o provedor está ativo no console do Firebase.");
+        }
     }
 }
 
 
-
 async function deslogar() {
     try {
-        await firebase.auth().signOut();
+        await window.auth.signOut();
         
         // Limpa o usuário atual
         usuarioLogado = null;
@@ -878,7 +962,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('t2').innerText = Math.max(1, Math.round(int * ease)) + "d";
                 document.getElementById('t3').innerText = Math.max(1, Math.round(int * ease * ANKI.easyBonus)) + "d";
             }
-            respondido = true;
         }
 
 
@@ -1203,71 +1286,61 @@ function removerVestibular(index) {
 // ==========================================
 
 
-///=============== FUNÇÃO SWIPE DOS CARTÕES (CORRIGIDA) ===============
-(function(){
-    const cardBox = document.querySelector('.card-box');
-    let startX = 0, startY = 0, isSwiping = false;
+///=============== FUNÇÃO SWIPE DOS CARTÕES===============
+            
+        (function(){
+            const cardBox = document.querySelector('.card-box');
+            let startX = 0, startY = 0, isSwiping = false;
 
-    cardBox.addEventListener('touchstart', e => {
-        // Importante: usamos window.respondido para garantir que o valor atualizado é lido
-        if (!window.respondido) { 
-            isSwiping = false; 
-            return; 
-        }
-        isSwiping = true;
-        startX = e.touches[0].clientX; 
-        startY = e.touches[0].clientY;
-        cardBox.style.transition = 'none';
-    }, {passive: true});
+            cardBox.addEventListener('touchstart', e => {
+                if (!respondido) { isSwiping = false; return; }
+                isSwiping = true;
+                startX = e.touches[0].clientX; startY = e.touches[0].clientY;
+                cardBox.style.transition = 'none';
+            }, {passive: true});
 
-    cardBox.addEventListener('touchmove', e => {
-        if (!isSwiping || !window.respondido) return;
-        
-        const dx = e.touches[0].clientX - startX;
-        const dy = e.touches[0].clientY - startY;
-        
-        // Impede o "samba" da página durante o swipe do card
-        if (Math.abs(dx) > 10 && e.cancelable) e.preventDefault();
-        
-        cardBox.style.transform = `translate(${dx}px, ${dy}px) rotate(${dx * 0.05}deg)`;
-        
-        if (dx > 50) { 
-            cardBox.style.border = '3px solid #5cb85c';
-            cardBox.style.boxShadow = '0 10px 30px rgba(92, 184, 92, 0.4)';
-        } else if (dx < -50) { 
-            cardBox.style.border = '3px solid #d9534f';
-            cardBox.style.boxShadow = '0 10px 30px rgba(217, 83, 79, 0.4)';
-        } else {
-            cardBox.style.border = 'none';
-            cardBox.style.boxShadow = '0 10px 25px rgba(0,0,0,0.15)';
-        }
-    }, {passive: false});
+cardBox.addEventListener('touchmove', e => {
+                if (!isSwiping || !respondido) return;
+                const dx = e.touches[0].clientX - startX;
+                const dy = e.touches[0].clientY - startY;
+                if (e.cancelable) e.preventDefault();
+                cardBox.style.transform = `translate(${dx}px, ${dy}px) rotate(${dx * 0.05}deg)`;
+                
+                if (dx > 50) { 
+                    cardBox.style.border = '3px solid #5cb85c';
+                    cardBox.style.boxShadow = '0 10px 30px rgba(92, 184, 92, 0.4)'; // Sombra Verde
+                }
+                else if (dx < -50) { 
+                    cardBox.style.border = '3px solid #d9534f';
+                    cardBox.style.boxShadow = '0 10px 30px rgba(217, 83, 79, 0.4)'; // Sombra Vermelha
+                }
+                else {
+                    cardBox.style.border = 'none';
+                    cardBox.style.boxShadow = '0 10px 25px rgba(0,0,0,0.15)'; // Volta ao normal
+                }
+            }, {passive: false});
 
-    cardBox.addEventListener('touchend', e => {
-        if (!isSwiping) return;
-        isSwiping = false;
-        const dx = e.changedTouches[0].clientX - startX;
+            cardBox.addEventListener('touchend', e => {
+                if (!isSwiping) return;
+                isSwiping = false;
+                const dx = e.changedTouches[0].clientX - startX;
+                if (dx > 100) {
+                    cardBox.style.transition = 'transform 0.4s ease-out';
+                    cardBox.style.transform = `translate(1000px, 0) rotate(30deg)`;
+                    setTimeout(() => responder(2), 200);
+                } else if (dx < -100) {
+                    cardBox.style.transition = 'transform 0.4s ease-out';
+                    cardBox.style.transform = `translate(-1000px, 0) rotate(-30deg)`;
+                    setTimeout(() => responder(0), 200);
+                } else {
+                    cardBox.style.transition = 'transform 0.3s ease';
+                    cardBox.style.transform = 'translate(0,0) rotate(0)';
+                    cardBox.style.border = 'none';
+                    cardBox.style.boxShadow = '0 10px 25px rgba(0,0,0,0.15)';
+                }
+            });
+        })();
 
-        if (dx > 100) {
-            cardBox.style.transition = 'transform 0.4s ease-out';
-            cardBox.style.transform = `translate(1000px, 0) rotate(30deg)`;
-            setTimeout(() => {
-                if (typeof responder === 'function') responder(2); // BOM
-            }, 150);
-        } else if (dx < -100) {
-            cardBox.style.transition = 'transform 0.4s ease-out';
-            cardBox.style.transform = `translate(-1000px, 0) rotate(-30deg)`;
-            setTimeout(() => {
-                if (typeof responder === 'function') responder(0); // DE NOVO
-            }, 150);
-        } else {
-            cardBox.style.transition = 'transform 0.3s ease';
-            cardBox.style.transform = 'translate(0,0) rotate(0)';
-            cardBox.style.border = 'none';
-            cardBox.style.boxShadow = '0 10px 25px rgba(0,0,0,0.15)';
-        }
-    });
-})();
 
 
 
@@ -1488,19 +1561,15 @@ function resetSwipe(el) {
 //=======================================================
 
 let swipeStartX = 0;
-let swipeStartY = 0;
 let currentSwipeX = 0;
 
 function handleSwipeStart(e) {
-    if (document.getElementById('screen-estudo').classList.contains('active')) return;
     swipeStartX = e.touches[0].clientX;
     swipeStartY = e.touches[0].clientY;
     e.currentTarget.style.transition = 'none';
 }
 
 function handleSwipeMove(e) {
-    if (document.getElementById('study-screen').classList.contains('active')) return;
-    if (document.getElementById('screen-estudo').classList.contains('active')) return;
     let diffX = e.touches[0].clientX - swipeStartX;
     let diffY = e.touches[0].clientY - (swipeStartY || 0);
 
@@ -1519,7 +1588,6 @@ function handleSwipeMove(e) {
 }
 
 function handleSwipeEnd(e) {
-    if (document.getElementById('screen-estudo').classList.contains('active')) return;
     const el = e.currentTarget;
     el.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
     const finalDiff = currentSwipeX - swipeStartX;
@@ -1640,5 +1708,3 @@ function dispararImportacao() {
     };
     input.click();
 }
-
-
