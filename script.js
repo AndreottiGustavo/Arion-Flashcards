@@ -770,8 +770,11 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         
             const iconePinVetor = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="display:inline-block; vertical-align:middle; margin-right:5px;"><path d="M16,12V4H17V2H7V4H8V12L6,14V16H11.2V22H12.8V16H18V14L16,12Z" /></svg>`;
+            const iconePinPequeno = `<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" class="deck-pin-icon" style="display:inline-block; vertical-align:middle; opacity:0.9;"><path d="M16,12V4H17V2H7V4H8V12L6,14V16H11.2V22H12.8V16H18V14L16,12Z" /></svg>`;
         
-            const listaHtml = baralhos.map((b, i) => {
+            // Ordenar: fixados no topo (abaixo de "Estudar Tudo"), depois os demais
+            const ordenados = [...baralhos].map((b, i) => ({ b, i })).sort((x, y) => (y.b.fixado ? 1 : 0) - (x.b.fixado ? 1 : 0));
+            const listaHtml = ordenados.map(({ b, i }) => {
                 const n = b.cards.filter(c => c.state === 'new' && (b.premium ? c.liberado : true)).length;
                 const r = b.cards.filter(c => c.state !== 'new' && c.rev <= agora && (b.premium ? c.liberado : true)).length;
                 const estaFixado = b.fixado === true;
@@ -792,10 +795,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         ${b.premium ? '<div class="premium-badge" style="position: absolute; top: -10px; left: 15px; z-index: 10;">PREMIUM</div>' : ''}
         
                         <div class="deck-content" 
-                             onclick="abrirDetalhes(${i})"
                              data-deck-index="${i}"
-                             style="padding: 22px 15px; display: flex; justify-content: space-between; align-items: center; width: 100%; position: relative; z-index: 2; transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94); background: var(--primary-green); border-radius: 18px; box-sizing: border-box; ${b.premium ? 'border: 2px solid var(--premium-gold);' : 'border: 1px solid rgba(244, 233, 193, 0.3);'}">
-                            
+                             style="padding: 22px 15px; display: flex; flex-direction: column; justify-content: center; align-items: stretch; width: 100%; position: relative; z-index: 2; transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94); background: var(--primary-green); border-radius: 18px; box-sizing: border-box; ${b.premium ? 'border: 2px solid var(--premium-gold);' : 'border: 1px solid rgba(244, 233, 193, 0.3);'}">
                             <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                                 <strong style="${b.premium ? 'color:var(--premium-gold)' : 'color: white;'}">
                                     ${estaFixado ? iconePinVetor : ''}${b.nome}
@@ -806,6 +807,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                     <span style="color: #21ba45; font-weight: bold;">${r}</span> revisões
                                 </small>
                             </div>
+                            ${estaFixado ? `<div style="margin-top: 4px; display: flex; justify-content: flex-end; align-items: center;">${iconePinPequeno}</div>` : ''}
                         </div>
                     </div>`;
             }).join('');
@@ -1617,10 +1619,16 @@ function resetSwipe(el) {
 // LÓGICA DE SWIPE PARA ABRIR OPÇÕES
 //=======================================================
 
+const SWIPE_ACTIVATE_PX = 28;   // Só considera swipe após mover pelo menos 28px (evita toque ser interpretado como swipe)
+const SWIPE_OPEN_MENU_PX = 95;  // Só abre o menu se arrastar pelo menos 95px para a esquerda
+
 let swipeStartX = 0;
 let swipeStartY = 0;
 let currentSwipeX = 0;
-let deckSwipeEl = null; // elemento .deck-content sendo arrastado (delegação)
+let deckSwipeEl = null;
+let deckSwipeActivated = false; // true só depois de ultrapassar SWIPE_ACTIVATE_PX
+let lastSwipeTarget = null;
+let lastSwipeTime = 0;
 
 function handleSwipeStart(e) {
     swipeStartX = e.touches[0].clientX;
@@ -1632,15 +1640,13 @@ function handleSwipeMove(e) {
     let diffX = e.touches[0].clientX - swipeStartX;
     let diffY = e.touches[0].clientY - (swipeStartY || 0);
 
-    // Se mover mais para cima/baixo do que para os lados, ignora o swipe
     if (Math.abs(diffY) > Math.abs(diffX)) return;
 
-    // Trava o movimento horizontal da tela (o "samba")
-    if (e.cancelable) e.preventDefault(); 
+    if (e.cancelable) e.preventDefault();
 
-    let diff = diffX; 
-    if (diff > 100) diff = 100; 
-    if (diff < -180) diff = -180; 
+    let diff = diffX;
+    if (diff > 100) diff = 100;
+    if (diff < -180) diff = -180;
     currentSwipeX = e.touches[0].clientX;
     e.currentTarget.style.transform = `translateX(${diff}px)`;
 }
@@ -1655,7 +1661,7 @@ function handleSwipeEnd(e) {
     else el.style.transform = 'translateX(0)';
 }
 
-// Delegação no #deck-list: captura o touch em fase de captura para ganhar do scroll
+// Delegação no #deck-list: swipe menos sensível + evita abrir deck ao soltar após swipe
 (function initDeckSwipeDelegation() {
     const list = document.getElementById('deck-list');
     if (!list) return;
@@ -1664,8 +1670,10 @@ function handleSwipeEnd(e) {
         const card = e.target.closest('.deck-content');
         if (!card) return;
         deckSwipeEl = card;
+        deckSwipeActivated = false;
         swipeStartX = e.touches[0].clientX;
         swipeStartY = e.touches[0].clientY;
+        currentSwipeX = swipeStartX;
         card.style.transition = 'none';
     }, { passive: true, capture: true });
 
@@ -1676,7 +1684,12 @@ function handleSwipeEnd(e) {
 
         const diffX = e.touches[0].clientX - swipeStartX;
         const diffY = e.touches[0].clientY - swipeStartY;
-        if (Math.abs(diffY) > Math.abs(diffX)) return; // vertical = deixa scrollar
+        if (Math.abs(diffY) > Math.abs(diffX)) return;
+
+        if (!deckSwipeActivated) {
+            if (Math.abs(diffX) < SWIPE_ACTIVATE_PX) return;
+            deckSwipeActivated = true;
+        }
 
         if (e.cancelable) e.preventDefault();
         let diff = diffX;
@@ -1689,22 +1702,47 @@ function handleSwipeEnd(e) {
     list.addEventListener('touchend', () => {
         if (!deckSwipeEl) return;
         const el = deckSwipeEl;
-        deckSwipeEl = null;
-        el.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
         const finalDiff = currentSwipeX - swipeStartX;
-        if (finalDiff < -70) el.style.transform = 'translateX(-150px)';
-        else if (finalDiff > 50) el.style.transform = 'translateX(80px)';
-        else el.style.transform = 'translateX(0)';
+        deckSwipeEl = null;
+
+        el.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+        if (finalDiff < -SWIPE_OPEN_MENU_PX) {
+            el.style.transform = 'translateX(-150px)';
+            lastSwipeTarget = el;
+            lastSwipeTime = Date.now();
+        } else if (finalDiff > 50) {
+            el.style.transform = 'translateX(80px)';
+        } else {
+            el.style.transform = 'translateX(0)';
+        }
     }, { passive: true, capture: true });
 
-    list.addEventListener('touchcancel', () => { deckSwipeEl = null; }, { passive: true, capture: true });
+    list.addEventListener('touchcancel', () => { deckSwipeEl = null; deckSwipeActivated = false; }, { passive: true, capture: true });
+
+    // Evita que o clique "abrir deck" dispare quando o usuário acabou de fazer swipe para abrir o menu
+    list.addEventListener('click', e => {
+        const card = e.target.closest('.deck-content');
+        if (!card) return;
+        if (lastSwipeTarget === card && (Date.now() - lastSwipeTime) < 450) {
+            e.preventDefault();
+            e.stopPropagation();
+            lastSwipeTarget = null;
+            return;
+        }
+        const i = parseInt(card.getAttribute('data-deck-index'), 10);
+        if (!isNaN(i) && typeof abrirDetalhes === 'function') abrirDetalhes(i);
+    }, true);
 })();
 
-function fixarDeck(i) {
-    const deck = baralhos.splice(i, 1)[0];
-    baralhos.unshift(deck);
+function alternarFixar(i) {
+    if (i < 0 || i >= baralhos.length) return;
+    baralhos[i].fixado = !baralhos[i].fixado;
     salvar();
     renderizar();
+}
+
+function fixarDeck(i) {
+    alternarFixar(i);
 }
 
 // Fecha o swipe se o usuário rolar a tela
