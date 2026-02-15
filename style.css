@@ -199,14 +199,7 @@ body, html {
 h1 { color: var(--accent-gold); margin: 0; font-size: 1.4rem; letter-spacing: 2px; text-transform: uppercase; }
 
 /* LISTA DE BARALHOS */
-.deck-list { 
-    overflow-y: auto; 
-    overflow-x: hidden;
-    flex-grow: 1; 
-    padding-bottom: 70px;
-    touch-action: pan-y; /* Só scroll vertical; horizontal fica para o swipe dos cards */
-    -webkit-overflow-scrolling: touch; /* Scroll suave no iOS */
-}
+.deck-list { overflow-y: auto; overflow-x: hidden;flex-grow: 1; padding-bottom: 70px;}
 .deck-list::-webkit-scrollbar {
     display: none !important;
     width: 0;
@@ -238,7 +231,6 @@ h1 { color: var(--accent-gold); margin: 0; font-size: 1.4rem; letter-spacing: 2p
     width: 100%;
     box-sizing: border-box;
     cursor: pointer;
-    touch-action: pan-y; /* Só scroll vertical: deixa o swipe horizontal para o JS */
 }
 
 /* MOLDURA PREMIUM: Agora ela é aplicada ao CONTENT, para deslizar junto */
@@ -312,8 +304,90 @@ h1 { color: var(--accent-gold); margin: 0; font-size: 1.4rem; letter-spacing: 2p
 }
 .price-tag { color: #2e7d32; font-weight: bold; font-size: 1.2rem; }
 
-
-
+/* ========== ESTATÍSTICAS ========== */
+.stats-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding-bottom: 30px;
+}
+.stats-card {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(244, 233, 193, 0.25);
+    border-radius: 16px;
+    padding: 18px;
+    color: var(--accent-gold);
+}
+.stats-card h3 {
+    margin: 0 0 12px 0;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0.9;
+}
+.stats-value {
+    font-size: 2rem;
+    font-weight: 800;
+    color: white;
+}
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+.stats-grid .stats-card {
+    margin: 0;
+}
+/* Heatmap estilo Anki/GitHub */
+.stats-heatmap-legend {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.8);
+}
+.stats-heatmap-legend span { margin-right: 4px; }
+.heatmap-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    margin-top: 8px;
+}
+.heatmap-row {
+    display: flex;
+    gap: 3px;
+    justify-content: flex-start;
+}
+.heatmap-cell {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+    background: rgba(255,255,255,0.08);
+    transition: transform 0.15s;
+}
+.heatmap-cell:hover {
+    transform: scale(1.2);
+}
+.heatmap-cell[data-level="0"] { background: rgba(255,255,255,0.08); }
+.heatmap-cell[data-level="1"] { background: rgba(34, 197, 94, 0.4); }
+.heatmap-cell[data-level="2"] { background: rgba(34, 197, 94, 0.6); }
+.heatmap-cell[data-level="3"] { background: rgba(34, 197, 94, 0.85); }
+.heatmap-cell[data-level="4"] { background: rgb(22, 163, 74); }
+.heatmap-weekdays {
+    font-size: 0.65rem;
+    color: rgba(255,255,255,0.6);
+    margin-right: 6px;
+    width: 12px;
+    text-align: center;
+}
+.heatmap-months {
+    display: flex;
+    gap: 2px;
+    font-size: 0.65rem;
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 4px;
+}
 
 /* --- =========================.deck-item=====ESTILO DA TELA DE VESTIBULARES========================= --- */
 
@@ -677,19 +751,19 @@ box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-start; /* Alinha tudo no topo */
+    justify-content: flex-start;
     text-align: center;
     padding: 30px 20px;
     background: var(--white);
     color: var(--text-dark);
     border-radius: 20px;
     width: 100%;
-    min-height: 280px; /* Dá uma altura mínima estável */
+    min-height: 200px;
     position: relative;
     box-sizing: border-box;
     box-shadow: 0 10px 30px rgba(0,0,0,0.18);
     font-weight: 400 !important;
-    touch-action: pan-y; /* Swipe horizontal fica para o JS (responder esquerda/direita) */
+    /* Cartão cresce para baixo com o conteúdo; nada fixo que esconda texto */
 }
 
 #display-front, #display-back {
@@ -699,6 +773,9 @@ box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     text-align: center;
     word-wrap: break-word;
     font-weight: 400 !important;
+    flex-shrink: 0;
+    overflow-wrap: break-word;
+    /* Conteúdo nunca cortado; cartão aumenta para baixo */
 }
 
 /* RESPEITAR FORMATAÇÕES MANUAIS (Botões do Editor) */
@@ -761,13 +838,9 @@ box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     display: none;          /* O JS vai mudar para 'block' */
 }
 #btn-show-answer {
-    /* FIXA O BOTÃO NO FUNDO DO CARTÃO */
-    position: absolute;
-    bottom: 20px;   /* Distância da borda de baixo */
-    left: 50%;      /* Move para o meio */
-    transform: translateX(-50%); /* Centraliza perfeitamente */
-    
-    /* ESTILO VISUAL (AZUL IGUAL AO ESTUDAR AGORA) */
+    /* Botão em fluxo: fica logo abaixo do texto, cartão cresce para baixo */
+    margin-top: 20px;
+    flex-shrink: 0;
     width: 85%;
     max-width: 260px;
     background: #2185d0;
@@ -779,7 +852,6 @@ box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     font-size: 0.9rem;
     cursor: pointer;
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    z-index: 10; /* Garante que fique por cima de outros elementos */
 }
 
 #btn-show-answer:active {

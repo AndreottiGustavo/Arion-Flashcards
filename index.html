@@ -42,6 +42,7 @@
                 <nav class="nav-menu-dropdown" id="main-nav">
                     <button class="nav-btn" id="nav-decks" onclick="mudarTela('deck-screen'); atualizarNav('nav-decks')">🃏 Baralhos</button>
                     <button class="nav-btn" onclick="abrirVestibulares()">📅 Meus Vestibulares</button>
+                    <button class="nav-btn" id="nav-stats" onclick="abrirEstatisticas(); atualizarNav('nav-stats')">📊 Estatísticas</button>
                     <button class="nav-btn" id="nav-browse" onclick="abrirPainel(); atualizarNav('nav-browse')">📁 Painel (Cards)</button>
                     <button class="nav-btn efeito brilho" id="nav-store" onclick="mudarTela('store-screen'); atualizarNav('nav-store')" style="color:var(--premium-gold); border-color:var(--premium-gold)">✨ Baralhos Prontos</button>
                     <button class="nav-btn" onclick="dispararImportacao()">📥 Importar do Anki</button>
@@ -167,6 +168,11 @@
         <button class="btn-gold fab-button" onclick="abrirModalCriar()">
             + Novo Baralho</button>    
     </div>
+    </div>
+
+    <div id="stats-screen" class="screen">
+        <header><h1>Estatísticas</h1></header>
+        <div id="stats-content" class="stats-container"></div>
     </div>
 
     <div id="store-screen" class="screen">
@@ -303,13 +309,25 @@
     appId: "1:145015637575:web:86f467e62f8b6531195362"
   };
 
-  // Inicializa e expõe para o window
+
   firebase.initializeApp(firebaseConfig);
-  
-  window.auth = firebase.auth();
-  window.db = firebase.firestore();
-  window.GoogleAuthProvider = firebase.auth.GoogleAuthProvider;
-  window.OAuthProvider = firebase.auth.OAuthProvider;
+firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+  .then(() => {
+      console.log("Persistência LOCAL ativada");
+      inicializarApp(); // só inicia depois da persistência
+  })
+  .catch((error) => {
+      console.error("Erro ao definir persistência:", error);
+      inicializarApp();
+  });
+
+window.auth = firebase.auth();
+window.db = firebase.firestore();
+window.GoogleAuthProvider = firebase.auth.GoogleAuthProvider;
+window.OAuthProvider = firebase.auth.OAuthProvider;
+
+
+
   
   // Atalhos para o seu script.js não dar erro
   window.signInWithPopup = (auth, provider) => auth.signInWithPopup(provider);
