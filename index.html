@@ -164,6 +164,7 @@
     <!-- ======== tela inicial baralhos =============-->
     <div id="deck-screen" class="screen">
         <header><h1>Meus Baralhos</h1></header>
+        <div id="deck-notices" class="deck-notices"></div>
         <div class="deck-list" id="deck-list"></div>
         <button class="btn-gold fab-button" onclick="abrirModalCriar()">
             + Novo Baralho</button>    
@@ -182,6 +183,7 @@
             <p style="color:#666; font-size:0.9rem">Cronograma completo do Ensino Médio separado por módulos.</p>
             <div class="price-tag">R$ 19,90 / mês</div>
             <button class="btn-gold" onclick="simularAssinatura()">ASSINAR AGORA</button>
+            <button class="btn-outline" onclick="atualizarConteudoPremium()" style="margin-top:10px; font-size:0.85rem;">Já sou assinante – Atualizar conteúdo</button>
         </div>
     </div>
 
