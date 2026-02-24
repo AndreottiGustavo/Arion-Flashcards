@@ -158,6 +158,37 @@ function verificarTutorial() {
 }
 
 function inicializarApp() {
+    if (window.auth) {
+        window.onAuthStateChanged(window.auth, (user) => {
+            const loginScreen = document.getElementById('login-forced-screen');
+            const splash = document.getElementById('splash-screen');
+
+            if (user) {
+                usuarioLogado = user;
+                sincronizarComNuvem().then(() => {
+                    verificarTutorial();
+                    setTimeout(() => {
+                        if(loginScreen) loginScreen.style.display = 'none';
+                        if(splash) splash.style.display = 'none';
+                        mudarTela('deck-screen');
+                        renderizar();
+                    }, 1500); 
+                });
+            } else {
+                if(splash) splash.style.display = 'none';
+                if(loginScreen) {
+                    loginScreen.style.display = 'flex';
+                    loginScreen.style.opacity = '1';
+                    mudarTela('login-forced-screen');
+                }
+            }
+        });
+    } else {
+        // Se o Firebase ainda não carregou, tenta novamente rápido (50ms)
+        setTimeout(inicializarApp, 50);
+    }
+}
+function inicializarApp() {
     // 1. Verifica se o Firebase Auth está carregado
     if (window.auth) {
         window.auth.onAuthStateChanged((user) => {
@@ -187,8 +218,6 @@ function inicializarApp() {
                 if(loginScreen) {
                     loginScreen.style.display = 'flex';
                     loginScreen.style.opacity = '1';
-                    loginScreen.style.visibility = 'visible';
-                    loginScreen.style.zIndex = '';
                     mudarTela('login-forced-screen');
                 }
             }
@@ -219,36 +248,20 @@ async function loginComGoogle() {
         // 4. Aguarda os dados da nuvem
         await sincronizarComNuvem();
 
-        // 5. Tutorial (igual ao fluxo de abertura com usuário já logado)
-        verificarTutorial();
-
-        // 6. Esconde as telas de bloqueio e garante que não fiquem por cima
+        // 5. Esconde as telas de bloqueio
         const loginScreen = document.getElementById('login-forced-screen');
         const splash = document.getElementById('splash-screen');
 
         if (loginScreen) {
             loginScreen.style.display = 'none';
-            loginScreen.style.visibility = 'hidden';
-            loginScreen.style.zIndex = '-1';
-            loginScreen.classList.remove('active');
         }
         if (splash) {
             splash.style.display = 'none';
-            splash.style.visibility = 'hidden';
-            splash.style.zIndex = '-1';
         }
 
-        // 7. Ir para a tela de baralhos no próximo frame (evita race com onAuthStateChanged)
-        requestAnimationFrame(() => {
-            mudarTela('deck-screen');
-            renderizar();
-            // Garante nav e header visíveis (caso o app esteja em WebView/Cordova)
-            const nav = document.getElementById('main-nav');
-            const header = document.querySelector('.top-header');
-            if (nav) nav.style.display = 'flex';
-            if (header) header.style.display = 'flex';
-            if (typeof atualizarNav === 'function') atualizarNav('nav-decks');
-        });
+        // 6. Troca a tela e renderiza
+        mudarTela('deck-screen');
+        renderizar();
 
     } catch (error) {
         console.error("Erro no login:", error);
@@ -278,35 +291,19 @@ async function loginComApple() {
         // 4. Aguarda sincronização dos dados
         await sincronizarComNuvem();
 
-        // 5. Tutorial (igual ao fluxo de abertura)
-        verificarTutorial();
-
-        // 6. Esconde as telas de bloqueio e garante que não fiquem por cima
+        // 5. Esconde as telas de bloqueio
         const loginScreen = document.getElementById('login-forced-screen');
         const splash = document.getElementById('splash-screen');
 
         if (loginScreen) {
             loginScreen.style.display = 'none';
-            loginScreen.style.visibility = 'hidden';
-            loginScreen.style.zIndex = '-1';
             loginScreen.classList.remove('active');
         }
-        if (splash) {
-            splash.style.display = 'none';
-            splash.style.visibility = 'hidden';
-            splash.style.zIndex = '-1';
-        }
+        if (splash) splash.style.display = 'none';
 
-        // 7. Ir para a tela de baralhos no próximo frame
-        requestAnimationFrame(() => {
-            mudarTela('deck-screen');
-            renderizar();
-            const nav = document.getElementById('main-nav');
-            const header = document.querySelector('.top-header');
-            if (nav) nav.style.display = 'flex';
-            if (header) header.style.display = 'flex';
-            if (typeof atualizarNav === 'function') atualizarNav('nav-decks');
-        });
+        // 6. Muda a tela e renderiza
+        mudarTela('deck-screen');
+        renderizar();
 
     } catch (error) {
         console.error("Erro no login Apple:", error);
@@ -324,13 +321,7 @@ async function deslogar() {
         // Limpa o usuário atual
         usuarioLogado = null;
 
-        // Garante que a tela de login fique visível de novo
-        const loginScreen = document.getElementById('login-forced-screen');
-        if (loginScreen) {
-            loginScreen.style.display = 'flex';
-            loginScreen.style.visibility = 'visible';
-            loginScreen.style.zIndex = '';
-        }
+       
 
         // Voltar para a tela de login
         mudarTela("login-forced-screen");
@@ -376,11 +367,6 @@ async function sincronizarComNuvem() {
             if (dados.dadosStreak) {
                 localStorage.setItem('arion_streak_data', JSON.stringify(dados.dadosStreak));
             }
-            // Sincroniza Heatmap
-            if (dados.heatmap && typeof dados.heatmap === 'object') {
-                const merged = { ...getHeatmapData(), ...dados.heatmap };
-                localStorage.setItem(HEATMAP_KEY, JSON.stringify(merged));
-            }
             
             renderizar();
             if (typeof renderizarVestibulares === 'function') renderizarVestibulares();
@@ -407,26 +393,6 @@ window.addEventListener('DOMContentLoaded', () => {
 
 
 
-
-// =============================== heatmap (reviews por dia, estilo Anki) ===========================================
-const HEATMAP_KEY = 'arion_heatmap_data';
-
-function getHeatmapData() {
-    try {
-        const raw = localStorage.getItem(HEATMAP_KEY);
-        return raw ? JSON.parse(raw) : {};
-    } catch (e) {
-        return {};
-    }
-}
-
-function incrementarHeatmapHoje() {
-    const hoje = new Date();
-    const hojeStr = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}-${String(hoje.getDate()).padStart(2, '0')}`;
-    const heatmap = getHeatmapData();
-    heatmap[hojeStr] = (heatmap[hojeStr] || 0) + 1;
-    localStorage.setItem(HEATMAP_KEY, JSON.stringify(heatmap));
-}
 
 // =============================== atualizar streak ===========================================
 
@@ -481,8 +447,6 @@ function atualizarStreak() {
             // 1. Salva no celular primeiro (sempre funciona)
             localStorage.setItem('arion_db_v4', JSON.stringify(baralhos));
             localStorage.setItem('meusVestibulares', JSON.stringify(meusVestibulares));
-            const heatmapAtual = getHeatmapData();
-            localStorage.setItem(HEATMAP_KEY, JSON.stringify(heatmapAtual));
     
     const streakAtual = JSON.parse(localStorage.getItem('arion_streak_data')) || { contagem: 0, ultimaData: null };
             renderizar();
@@ -499,7 +463,6 @@ function atualizarStreak() {
                     ultimaAtualizacao: Date.now(),
                     dadosStreak: streakAtual,
                     meusVestibulares: meusVestibulares,
-                    heatmap: getHeatmapData(),
                 }, { merge: true })
                 .then(() => console.log("Nuvem atualizada com sucesso (Upload OK)"))
                 .catch(e => console.error("Erro ao enviar para nuvem:", e));
@@ -768,9 +731,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
             const iconePinVetor = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="display:inline-block; vertical-align:middle; margin-right:5px;"><path d="M16,12V4H17V2H7V4H8V12L6,14V16H11.2V22H12.8V16H18V14L16,12Z" /></svg>`;
         
-            // Ordenar: fixados no topo (abaixo de "Estudar Tudo"), depois os demais
-            const ordenados = [...baralhos].map((b, i) => ({ b, i })).sort((x, y) => (y.b.fixado ? 1 : 0) - (x.b.fixado ? 1 : 0));
-            const listaHtml = ordenados.map(({ b, i }) => {
+            const listaHtml = baralhos.map((b, i) => {
                 const n = b.cards.filter(c => c.state === 'new' && (b.premium ? c.liberado : true)).length;
                 const r = b.cards.filter(c => c.state !== 'new' && c.rev <= agora && (b.premium ? c.liberado : true)).length;
                 const estaFixado = b.fixado === true;
@@ -791,8 +752,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         ${b.premium ? '<div class="premium-badge" style="position: absolute; top: -10px; left: 15px; z-index: 10;">PREMIUM</div>' : ''}
         
                         <div class="deck-content" 
+                             onclick="abrirDetalhes(${i})"
                              data-deck-index="${i}"
                              style="padding: 22px 15px; display: flex; justify-content: space-between; align-items: center; width: 100%; position: relative; z-index: 2; transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94); background: var(--primary-green); border-radius: 18px; box-sizing: border-box; ${b.premium ? 'border: 2px solid var(--premium-gold);' : 'border: 1px solid rgba(244, 233, 193, 0.3);'}">
+                            
                             <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                                 <strong style="${b.premium ? 'color:var(--premium-gold)' : 'color: white;'}">
                                     ${estaFixado ? iconePinVetor : ''}${b.nome}
@@ -1028,7 +991,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             
-            incrementarHeatmapHoje(); // Uma resposta = um registro no heatmap
+        
         
             // ======== LÓGICA ANKI NORMAL (Para os outros baralhos) ========
             respondido = true; 
@@ -1196,118 +1159,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-// =============================== ESTATÍSTICAS ===========================================
-function abrirEstatisticas() {
-    mudarTela('stats-screen');
-    renderEstatisticas();
-}
-
-function renderEstatisticas() {
-    const container = document.getElementById('stats-content');
-    if (!container) return;
-
-    const streakData = JSON.parse(localStorage.getItem('arion_streak_data')) || { contagem: 0, ultimaData: null };
-    const heatmap = getHeatmapData();
-    const hoje = new Date();
-    const hojeStr = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}-${String(hoje.getDate()).padStart(2, '0')}`;
-
-    let totalRespondidos = 0;
-    let totalCartoes = 0;
-    baralhos.forEach(b => {
-        b.cards.forEach(c => {
-            totalCartoes++;
-            totalRespondidos += (c.rep || 0);
-        });
-    });
-
-    const hojeRespondidos = heatmap[hojeStr] || 0;
-    const diasComEstudo = Object.keys(heatmap).length;
-    const mediaPorDia = diasComEstudo > 0 ? Math.round(totalRespondidos / diasComEstudo) : 0;
-
-    const DIAS_SEMANA = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-    const NUM_SEMANAS = 52;
-    const grid = Array(7).fill(null).map(() => Array(NUM_SEMANAS).fill(0));
-    const inicio = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
-    inicio.setDate(inicio.getDate() - (NUM_SEMANAS * 7 - 1));
-    let maxCount = 0;
-    for (let i = 0; i < NUM_SEMANAS * 7; i++) {
-        const d = new Date(inicio.getTime() + i * 86400000);
-        if (d > hoje) break;
-        const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-        const count = heatmap[dateStr] || 0;
-        const row = d.getDay();
-        const col = Math.floor(i / 7);
-        if (col >= 0 && col < NUM_SEMANAS) {
-            grid[row][col] = count;
-            if (count > maxCount) maxCount = count;
-        }
-    }
-    const nivel = (c) => {
-        if (c === 0) return 0;
-        if (maxCount <= 0) return 0;
-        const p = c / maxCount;
-        if (p <= 0.25) return 1;
-        if (p <= 0.5) return 2;
-        if (p <= 0.75) return 3;
-        return 4;
-    };
-
-    const dayIndexHoje = Math.round((hoje - inicio) / 86400000);
-    const colHoje = Math.min(Math.floor(dayIndexHoje / 7), NUM_SEMANAS - 1);
-    const rowHoje = hoje.getDay();
-
-    let heatmapHtml = '<div style="display:flex">';
-    heatmapHtml += '<div class="heatmap-weekdays">';
-    for (let r = 0; r < 7; r++) heatmapHtml += `<div>${DIAS_SEMANA[r].charAt(0)}</div>`;
-    heatmapHtml += '</div><div class="heatmap-grid" style="flex:1; overflow-x:auto">';
-    for (let r = 0; r < 7; r++) {
-        heatmapHtml += '<div class="heatmap-row">';
-        for (let c = 0; c < NUM_SEMANAS; c++) {
-            const count = grid[r][c];
-            const isHoje = c === colHoje && r === rowHoje;
-            const title = isHoje ? `Hoje: ${count} revisões` : (count ? `${count} revisões` : 'Nenhuma revisão');
-            heatmapHtml += `<div class="heatmap-cell" data-level="${nivel(count)}" title="${title}"${isHoje ? ' style="outline:2px solid var(--accent-gold); outline-offset:1px"' : ''}></div>`;
-        }
-        heatmapHtml += '</div>';
-    }
-    heatmapHtml += '</div></div>';
-    heatmapHtml += '<div class="stats-heatmap-legend"><span>Menos</span>';
-    for (let i = 0; i <= 4; i++) heatmapHtml += `<div class="heatmap-cell" data-level="${i}"></div>`;
-    heatmapHtml += '<span>Mais</span></div>';
-
-    container.innerHTML = `
-        <div class="stats-card">
-            <h3>🔥 Streak</h3>
-            <div class="stats-value">${streakData.contagem} ${streakData.contagem === 1 ? 'dia' : 'dias'}</div>
-            <small style="opacity:0.8">${streakData.ultimaData ? 'Último estudo: ' + streakData.ultimaData : 'Estude para começar'}</small>
-        </div>
-        <div class="stats-grid">
-            <div class="stats-card">
-                <h3>📝 Cartões respondidos</h3>
-                <div class="stats-value">${totalRespondidos.toLocaleString('pt-BR')}</div>
-            </div>
-            <div class="stats-card">
-                <h3>📚 Total de cartões</h3>
-                <div class="stats-value">${totalCartoes.toLocaleString('pt-BR')}</div>
-            </div>
-            <div class="stats-card">
-                <h3>✅ Hoje</h3>
-                <div class="stats-value">${hojeRespondidos}</div>
-                <small style="opacity:0.8">revisões hoje</small>
-            </div>
-            <div class="stats-card">
-                <h3>📊 Média por dia</h3>
-                <div class="stats-value">${mediaPorDia}</div>
-                <small style="opacity:0.8">em dias com estudo</small>
-            </div>
-        </div>
-        <div class="stats-card">
-            <h3>Calendário de estudo (heatmap)</h3>
-            ${heatmapHtml}
-        </div>
-    `;
-}
-
    /* ============================ ÁREA DE GERENCIADOR DE VESTIBULARES ---======================== */
 
 // 1. Carrega os dados salvos ou começa uma lista vazia (Padronizado para meusVestibulares)
@@ -1434,70 +1285,59 @@ function removerVestibular(index) {
 // ==========================================
 
 
-///=============== FUNÇÃO SWIPE DOS CARTÕES (apenas horizontal; vertical = scroll) ===============
+///=============== FUNÇÃO SWIPE DOS CARTÕES===============
+            
         (function(){
             const cardBox = document.querySelector('.card-box');
             if (!cardBox) return;
             let startX = 0, startY = 0, isSwiping = false;
-            /** 'horizontal' = responder com swipe; 'vertical' = deixar a tela rolar; null = ainda não decidiu */
-            let swipeIntent = null;
-            const THRESHOLD_PX = 12;
 
             cardBox.addEventListener('touchstart', e => {
-                if (!cardVirado || respondido) { isSwiping = false; swipeIntent = null; return; }
+                if (!cardVirado || respondido) { isSwiping = false; return; } // Só permite swipe depois de virar o cartão (resposta visível)
                 isSwiping = true;
-                swipeIntent = null;
-                startX = e.touches[0].clientX;
-                startY = e.touches[0].clientY;
+                startX = e.touches[0].clientX; startY = e.touches[0].clientY;
                 cardBox.style.transition = 'none';
-            }, { passive: true });
+            }, {passive: true});
 
             cardBox.addEventListener('touchmove', e => {
-                if (!cardVirado || respondido) return;
+                if (!isSwiping || !cardVirado || respondido) return;
                 const dx = e.touches[0].clientX - startX;
                 const dy = e.touches[0].clientY - startY;
-                if (swipeIntent === null) {
-                    if (Math.abs(dx) > THRESHOLD_PX || Math.abs(dy) > THRESHOLD_PX) {
-                        swipeIntent = Math.abs(dx) >= Math.abs(dy) ? 'horizontal' : 'vertical';
-                    }
-                }
-                if (swipeIntent === 'vertical') return; // deixa o scroll da tela acontecer
-                if (swipeIntent !== 'horizontal') return;
                 if (e.cancelable) e.preventDefault();
-                cardBox.style.transform = `translate(${dx}px, 0) rotate(${dx * 0.05}deg)`;
-                if (dx > 50) {
+                cardBox.style.transform = `translate(${dx}px, ${dy}px) rotate(${dx * 0.05}deg)`;
+                
+                if (dx > 50) { 
                     cardBox.style.border = '3px solid #5cb85c';
-                    cardBox.style.boxShadow = '0 10px 30px rgba(92, 184, 92, 0.4)';
-                } else if (dx < -50) {
-                    cardBox.style.border = '3px solid #d9534f';
-                    cardBox.style.boxShadow = '0 10px 30px rgba(217, 83, 79, 0.4)';
-                } else {
-                    cardBox.style.border = 'none';
-                    cardBox.style.boxShadow = '0 10px 25px rgba(0,0,0,0.15)';
+                    cardBox.style.boxShadow = '0 10px 30px rgba(92, 184, 92, 0.4)'; // Sombra Verde
                 }
-            }, { passive: false });
+                else if (dx < -50) { 
+                    cardBox.style.border = '3px solid #d9534f';
+                    cardBox.style.boxShadow = '0 10px 30px rgba(217, 83, 79, 0.4)'; // Sombra Vermelha
+                }
+                else {
+                    cardBox.style.border = 'none';
+                    cardBox.style.boxShadow = '0 10px 25px rgba(0,0,0,0.15)'; // Volta ao normal
+                }
+            }, {passive: false});
 
             cardBox.addEventListener('touchend', e => {
                 if (!isSwiping) return;
-                const dx = e.changedTouches[0].clientX - startX;
-                if (swipeIntent === 'horizontal') {
-                    if (dx > 100) {
-                        cardBox.style.transition = 'transform 0.4s ease-out';
-                        cardBox.style.transform = `translate(1000px, 0) rotate(30deg)`;
-                        setTimeout(() => responder(2), 200);
-                    } else if (dx < -100) {
-                        cardBox.style.transition = 'transform 0.4s ease-out';
-                        cardBox.style.transform = `translate(-1000px, 0) rotate(-30deg)`;
-                        setTimeout(() => responder(0), 200);
-                    } else {
-                        cardBox.style.transition = 'transform 0.3s ease';
-                        cardBox.style.transform = 'translate(0,0) rotate(0)';
-                        cardBox.style.border = 'none';
-                        cardBox.style.boxShadow = '0 10px 25px rgba(0,0,0,0.15)';
-                    }
-                }
                 isSwiping = false;
-                swipeIntent = null;
+                const dx = e.changedTouches[0].clientX - startX;
+                if (dx > 100) {
+                    cardBox.style.transition = 'transform 0.4s ease-out';
+                    cardBox.style.transform = `translate(1000px, 0) rotate(30deg)`;
+                    setTimeout(() => responder(2), 200);
+                } else if (dx < -100) {
+                    cardBox.style.transition = 'transform 0.4s ease-out';
+                    cardBox.style.transform = `translate(-1000px, 0) rotate(-30deg)`;
+                    setTimeout(() => responder(0), 200);
+                } else {
+                    cardBox.style.transition = 'transform 0.3s ease';
+                    cardBox.style.transform = 'translate(0,0) rotate(0)';
+                    cardBox.style.border = 'none';
+                    cardBox.style.boxShadow = '0 10px 25px rgba(0,0,0,0.15)';
+                }
             });
         })();
 
@@ -1714,7 +1554,7 @@ document.addEventListener('touchend', e => {
     if (diff > 100) {
         // Ação de voltar dependendo da tela atual
         const idAtual = currentSwipeEl.id;
-        if (idAtual === 'details-screen' || idAtual === 'store-screen' || idAtual === 'browse-screen' || idAtual === 'create-screen' || idAtual === 'stats-screen' || idAtual === 'vestibulares-screen') {
+        if (idAtual === 'details-screen' || idAtual === 'store-screen' || idAtual === 'browse-screen' || idAtual === 'create-screen') {
             mudarTela('deck-screen');
         } else if (idAtual === 'study-screen') {
             abrirDetalhes(dIdx);
@@ -1737,16 +1577,10 @@ function resetSwipe(el) {
 // LÓGICA DE SWIPE PARA ABRIR OPÇÕES
 //=======================================================
 
-const SWIPE_ACTIVATE_PX = 28;   // Só considera swipe após mover pelo menos 28px (evita toque ser interpretado como swipe)
-const SWIPE_OPEN_MENU_PX = 95;  // Só abre o menu se arrastar pelo menos 95px para a esquerda
-
 let swipeStartX = 0;
 let swipeStartY = 0;
 let currentSwipeX = 0;
-let deckSwipeEl = null;
-let deckSwipeActivated = false; // true só depois de ultrapassar SWIPE_ACTIVATE_PX
-let lastSwipeTarget = null;
-let lastSwipeTime = 0;
+let deckSwipeEl = null; // elemento .deck-content sendo arrastado (delegação)
 
 function handleSwipeStart(e) {
     swipeStartX = e.touches[0].clientX;
@@ -1758,13 +1592,15 @@ function handleSwipeMove(e) {
     let diffX = e.touches[0].clientX - swipeStartX;
     let diffY = e.touches[0].clientY - (swipeStartY || 0);
 
+    // Se mover mais para cima/baixo do que para os lados, ignora o swipe
     if (Math.abs(diffY) > Math.abs(diffX)) return;
 
-    if (e.cancelable) e.preventDefault();
+    // Trava o movimento horizontal da tela (o "samba")
+    if (e.cancelable) e.preventDefault(); 
 
-    let diff = diffX;
-    if (diff > 100) diff = 100;
-    if (diff < -180) diff = -180;
+    let diff = diffX; 
+    if (diff > 100) diff = 100; 
+    if (diff < -180) diff = -180; 
     currentSwipeX = e.touches[0].clientX;
     e.currentTarget.style.transform = `translateX(${diff}px)`;
 }
@@ -1779,7 +1615,7 @@ function handleSwipeEnd(e) {
     else el.style.transform = 'translateX(0)';
 }
 
-// Delegação no #deck-list: swipe menos sensível + evita abrir deck ao soltar após swipe
+// Delegação no #deck-list: captura o touch em fase de captura para ganhar do scroll
 (function initDeckSwipeDelegation() {
     const list = document.getElementById('deck-list');
     if (!list) return;
@@ -1788,10 +1624,8 @@ function handleSwipeEnd(e) {
         const card = e.target.closest('.deck-content');
         if (!card) return;
         deckSwipeEl = card;
-        deckSwipeActivated = false;
         swipeStartX = e.touches[0].clientX;
         swipeStartY = e.touches[0].clientY;
-        currentSwipeX = swipeStartX;
         card.style.transition = 'none';
     }, { passive: true, capture: true });
 
@@ -1802,12 +1636,7 @@ function handleSwipeEnd(e) {
 
         const diffX = e.touches[0].clientX - swipeStartX;
         const diffY = e.touches[0].clientY - swipeStartY;
-        if (Math.abs(diffY) > Math.abs(diffX)) return;
-
-        if (!deckSwipeActivated) {
-            if (Math.abs(diffX) < SWIPE_ACTIVATE_PX) return;
-            deckSwipeActivated = true;
-        }
+        if (Math.abs(diffY) > Math.abs(diffX)) return; // vertical = deixa scrollar
 
         if (e.cancelable) e.preventDefault();
         let diff = diffX;
@@ -1820,47 +1649,22 @@ function handleSwipeEnd(e) {
     list.addEventListener('touchend', () => {
         if (!deckSwipeEl) return;
         const el = deckSwipeEl;
-        const finalDiff = currentSwipeX - swipeStartX;
         deckSwipeEl = null;
-
         el.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-        if (finalDiff < -SWIPE_OPEN_MENU_PX) {
-            el.style.transform = 'translateX(-150px)';
-            lastSwipeTarget = el;
-            lastSwipeTime = Date.now();
-        } else if (finalDiff > 50) {
-            el.style.transform = 'translateX(80px)';
-        } else {
-            el.style.transform = 'translateX(0)';
-        }
+        const finalDiff = currentSwipeX - swipeStartX;
+        if (finalDiff < -70) el.style.transform = 'translateX(-150px)';
+        else if (finalDiff > 50) el.style.transform = 'translateX(80px)';
+        else el.style.transform = 'translateX(0)';
     }, { passive: true, capture: true });
 
-    list.addEventListener('touchcancel', () => { deckSwipeEl = null; deckSwipeActivated = false; }, { passive: true, capture: true });
-
-    // Evita que o clique "abrir deck" dispare quando o usuário acabou de fazer swipe para abrir o menu
-    list.addEventListener('click', e => {
-        const card = e.target.closest('.deck-content');
-        if (!card) return;
-        if (lastSwipeTarget === card && (Date.now() - lastSwipeTime) < 450) {
-            e.preventDefault();
-            e.stopPropagation();
-            lastSwipeTarget = null;
-            return;
-        }
-        const i = parseInt(card.getAttribute('data-deck-index'), 10);
-        if (!isNaN(i) && typeof abrirDetalhes === 'function') abrirDetalhes(i);
-    }, true);
+    list.addEventListener('touchcancel', () => { deckSwipeEl = null; }, { passive: true, capture: true });
 })();
 
-function alternarFixar(i) {
-    if (i < 0 || i >= baralhos.length) return;
-    baralhos[i].fixado = !baralhos[i].fixado;
+function fixarDeck(i) {
+    const deck = baralhos.splice(i, 1)[0];
+    baralhos.unshift(deck);
     salvar();
     renderizar();
-}
-
-function fixarDeck(i) {
-    alternarFixar(i);
 }
 
 // Fecha o swipe se o usuário rolar a tela
