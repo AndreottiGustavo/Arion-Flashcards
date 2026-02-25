@@ -171,20 +171,17 @@
     <div id="emoji-picker-overlay" class="emoji-picker-overlay" style="display:none;">
         <div class="emoji-picker-box">
             <h3 class="emoji-picker-title">Escolha um emoji</h3>
-            <p class="emoji-picker-dica">Toque no campo abaixo para abrir o teclado do celular e escolher um emoji.</p>
-            <input type="text" id="emoji-picker-input" class="emoji-picker-input" placeholder="Toque aqui para abrir o teclado" inputmode="text" autocomplete="off">
-            <div class="emoji-picker-cor" id="emoji-picker-cor" style="display:none;">
+            <p class="emoji-picker-dica">Toque no campo para abrir o teclado do celular e escolher um emoji.</p>
+            <div class="emoji-picker-preview" id="emoji-picker-preview"></div>
+            <input type="text" id="emoji-picker-input" class="emoji-picker-input" placeholder="Toque aqui para abrir o teclado" autocomplete="off" data-emoji-input>
+            <div class="emoji-picker-cor" id="emoji-picker-cor">
                 <p class="emoji-picker-cor-label">Cor de fundo</p>
                 <div class="emoji-picker-cores" id="emoji-picker-cores"></div>
-                <div class="emoji-picker-cor-custom">
-                    <label class="perfil-label">Cor personalizada</label>
-                    <input type="color" id="emoji-picker-input-cor" value="#FFE4B5" title="Escolher cor">
-                </div>
             </div>
-            <div class="emoji-picker-preview" id="emoji-picker-preview"></div>
+            <input type="color" id="emoji-picker-input-cor" class="emoji-picker-input-cor-hidden" value="#FFE4B5" title="Cor personalizada">
             <div class="emoji-picker-actions">
-                <button type="button" class="btn-cancelar" id="emoji-picker-cancelar">Cancelar</button>
-                <button type="button" class="btn-gold" id="emoji-picker-confirmar">Usar como foto</button>
+                <button type="button" class="emoji-picker-btn-cancel" id="emoji-picker-cancelar">Cancelar</button>
+                <button type="button" class="btn-gold emoji-picker-btn-confirm" id="emoji-picker-confirmar">Usar como foto</button>
             </div>
         </div>
     </div>
@@ -227,8 +224,10 @@
             <!-- Header do perfil: foto + nome + email -->
             <div class="perfil-header-card">
                 <div class="perfil-foto-wrap" id="perfil-foto-wrap">
-                    <img id="perfil-foto-img" class="perfil-foto-img" src="" alt="Foto do perfil" referrerpolicy="no-referrer">
-                    <span id="perfil-foto-emoji" class="perfil-foto-emoji" style="display:none;"></span>
+                    <div class="perfil-foto-inner" id="perfil-foto-inner">
+                        <img id="perfil-foto-img" class="perfil-foto-img" src="" alt="Foto do perfil" referrerpolicy="no-referrer">
+                        <span id="perfil-foto-emoji" class="perfil-foto-emoji" style="display:none;"></span>
+                    </div>
                     <button type="button" class="perfil-foto-editar" id="perfil-btn-editar-foto" title="Editar foto" aria-label="Editar foto">✎</button>
                     <div class="perfil-foto-menu" id="perfil-foto-menu" style="display:none;">
                         <button type="button" class="perfil-foto-menu-item" id="perfil-opcao-trocar">📷 Trocar Imagem</button>

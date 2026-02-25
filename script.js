@@ -66,32 +66,44 @@ function abrirEmojiPicker() {
     const btnCancelar = document.getElementById('emoji-picker-cancelar');
     if (!overlay || !inputEmoji) return;
 
-    _emojiPickerSelecionado = { emoji: null, cor: null };
+    _emojiPickerSelecionado = { emoji: null, cor: PALETA_CORES_EMOJI[0] };
     inputEmoji.value = '';
     inputEmoji.placeholder = 'Toque aqui para abrir o teclado';
-    corSection.style.display = 'none';
+    corSection.style.display = 'block';
     preview.textContent = '';
-    preview.style.display = 'none';
+    preview.style.display = 'flex';
+    preview.style.backgroundColor = _emojiPickerSelecionado.cor;
 
     function atualizarEmoji() {
         const emoji = extrairPrimeiroEmoji(inputEmoji.value);
         if (emoji) {
             _emojiPickerSelecionado.emoji = emoji;
-            _emojiPickerSelecionado.cor = corFundoPadraoParaEmoji(emoji);
+            if (!_emojiPickerSelecionado.cor) _emojiPickerSelecionado.cor = corFundoPadraoParaEmoji(emoji);
             inputCor.value = _emojiPickerSelecionado.cor;
-            corSection.style.display = 'block';
-            preview.style.display = 'flex';
             preview.style.backgroundColor = _emojiPickerSelecionado.cor;
             preview.textContent = emoji;
         } else {
-            corSection.style.display = 'none';
-            preview.style.display = 'none';
+            preview.textContent = '';
+            preview.style.backgroundColor = _emojiPickerSelecionado.cor;
         }
     }
 
     inputEmoji.oninput = inputEmoji.onkeyup = atualizarEmoji;
 
     cores.innerHTML = '';
+    var corCustomLabel = document.createElement('label');
+    corCustomLabel.className = 'emoji-cor-btn emoji-cor-btn-mais';
+    corCustomLabel.title = 'Outra cor';
+    corCustomLabel.textContent = '+';
+    corCustomLabel.htmlFor = 'emoji-picker-input-cor';
+    cores.appendChild(corCustomLabel);
+
+    inputCor.oninput = () => {
+        _emojiPickerSelecionado.cor = inputCor.value;
+        if (preview) preview.style.backgroundColor = inputCor.value;
+        cores.querySelectorAll('.emoji-cor-btn:not(.emoji-cor-btn-mais)').forEach(b => b.classList.remove('emoji-cor-ativo'));
+    };
+
     PALETA_CORES_EMOJI.forEach(cor => {
         const btn = document.createElement('button');
         btn.type = 'button';
@@ -107,11 +119,6 @@ function abrirEmojiPicker() {
         };
         cores.appendChild(btn);
     });
-
-    inputCor.oninput = () => {
-        _emojiPickerSelecionado.cor = inputCor.value;
-        if (preview) preview.style.backgroundColor = inputCor.value;
-    };
 
     btnConfirmar.onclick = () => {
         const emoji = _emojiPickerSelecionado.emoji || extrairPrimeiroEmoji(inputEmoji.value);
@@ -818,6 +825,8 @@ window.addEventListener('DOMContentLoaded', () => {
             });
         }
         if (lembreteAtivo) {
+        document.getElementById('emoji-picker-confirmar').addEventListener('click', () => {});
+        document.getElementById('emoji-picker-cancelar').addEventListener('click', () => {});
             lembreteAtivo.addEventListener('change', () => {
                 localStorage.setItem('arion_lembrete_ativo', lembreteAtivo.checked ? 'true' : 'false');
                 salvar();
@@ -875,6 +884,7 @@ function preencherTelaPerfil() {
     }
 
     const custom = getFotoPerfilObjeto();
+    const inner = document.getElementById('perfil-foto-inner');
     if (fotoImg && wrap) {
         if (custom && custom.t === 'emoji') {
             const emoji = custom.e || '😀';
@@ -884,17 +894,17 @@ function preencherTelaPerfil() {
                 fotoEmoji.style.display = 'block';
             }
             fotoImg.style.display = 'none';
-            wrap.style.backgroundColor = cor;
+            if (inner) inner.style.backgroundColor = cor;
         } else if (custom && custom.url) {
             fotoImg.src = custom.url;
             fotoImg.style.display = '';
             if (fotoEmoji) fotoEmoji.style.display = 'none';
-            wrap.style.backgroundColor = '';
+            if (inner) inner.style.backgroundColor = '';
         } else {
             fotoImg.src = getFotoPerfilAtual(usuarioLogado);
             fotoImg.style.display = '';
             if (fotoEmoji) fotoEmoji.style.display = 'none';
-            wrap.style.backgroundColor = '';
+            if (inner) inner.style.backgroundColor = '';
         }
         fotoImg.onerror = function() { this.src = AVATAR_PLACEHOLDER; this.onerror = null; };
     }
