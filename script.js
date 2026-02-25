@@ -8,6 +8,166 @@ let corAtual = "#ff0000";
 let onboardingFeito = localStorage.getItem('arion_onboarding') === 'true';
 let usuarioLogado = null;
 
+// Placeholder: avatar "bonequinho" quando não há foto (Google/Apple) ou falha no carregamento
+const AVATAR_PLACEHOLDER = "data:image/svg+xml," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="38" r="18" fill="rgba(244,233,193,0.5)"/><path d="M20 92c0-20 22-30 30-30s30 10 30 30" fill="rgba(244,233,193,0.4)"/></svg>');
+
+// Paleta de cores sólidas que combinam com emojis (estilo WhatsApp)
+const PALETA_CORES_EMOJI = ['#FFE4B5', '#FFDAB9', '#E6E6FA', '#B0E0E6', '#98FB98', '#F0E68C', '#FFB6C1', '#DDA0DD', '#87CEEB', '#F5DEB3', '#D8BFD8', '#FFA07A', '#AFEEEE', '#E0BBE4', '#F7DC6F', '#D5F5E3', '#FADBD8', '#D6EAF8'];
+
+function corFundoPadraoParaEmoji(emoji) {
+    if (!emoji) return PALETA_CORES_EMOJI[0];
+    let hash = 0;
+    for (let i = 0; i < emoji.length; i++) hash = ((hash << 5) - hash) + emoji.charCodeAt(i) | 0;
+    return PALETA_CORES_EMOJI[Math.abs(hash) % PALETA_CORES_EMOJI.length];
+}
+
+/** Retorna o objeto da foto custom (emoji+cor ou null) ou se for imagem data URL, a string. */
+function getFotoPerfilObjeto() {
+    const raw = localStorage.getItem('arion_foto_perfil_custom');
+    if (!raw) return null;
+    if (raw.startsWith('data:')) return { tipo: 'imagem', url: raw };
+    try {
+        const obj = JSON.parse(raw);
+        if (obj && (obj.t === 'emoji' || obj.tipo === 'emoji')) return { t: 'emoji', e: obj.e || obj.emoji, c: obj.c || obj.corFundo || corFundoPadraoParaEmoji(obj.e || obj.emoji) };
+        return null;
+    } catch (_) {}
+    return { t: 'emoji', e: raw, c: corFundoPadraoParaEmoji(raw) };
+}
+
+function getFotoPerfilAtual(user) {
+    const custom = getFotoPerfilObjeto();
+    if (custom && custom.t === 'emoji') {
+        const emoji = custom.e || '😀';
+        const cor = (custom.c || corFundoPadraoParaEmoji(emoji)).replace('#', '%23');
+        return 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="' + (custom.c || PALETA_CORES_EMOJI[0]) + '"/><text y=".9em" x="50" text-anchor="middle" font-size="52" fill="%230a3d3a">' + emoji + '</text></svg>');
+    }
+    if (custom && custom.url) return custom.url;
+    if (user && user.photoURL && user.photoURL.trim()) return user.photoURL;
+    return AVATAR_PLACEHOLDER;
+}
+
+let _emojiPickerSelecionado = { emoji: null, cor: null };
+
+function extrairPrimeiroEmoji(str) {
+    const t = (str || '').trim();
+    if (!t) return null;
+    const primeiro = [...t][0];
+    return primeiro || t.charAt(0) || null;
+}
+
+function abrirEmojiPicker() {
+    const overlay = document.getElementById('emoji-picker-overlay');
+    const inputEmoji = document.getElementById('emoji-picker-input');
+    const corSection = document.getElementById('emoji-picker-cor');
+    const cores = document.getElementById('emoji-picker-cores');
+    const preview = document.getElementById('emoji-picker-preview');
+    const inputCor = document.getElementById('emoji-picker-input-cor');
+    const btnConfirmar = document.getElementById('emoji-picker-confirmar');
+    const btnCancelar = document.getElementById('emoji-picker-cancelar');
+    if (!overlay || !inputEmoji) return;
+
+    _emojiPickerSelecionado = { emoji: null, cor: null };
+    inputEmoji.value = '';
+    inputEmoji.placeholder = 'Toque aqui para abrir o teclado';
+    corSection.style.display = 'none';
+    preview.textContent = '';
+    preview.style.display = 'none';
+
+    function atualizarEmoji() {
+        const emoji = extrairPrimeiroEmoji(inputEmoji.value);
+        if (emoji) {
+            _emojiPickerSelecionado.emoji = emoji;
+            _emojiPickerSelecionado.cor = corFundoPadraoParaEmoji(emoji);
+            inputCor.value = _emojiPickerSelecionado.cor;
+            corSection.style.display = 'block';
+            preview.style.display = 'flex';
+            preview.style.backgroundColor = _emojiPickerSelecionado.cor;
+            preview.textContent = emoji;
+        } else {
+            corSection.style.display = 'none';
+            preview.style.display = 'none';
+        }
+    }
+
+    inputEmoji.oninput = inputEmoji.onkeyup = atualizarEmoji;
+
+    cores.innerHTML = '';
+    PALETA_CORES_EMOJI.forEach(cor => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'emoji-cor-btn';
+        btn.style.backgroundColor = cor;
+        btn.title = cor;
+        btn.onclick = () => {
+            _emojiPickerSelecionado.cor = cor;
+            inputCor.value = cor;
+            if (preview) preview.style.backgroundColor = cor;
+            cores.querySelectorAll('.emoji-cor-btn').forEach(b => b.classList.remove('emoji-cor-ativo'));
+            btn.classList.add('emoji-cor-ativo');
+        };
+        cores.appendChild(btn);
+    });
+
+    inputCor.oninput = () => {
+        _emojiPickerSelecionado.cor = inputCor.value;
+        if (preview) preview.style.backgroundColor = inputCor.value;
+    };
+
+    btnConfirmar.onclick = () => {
+        const emoji = _emojiPickerSelecionado.emoji || extrairPrimeiroEmoji(inputEmoji.value);
+        if (!emoji) return;
+        const payload = { t: 'emoji', e: emoji, c: _emojiPickerSelecionado.cor || corFundoPadraoParaEmoji(emoji) };
+        localStorage.setItem('arion_foto_perfil_custom', JSON.stringify(payload));
+        salvar();
+        if (usuarioLogado) atualizarPerfilMenu(usuarioLogado, localStorage.getItem('arion_assinante') === 'true');
+        preencherTelaPerfil();
+        overlay.style.display = 'none';
+    };
+
+    btnCancelar.onclick = () => { overlay.style.display = 'none'; };
+    overlay.onclick = (e) => { if (e.target === overlay) overlay.style.display = 'none'; };
+    const box = document.querySelector('.emoji-picker-box');
+    if (box) box.onclick = (e) => e.stopPropagation();
+
+    overlay.style.display = 'flex';
+    setTimeout(() => inputEmoji.focus(), 300);
+}
+
+function atualizarPerfilMenu(user, assinante) {
+    const img = document.getElementById('foto-perfil-menu');
+    const nomeEl = document.getElementById('nome-usuario-menu');
+    const wrap = document.getElementById('menu-profile-foto-wrap');
+    if (!img || !nomeEl || !wrap) return;
+    if (user && (user.photoURL || user.displayName)) {
+        img.src = getFotoPerfilAtual(user);
+        img.onerror = function() { this.src = AVATAR_PLACEHOLDER; this.onerror = null; };
+        nomeEl.textContent = (user.displayName && user.displayName.trim()) ? user.displayName : (user.email || 'Usuário');
+        nomeEl.style.display = '';
+        if (assinante === true) {
+            wrap.classList.add('premium');
+            let badge = wrap.querySelector('.menu-profile-premium-badge');
+            if (!badge) {
+                badge = document.createElement('span');
+                badge.className = 'menu-profile-premium-badge';
+                badge.textContent = 'Premium';
+                wrap.appendChild(badge);
+            }
+        } else {
+            wrap.classList.remove('premium');
+            const badge = wrap.querySelector('.menu-profile-premium-badge');
+            if (badge) badge.remove();
+        }
+    } else {
+        img.src = AVATAR_PLACEHOLDER;
+        img.onerror = null;
+        nomeEl.textContent = '';
+        nomeEl.style.display = 'none';
+        wrap.classList.remove('premium');
+        const badge = wrap.querySelector('.menu-profile-premium-badge');
+        if (badge) badge.remove();
+    }
+}
+
 // Dados dos cards do tutorial (isTutorial/corEspecial aplicados no deck na sincronização)
 const TUTORIAL_CARDS_DATA = [
     { f: `Como funciona um <b>flashcard</b>?`, v: `Você lê a pergunta, tenta lembrar a resposta, vira a carta e escolhe se foi <i>fácil</i>, <i>médio </i> ou <i>difícil</i>.`, rev: 0, int: 0, ease: 2.5, liberado: true, state: 'new', step: 0, skipSRS: true },
@@ -237,6 +397,7 @@ function inicializarApp() {
                         const tutorialConcluido = dados.tutorialConcluido === true;
                         localStorage.setItem('arion_assinante', assinante ? 'true' : 'false');
                         localStorage.setItem('arion_tutorial_concluido', tutorialConcluido ? 'true' : 'false');
+                        atualizarPerfilMenu(user, assinante);
 
                         await Promise.all([verificarTutorial(), verificarAtualizacoesPremium()]);
                         await sincronizarComNuvem();
@@ -254,6 +415,7 @@ function inicializarApp() {
                 })();
             } else {
                 // --- CENÁRIO: USUÁRIO DESLOGADO ---
+                atualizarPerfilMenu(null);
                 if (splash) splash.style.display = 'none';
                 if (loginScreen) {
                     loginScreen.style.display = 'flex';
@@ -296,6 +458,7 @@ async function loginComGoogle() {
             const dados = docAtual.exists ? docAtual.data() : {};
             localStorage.setItem('arion_assinante', dados.assinante === true ? 'true' : 'false');
             localStorage.setItem('arion_tutorial_concluido', dados.tutorialConcluido === true ? 'true' : 'false');
+            atualizarPerfilMenu(usuarioLogado, dados.assinante === true);
             await Promise.all([verificarTutorial(), verificarAtualizacoesPremium()]);
             await sincronizarComNuvem();
         } else {
@@ -359,6 +522,7 @@ async function loginComApple() {
             const dados = docAtual.exists ? docAtual.data() : {};
             localStorage.setItem('arion_assinante', dados.assinante === true ? 'true' : 'false');
             localStorage.setItem('arion_tutorial_concluido', dados.tutorialConcluido === true ? 'true' : 'false');
+            atualizarPerfilMenu(usuarioLogado, dados.assinante === true);
             await Promise.all([verificarTutorial(), verificarAtualizacoesPremium()]);
             await sincronizarComNuvem();
         } else {
@@ -402,6 +566,7 @@ async function deslogar() {
         
         // Limpa o usuário atual
         usuarioLogado = null;
+        atualizarPerfilMenu(null);
 
         // Garante que a tela de login fique visível de novo
         const loginScreen = document.getElementById('login-forced-screen');
@@ -546,6 +711,11 @@ async function sincronizarComNuvem() {
                 const merged = { ...getHeatmapData(), ...dados.heatmap };
                 localStorage.setItem(HEATMAP_KEY, JSON.stringify(merged));
             }
+            if (dados.metaDiaria != null) localStorage.setItem('arion_meta_diaria', String(dados.metaDiaria));
+            if (dados.horarioLembrete) localStorage.setItem('arion_horario_lembrete', dados.horarioLembrete);
+            if (dados.lembreteAtivo === true) localStorage.setItem('arion_lembrete_ativo', 'true');
+            else if (dados.lembreteAtivo === false) localStorage.setItem('arion_lembrete_ativo', 'false');
+            if (dados.fotoPerfilCustom) localStorage.setItem('arion_foto_perfil_custom', typeof dados.fotoPerfilCustom === 'object' ? JSON.stringify(dados.fotoPerfilCustom) : dados.fotoPerfilCustom);
         }
 
         renderizar();
@@ -568,7 +738,175 @@ window.addEventListener('DOMContentLoaded', () => {
             if(btnSub) btnSub.classList.toggle('active-tool', isSub);
         }
     });
+
+    // Eventos da tela de perfil (bind único)
+    const perfilScreen = document.getElementById('perfil-screen');
+    if (perfilScreen) {
+        const btnEditar = document.getElementById('perfil-btn-editar-foto');
+        const menuFoto = document.getElementById('perfil-foto-menu');
+        const opcaoTrocar = document.getElementById('perfil-opcao-trocar');
+        const opcaoEmoji = document.getElementById('perfil-opcao-emoji');
+        const inputFile = document.getElementById('perfil-input-file');
+        const metaDiaria = document.getElementById('perfil-meta-diaria');
+        const horarioLembrete = document.getElementById('perfil-horario-lembrete');
+        const lembreteAtivo = document.getElementById('perfil-lembrete-ativo');
+        const btnSuporte = document.getElementById('perfil-btn-suporte');
+
+        if (btnEditar && menuFoto) {
+            btnEditar.addEventListener('click', (e) => {
+                e.stopPropagation();
+                menuFoto.style.display = menuFoto.style.display === 'none' ? 'flex' : 'none';
+            });
+        }
+        document.addEventListener('click', () => {
+            if (menuFoto) menuFoto.style.display = 'none';
+        });
+        if (menuFoto) menuFoto.addEventListener('click', (e) => e.stopPropagation());
+
+        if (opcaoTrocar && inputFile) {
+            opcaoTrocar.addEventListener('click', () => {
+                menuFoto.style.display = 'none';
+                inputFile.click();
+            });
+        }
+        if (opcaoEmoji) {
+            opcaoEmoji.addEventListener('click', () => {
+                menuFoto.style.display = 'none';
+                abrirEmojiPicker();
+            });
+        }
+        const opcaoConta = document.getElementById('perfil-opcao-conta');
+        if (opcaoConta) {
+            opcaoConta.addEventListener('click', () => {
+                menuFoto.style.display = 'none';
+                localStorage.removeItem('arion_foto_perfil_custom');
+                salvar();
+                if (usuarioLogado) atualizarPerfilMenu(usuarioLogado, localStorage.getItem('arion_assinante') === 'true');
+                preencherTelaPerfil();
+            });
+        }
+        if (inputFile) {
+            inputFile.addEventListener('change', (e) => {
+                const file = e.target.files && e.target.files[0];
+                if (!file || !file.type.startsWith('image/')) return;
+                const reader = new FileReader();
+                reader.onload = () => {
+                    const dataUrl = reader.result;
+                    localStorage.setItem('arion_foto_perfil_custom', dataUrl);
+                    salvar();
+                    if (usuarioLogado) atualizarPerfilMenu(usuarioLogado, localStorage.getItem('arion_assinante') === 'true');
+                    preencherTelaPerfil();
+                };
+                reader.readAsDataURL(file);
+                inputFile.value = '';
+            });
+        }
+
+        if (metaDiaria) {
+            metaDiaria.addEventListener('change', () => {
+                const val = metaDiaria.value.trim();
+                if (val !== '') localStorage.setItem('arion_meta_diaria', val);
+                else localStorage.removeItem('arion_meta_diaria');
+                salvar();
+            });
+        }
+        if (horarioLembrete) {
+            horarioLembrete.addEventListener('change', () => {
+                localStorage.setItem('arion_horario_lembrete', horarioLembrete.value || '');
+                salvar();
+                agendarLembreteDiario(horarioLembrete.value, document.getElementById('perfil-lembrete-ativo') && document.getElementById('perfil-lembrete-ativo').checked);
+            });
+        }
+        if (lembreteAtivo) {
+            lembreteAtivo.addEventListener('change', () => {
+                localStorage.setItem('arion_lembrete_ativo', lembreteAtivo.checked ? 'true' : 'false');
+                salvar();
+                agendarLembreteDiario(document.getElementById('perfil-horario-lembrete')?.value || '', lembreteAtivo.checked);
+            });
+        }
+        if (btnSuporte) {
+            btnSuporte.addEventListener('click', abrirSuporteEmail);
+        }
+    }
 });
+
+function agendarLembreteDiario(horario, ativo) {
+    if (!ativo || !horario) return;
+    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.LocalNotifications) {
+        window.Capacitor.Plugins.LocalNotifications.schedule({
+            notifications: [{
+                id: 1,
+                title: 'Árion Flashcards',
+                body: 'Hora de revisar seus cards!',
+                schedule: { at: new Date(new Date().toDateString() + ' ' + horario).getTime(), every: 'day' }
+            }]
+        }).catch(() => {});
+    }
+}
+
+function abrirSuporteEmail() {
+    const nome = (usuarioLogado && (usuarioLogado.displayName || usuarioLogado.email)) ? (usuarioLogado.displayName || usuarioLogado.email) : 'Usuário';
+    const assunto = 'Suporte Árion - Usuário: ' + encodeURIComponent(nome);
+    const corpo = encodeURIComponent('Olá equipe Árion, estou entrando em contato pois...');
+    window.location.href = 'mailto:arion.discursivas@gmail.com?subject=' + assunto + '&body=' + corpo;
+}
+
+function preencherTelaPerfil() {
+    const nomeEl = document.getElementById('perfil-nome');
+    const emailEl = document.getElementById('perfil-email');
+    const fotoImg = document.getElementById('perfil-foto-img');
+    const fotoEmoji = document.getElementById('perfil-foto-emoji');
+    const wrap = document.getElementById('perfil-foto-wrap');
+    const metaInput = document.getElementById('perfil-meta-diaria');
+    const horarioInput = document.getElementById('perfil-horario-lembrete');
+    const lembreteToggle = document.getElementById('perfil-lembrete-ativo');
+    const streakValor = document.getElementById('perfil-streak-valor');
+    const streakSub = document.getElementById('perfil-streak-sub');
+
+    if (usuarioLogado) {
+        if (nomeEl) nomeEl.textContent = (usuarioLogado.displayName && usuarioLogado.displayName.trim()) ? usuarioLogado.displayName : (usuarioLogado.email || 'Usuário');
+        if (emailEl) {
+            emailEl.textContent = usuarioLogado.email || '';
+            emailEl.style.display = usuarioLogado.email ? '' : 'none';
+        }
+    } else {
+        if (nomeEl) nomeEl.textContent = 'Usuário';
+        if (emailEl) emailEl.style.display = 'none';
+    }
+
+    const custom = getFotoPerfilObjeto();
+    if (fotoImg && wrap) {
+        if (custom && custom.t === 'emoji') {
+            const emoji = custom.e || '😀';
+            const cor = custom.c || corFundoPadraoParaEmoji(emoji);
+            if (fotoEmoji) {
+                fotoEmoji.textContent = emoji;
+                fotoEmoji.style.display = 'block';
+            }
+            fotoImg.style.display = 'none';
+            wrap.style.backgroundColor = cor;
+        } else if (custom && custom.url) {
+            fotoImg.src = custom.url;
+            fotoImg.style.display = '';
+            if (fotoEmoji) fotoEmoji.style.display = 'none';
+            wrap.style.backgroundColor = '';
+        } else {
+            fotoImg.src = getFotoPerfilAtual(usuarioLogado);
+            fotoImg.style.display = '';
+            if (fotoEmoji) fotoEmoji.style.display = 'none';
+            wrap.style.backgroundColor = '';
+        }
+        fotoImg.onerror = function() { this.src = AVATAR_PLACEHOLDER; this.onerror = null; };
+    }
+
+    if (metaInput) metaInput.value = localStorage.getItem('arion_meta_diaria') || '';
+    if (horarioInput) horarioInput.value = localStorage.getItem('arion_horario_lembrete') || '';
+    if (lembreteToggle) lembreteToggle.checked = localStorage.getItem('arion_lembrete_ativo') === 'true';
+
+    const streakData = JSON.parse(localStorage.getItem('arion_streak_data')) || { contagem: 0, ultimaData: null };
+    if (streakValor) streakValor.textContent = streakData.contagem + ' ' + (streakData.contagem === 1 ? 'dia' : 'dias');
+    if (streakSub) streakSub.textContent = streakData.ultimaData ? 'Último estudo: ' + streakData.ultimaData : 'Estude para começar';
+}
 
 
 
@@ -667,6 +1005,12 @@ function atualizarStreak() {
     
     const streakAtual = JSON.parse(localStorage.getItem('arion_streak_data')) || { contagem: 0, ultimaData: null };
             renderizar();
+
+            // Preferências de perfil para enviar à nuvem
+            const metaDiaria = localStorage.getItem('arion_meta_diaria');
+            const horarioLembrete = localStorage.getItem('arion_horario_lembrete');
+            const lembreteAtivo = localStorage.getItem('arion_lembrete_ativo') === 'true';
+            const fotoPerfilCustom = localStorage.getItem('arion_foto_perfil_custom');
         
             // 2. Se não estiver logado, para por aqui
             if (!usuarioLogado || !window.db) return;
@@ -679,6 +1023,10 @@ function atualizarStreak() {
                     dadosStreak: streakAtual,
                     meusVestibulares: meusVestibulares,
                     heatmap: getHeatmapData(),
+                    metaDiaria: metaDiaria != null && metaDiaria !== '' ? parseInt(metaDiaria, 10) : null,
+                    horarioLembrete: horarioLembrete || null,
+                    lembreteAtivo: lembreteAtivo,
+                    fotoPerfilCustom: fotoPerfilCustom && (!fotoPerfilCustom.startsWith('data:') || fotoPerfilCustom.length < 100000) ? fotoPerfilCustom : null,
                 });
                 docRef.set(payload, { merge: true })
                 .then(() => console.log("Nuvem atualizada com sucesso (Upload OK)"))
@@ -707,6 +1055,7 @@ function atualizarStreak() {
                 if(nav) nav.style.display = 'flex';
                 if(header) header.style.display = 'flex';
                 if(id === 'deck-screen') atualizarNav('nav-decks');
+                if(id === 'perfil-screen') preencherTelaPerfil();
             }
             window.scrollTo(0,0);
         }
@@ -872,7 +1221,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         tr.innerHTML = `<td style="max-width:110px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">${c.f}</td>
                                         <td style="max-width:110px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">${c.v}</td>
                                         <td style="color:#666">${b.nome}</td>`;
-                        tr.onclick = () => editarCardPainel(deckIdx, cardIdx);
+                        // Decks premium são apenas para estudo: não permitir editar cards pelo painel
+                        if (!b.premium) tr.onclick = () => editarCardPainel(deckIdx, cardIdx);
                         list.appendChild(tr);
                     }
                 });
@@ -964,7 +1314,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 ${estaFixado ? 'DESAFIXAR' : 'FIXAR'}
                             </div>
                             <div style="display:flex; height: 100%;">
-                                <div onclick="prepararRenomear(${i})" style="background: #ff9500; width: 75px; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 0.65rem;">EDITAR</div>
+                                ${b.premium ? '' : `<div onclick="prepararRenomear(${i})" style="background: #ff9500; width: 75px; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 0.65rem;">EDITAR</div>`}
                                 <div onclick="prepararExclusao(${i})" style="background: #ff3b30; width: 75px; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 0.65rem;">APAGAR</div>
                             </div>
                         </div>
@@ -1063,7 +1413,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         style="background:${isDisabled ? '#e0e0e0' : '#2185d0'}; color:${isDisabled ? '#999' : 'white'}; padding:12px 20px; width:auto; height:auto; cursor:${isDisabled ? 'not-allowed' : 'pointer'}; opacity:${isDisabled ? '0.7' : '1'}; border-radius:10px; border:none; font-weight:bold;" 
                         onclick="${isDisabled ? '' : 'iniciarEstudo(' + dIdx + ')'}" ${isDisabled ? 'disabled' : ''}>Estudar agora</button>
                 </div>`;
-                actions.innerHTML = `<button class="btn-gold" onclick="abrirCriador(${i})">+ ADICIONAR CARDS</button>`;
+                // Decks premium são apenas para estudo: não mostrar botão de adicionar cards
+                actions.innerHTML = b.premium ? '' : `<button class="btn-gold" onclick="abrirCriador(${i})">+ ADICIONAR CARDS</button>`;
             }
         }
 
@@ -1073,14 +1424,14 @@ document.addEventListener('DOMContentLoaded', () => {
             let filaGeral = [];
             const agora = Date.now();
         
-            baralhos.forEach(b => {
+            baralhos.forEach((b, deckIdx) => {
                 if (b.nome === TUTORIAL_DECK_NOME) return;
-                const cardsDesteBaralho = b.cards.filter(c => {
+                b.cards.forEach((c, cardIdx) => {
                     const isPendente = c.state === 'new' || c.rev <= agora;
-                    const isLiberado = b.premium ? c.liberado : true; 
-                    return isPendente && isLiberado;
-                }).map(c => ({ ...c, _deckNome: b.nome }));
-                filaGeral = filaGeral.concat(cardsDesteBaralho);
+                    const isLiberado = b.premium ? c.liberado : true;
+                    if (isPendente && isLiberado)
+                        filaGeral.push({ ...c, _deckNome: b.nome, _deckIdx: deckIdx, _cardIdx: cardIdx });
+                });
             });
         
             if (filaGeral.length === 0) {
@@ -1170,7 +1521,11 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('display-back').style.display = 'block';
             document.getElementById('card-divider').style.display = 'block';
             document.getElementById('anki-btns').style.display = 'flex';
-            
+            // Esconder botão Editar (lápis) em decks premium — apenas para estudo
+            const deck = c._deckNome ? baralhos.find(b => b.nome === c._deckNome) : baralhos[dIdx];
+            const editWrap = document.getElementById('study-edit-btn-wrap');
+            if (editWrap) editWrap.style.display = (deck && deck.premium) ? 'none' : 'flex';
+
             const int = c.int || 0;
             const ease = c.ease || ANKI.startingEase;
             const steps = ANKI.learningSteps;
@@ -1343,8 +1698,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ======== FUNÇÕES AUXILIARES DE FLUXO ========
+    // Quando o card veio do "Estudar tudo", é uma cópia; precisamos escrever o progresso de volta no baralho (incl. premium).
+    function sincronizarCardParaBaralho(card) {
+        if (card._deckIdx == null || card._cardIdx == null) return;
+        const orig = baralhos[card._deckIdx].cards[card._cardIdx];
+        if (!orig) return;
+        orig.rep = card.rep;
+        orig.state = card.state;
+        orig.rev = card.rev;
+        orig.int = card.int;
+        orig.ease = card.ease;
+        orig.step = card.step;
+        if (card.hasOwnProperty('prevInt')) orig.prevInt = card.prevInt;
+    }
 
     function reenfileirar(c) {
+        sincronizarCardParaBaralho(c);
         fila.push(c);
         salvar();
         carregarCard();
@@ -1352,6 +1721,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function finalizar() {
         c.rep++;
+        sincronizarCardParaBaralho(c);
         salvar();
     
         if (fila.length > 0) {
@@ -1410,6 +1780,8 @@ function renderEstatisticas() {
     const hoje = new Date();
     const hojeStr = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}-${String(hoje.getDate()).padStart(2, '0')}`;
 
+    // totalCartoes = quantidade de cartões em todos os baralhos (incl. premium)
+    // totalRespondidos = soma de "rep" de cada cartão = total de vezes que o usuário respondeu (De novo/Difícil/Bom/Fácil)
     let totalRespondidos = 0;
     let totalCartoes = 0;
     baralhos.forEach(b => {
@@ -1423,17 +1795,16 @@ function renderEstatisticas() {
     const diasComEstudo = Object.keys(heatmap).length;
     const mediaPorDia = diasComEstudo > 0 ? Math.round(totalRespondidos / diasComEstudo) : 0;
 
-    const DIAS_SEMANA = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-    const NUM_SEMANAS = 52;
+    const DIAS_SEMANA = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+    const MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+    const NUM_SEMANAS = 53; // 1º jan do ano vigente até ~1 ano à frente
     const grid = Array(7).fill(null).map(() => Array(NUM_SEMANAS).fill(0));
-    const inicio = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
-    inicio.setDate(inicio.getDate() - (NUM_SEMANAS * 7 - 1));
+    const inicio = new Date(hoje.getFullYear(), 0, 1); // 1º de janeiro do ano vigente
     let maxCount = 0;
     for (let i = 0; i < NUM_SEMANAS * 7; i++) {
         const d = new Date(inicio.getTime() + i * 86400000);
-        if (d > hoje) break;
         const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-        const count = heatmap[dateStr] || 0;
+        const count = (d <= hoje) ? (heatmap[dateStr] || 0) : 0;
         const row = d.getDay();
         const col = Math.floor(i / 7);
         if (col >= 0 && col < NUM_SEMANAS) {
@@ -1441,6 +1812,20 @@ function renderEstatisticas() {
             if (count > maxCount) maxCount = count;
         }
     }
+    function dataParaCell(r, c) {
+        const dStart = new Date(inicio.getTime() + c * 7 * 86400000);
+        const offset = (r - dStart.getDay() + 7) % 7;
+        return new Date(dStart.getTime() + offset * 86400000);
+    }
+    function formatarDataLonga(d) {
+        return `${DIAS_SEMANA[d.getDay()]}, ${d.getDate()} ${MESES[d.getMonth()]}`;
+    }
+    function formatarDataComMesMaiusculo(d) {
+        const mes = MESES[d.getMonth()];
+        const mesMaiusculo = mes.charAt(0).toUpperCase() + mes.slice(1);
+        return `${DIAS_SEMANA[d.getDay()]}, ${d.getDate()} ${mesMaiusculo}`;
+    }
+    // Níveis 0–4: mais revisões = nível maior = cor mais escura (estilo Anki)
     const nivel = (c) => {
         if (c === 0) return 0;
         if (maxCount <= 0) return 0;
@@ -1455,17 +1840,27 @@ function renderEstatisticas() {
     const colHoje = Math.min(Math.floor(dayIndexHoje / 7), NUM_SEMANAS - 1);
     const rowHoje = hoje.getDay();
 
-    let heatmapHtml = '<div style="display:flex">';
+    let heatmapHtml = '<div class="heatmap-wrapper" style="display:flex; direction:ltr; align-items:flex-start">';
     heatmapHtml += '<div class="heatmap-weekdays">';
-    for (let r = 0; r < 7; r++) heatmapHtml += `<div>${DIAS_SEMANA[r].charAt(0)}</div>`;
-    heatmapHtml += '</div><div class="heatmap-grid" style="flex:1; overflow-x:auto">';
+    for (let r = 0; r < 7; r++) heatmapHtml += `<div class="heatmap-weekday">${DIAS_SEMANA[r].charAt(0)}</div>`;
+    heatmapHtml += '</div><div id="heatmap-grid-scroll" class="heatmap-grid" style="flex:1; overflow-x:auto; min-width:0">';
     for (let r = 0; r < 7; r++) {
         heatmapHtml += '<div class="heatmap-row">';
         for (let c = 0; c < NUM_SEMANAS; c++) {
             const count = grid[r][c];
             const isHoje = c === colHoje && r === rowHoje;
-            const title = isHoje ? `Hoje: ${count} revisões` : (count ? `${count} revisões` : 'Nenhuma revisão');
-            heatmapHtml += `<div class="heatmap-cell" data-level="${nivel(count)}" title="${title}"${isHoje ? ' style="outline:2px solid var(--accent-gold); outline-offset:1px"' : ''}></div>`;
+            const isFuturo = c > colHoje || (c === colHoje && r > rowHoje);
+            const dataCell = dataParaCell(r, c);
+            const dataStr = formatarDataComMesMaiusculo(dataCell);
+            let parteContagem;
+            if (isFuturo) parteContagem = 'Dia futuro';
+            else if (count === 0) parteContagem = 'Nenhum card revisado';
+            else if (count === 1) parteContagem = '1 card revisado';
+            else parteContagem = `${count} cards revisados`;
+            const title = `${parteContagem} - ${dataStr}`;
+            const futuroClass = isFuturo ? ' heatmap-cell-future' : '';
+            const hojeAttr = isHoje ? ' id="heatmap-cell-hoje" style="outline:2px solid var(--accent-gold); outline-offset:1px"' : '';
+            heatmapHtml += `<div class="heatmap-cell${futuroClass}" data-level="${nivel(count)}" title="${title.replace(/"/g, '&quot;')}"${isHoje ? hojeAttr : ''}></div>`;
         }
         heatmapHtml += '</div>';
     }
@@ -1495,9 +1890,9 @@ function renderEstatisticas() {
                 <small style="opacity:0.8">revisões hoje</small>
             </div>
             <div class="stats-card">
-                <h3>📊 Média por dia</h3>
+                <h3>📊 Média de revisões por dia</h3>
                 <div class="stats-value">${mediaPorDia}</div>
-                <small style="opacity:0.8">em dias com estudo</small>
+                <small style="opacity:0.8">em dias em que você estudou</small>
             </div>
         </div>
         <div class="stats-card">
@@ -1505,6 +1900,11 @@ function renderEstatisticas() {
             ${heatmapHtml}
         </div>
     `;
+    // Por padrão posicionar a barra horizontal no dia de hoje (aluno pode arrastar para os lados)
+    requestAnimationFrame(() => {
+        const hojeCell = document.getElementById('heatmap-cell-hoje');
+        if (hojeCell) hojeCell.scrollIntoView({ behavior: 'auto', inline: 'center', block: 'nearest' });
+    });
 }
 
    /* ============================ ÁREA DE GERENCIADOR DE VESTIBULARES ---======================== */

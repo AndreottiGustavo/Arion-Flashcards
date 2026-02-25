@@ -40,6 +40,12 @@
                 <button id="menu-toggle" class="hamburger-btn">☰</button>
                 
                 <nav class="nav-menu-dropdown" id="main-nav">
+                    <div class="menu-profile-area" id="menu-profile-area">
+                        <span id="nome-usuario-menu" class="nome-usuario-menu nome-usuario-clicavel" onclick="mudarTela('perfil-screen'); document.getElementById('main-nav') && document.getElementById('main-nav').classList.remove('show');" role="button" tabindex="0"></span>
+                        <div class="menu-profile-foto-wrap" id="menu-profile-foto-wrap">
+                            <img id="foto-perfil-menu" class="foto-perfil-menu" src="" alt="Foto do perfil" referrerpolicy="no-referrer">
+                        </div>
+                    </div>
                     <button class="nav-btn" id="nav-decks" onclick="mudarTela('deck-screen'); atualizarNav('nav-decks')">🃏 Baralhos</button>
                     <button class="nav-btn" onclick="abrirVestibulares()">📅 Meus Vestibulares</button>
                     <button class="nav-btn" id="nav-stats" onclick="abrirEstatisticas(); atualizarNav('nav-stats')">📊 Estatísticas</button>
@@ -161,6 +167,28 @@
         </div>
     </div>
 
+    <!-- Modal: teclado nativo para emoji + cor de fundo -->
+    <div id="emoji-picker-overlay" class="emoji-picker-overlay" style="display:none;">
+        <div class="emoji-picker-box">
+            <h3 class="emoji-picker-title">Escolha um emoji</h3>
+            <p class="emoji-picker-dica">Toque no campo abaixo para abrir o teclado do celular e escolher um emoji.</p>
+            <input type="text" id="emoji-picker-input" class="emoji-picker-input" placeholder="Toque aqui para abrir o teclado" inputmode="text" autocomplete="off">
+            <div class="emoji-picker-cor" id="emoji-picker-cor" style="display:none;">
+                <p class="emoji-picker-cor-label">Cor de fundo</p>
+                <div class="emoji-picker-cores" id="emoji-picker-cores"></div>
+                <div class="emoji-picker-cor-custom">
+                    <label class="perfil-label">Cor personalizada</label>
+                    <input type="color" id="emoji-picker-input-cor" value="#FFE4B5" title="Escolher cor">
+                </div>
+            </div>
+            <div class="emoji-picker-preview" id="emoji-picker-preview"></div>
+            <div class="emoji-picker-actions">
+                <button type="button" class="btn-cancelar" id="emoji-picker-cancelar">Cancelar</button>
+                <button type="button" class="btn-gold" id="emoji-picker-confirmar">Usar como foto</button>
+            </div>
+        </div>
+    </div>
+
     <!-- ======== tela inicial baralhos =============-->
     <div id="deck-screen" class="screen">
         <header><h1>Meus Baralhos</h1></header>
@@ -186,6 +214,66 @@
             <button class="btn-outline" onclick="atualizarConteudoPremium()" style="margin-top:10px; font-size:0.85rem;">Já sou assinante – Atualizar conteúdo</button>
         </div>
     </div>
+
+    <!-- ======== tela de perfil =============-->
+    <section id="perfil-screen" class="screen">
+        <header>
+            <button type="button" onclick="mudarTela('deck-screen')" class="btn-voltar-perfil">← Voltar</button>
+            <h1>Perfil</h1>
+            <div style="width: 90px;"></div>
+        </header>
+
+        <div class="perfil-conteudo">
+            <!-- Header do perfil: foto + nome + email -->
+            <div class="perfil-header-card">
+                <div class="perfil-foto-wrap" id="perfil-foto-wrap">
+                    <img id="perfil-foto-img" class="perfil-foto-img" src="" alt="Foto do perfil" referrerpolicy="no-referrer">
+                    <span id="perfil-foto-emoji" class="perfil-foto-emoji" style="display:none;"></span>
+                    <button type="button" class="perfil-foto-editar" id="perfil-btn-editar-foto" title="Editar foto" aria-label="Editar foto">✎</button>
+                    <div class="perfil-foto-menu" id="perfil-foto-menu" style="display:none;">
+                        <button type="button" class="perfil-foto-menu-item" id="perfil-opcao-trocar">📷 Trocar Imagem</button>
+                        <button type="button" class="perfil-foto-menu-item" id="perfil-opcao-emoji">😀 Usar Emoji como Foto</button>
+                        <button type="button" class="perfil-foto-menu-item" id="perfil-opcao-conta">👤 Usar foto da conta</button>
+                    </div>
+                    <input type="file" id="perfil-input-file" accept="image/*" style="display:none;">
+                </div>
+                <h2 class="perfil-nome" id="perfil-nome">Nome do Usuário</h2>
+                <p class="perfil-email" id="perfil-email">email@exemplo.com</p>
+            </div>
+
+            <!-- Funcionalidades de estudo -->
+            <div class="perfil-card">
+                <h3 class="perfil-card-titulo">📚 Meta de estudo</h3>
+                <label class="perfil-label" for="perfil-meta-diaria">Meta de cards novos por dia</label>
+                <input type="number" id="perfil-meta-diaria" class="perfil-input-numero" min="1" max="500" placeholder="Ex: 20" inputmode="numeric">
+            </div>
+
+            <div class="perfil-card">
+                <h3 class="perfil-card-titulo">🔔 Lembrete de revisões</h3>
+                <div class="perfil-lembrete-row">
+                    <label class="perfil-toggle-label">
+                        <span class="perfil-toggle-text">Lembrete diário</span>
+                        <input type="checkbox" id="perfil-lembrete-ativo" class="perfil-toggle-input">
+                        <span class="perfil-toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="perfil-lembrete-row">
+                    <label class="perfil-label" for="perfil-horario-lembrete">Horário</label>
+                    <input type="time" id="perfil-horario-lembrete" class="perfil-input-time">
+                </div>
+            </div>
+
+            <!-- Streak -->
+            <div class="perfil-card perfil-streak-card" id="perfil-streak-card">
+                <h3 class="perfil-card-titulo">🔥 Sua sequência</h3>
+                <div class="perfil-streak-valor" id="perfil-streak-valor">0 dias</div>
+                <small class="perfil-streak-sub" id="perfil-streak-sub">Estude para começar</small>
+            </div>
+
+            <!-- Suporte -->
+            <button type="button" class="perfil-btn-suporte" id="perfil-btn-suporte">✉️ Suporte e Feedback</button>
+        </div>
+    </section>
 
     <div id="browse-screen" class="screen">
         <header><h1>Painel de Cards</h1></header>

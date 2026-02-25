@@ -115,6 +115,74 @@ body, html {
     pointer-events: none;
 }
 
+/* Área de perfil no topo do menu sanduíche */
+.menu-profile-area {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 12px 10px 14px;
+    margin: -4px 0 8px 0;
+    border-bottom: 1px solid rgba(244, 233, 193, 0.25);
+}
+.menu-profile-foto-wrap {
+    position: relative;
+    flex-shrink: 0;
+    border-radius: 50%;
+    padding: 2px;
+    background: rgba(255,255,255,0.1);
+}
+.menu-profile-foto-wrap.premium {
+    border: 2px solid var(--premium-gold);
+    box-shadow: 0 0 12px rgba(255, 215, 0, 0.35);
+}
+.menu-profile-foto-wrap .foto-perfil-menu,
+#foto-perfil-menu.foto-perfil-menu {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+    background: rgba(255,255,255,0.08);
+}
+.nome-usuario-menu {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--accent-gold);
+    text-align: left;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.nome-usuario-clicavel {
+    cursor: pointer;
+    padding: 4px 0;
+    border-radius: 8px;
+    transition: background 0.2s, opacity 0.2s;
+}
+.nome-usuario-clicavel:hover {
+    background: rgba(244, 233, 193, 0.15);
+    opacity: 0.95;
+}
+.nome-usuario-clicavel:active {
+    opacity: 0.85;
+}
+.menu-profile-premium-badge {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    background: var(--premium-gold);
+    color: var(--primary-green);
+    font-size: 0.6rem;
+    font-weight: 800;
+    padding: 2px 5px;
+    border-radius: 6px;
+    letter-spacing: 0.5px;
+}
+
 .nav-menu-dropdown.show {
     opacity: 1;
     visibility: visible;
@@ -348,20 +416,27 @@ h1 { color: var(--accent-gold); margin: 0; font-size: 1.4rem; letter-spacing: 2p
     color: rgba(255,255,255,0.8);
 }
 .stats-heatmap-legend span { margin-right: 4px; }
+/* Wrapper: esquerda = passado, direita = presente (estilo Anki); direction:ltr garante início à esquerda */
+.heatmap-wrapper {
+    direction: ltr;
+    margin-top: 8px;
+}
 .heatmap-grid {
     display: flex;
     flex-direction: column;
     gap: 3px;
-    margin-top: 8px;
+    margin-top: 0;
 }
 .heatmap-row {
     display: flex;
     gap: 3px;
     justify-content: flex-start;
+    flex-shrink: 0;
 }
 .heatmap-cell {
     width: 12px;
     height: 12px;
+    flex-shrink: 0;
     border-radius: 2px;
     background: rgba(255,255,255,0.08);
     transition: transform 0.15s;
@@ -369,17 +444,35 @@ h1 { color: var(--accent-gold); margin: 0; font-size: 1.4rem; letter-spacing: 2p
 .heatmap-cell:hover {
     transform: scale(1.2);
 }
-.heatmap-cell[data-level="0"] { background: rgba(255,255,255,0.08); }
-.heatmap-cell[data-level="1"] { background: rgba(34, 197, 94, 0.4); }
-.heatmap-cell[data-level="2"] { background: rgba(34, 197, 94, 0.6); }
-.heatmap-cell[data-level="3"] { background: rgba(34, 197, 94, 0.85); }
-.heatmap-cell[data-level="4"] { background: rgb(22, 163, 74); }
+/* Escala estilo Anki: 0 = nenhuma revisão (mais claro), 4 = mais revisões (mais escuro) */
+.heatmap-cell[data-level="0"] { background: rgba(255,255,255,0.1); }
+.heatmap-cell[data-level="1"] { background: rgba(34, 197, 94, 0.35); }
+.heatmap-cell[data-level="2"] { background: rgba(34, 197, 94, 0.55); }
+.heatmap-cell[data-level="3"] { background: rgba(34, 197, 94, 0.8); }
+.heatmap-cell[data-level="4"] { background: rgb(22, 140, 65); }
+/* Dias futuros: quadrados visíveis (estrutura da semana/semanas à frente) */
+.heatmap-cell-future {
+    background: rgba(255,255,255,0.04) !important;
+    border: 1px dashed rgba(255,255,255,0.12);
+}
+/* Rótulos D S T Q Q S S: mesma altura e gap das linhas do grid para alinhar */
 .heatmap-weekdays {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
     font-size: 0.65rem;
     color: rgba(255,255,255,0.6);
-    margin-right: 6px;
+    margin-right: 8px;
     width: 12px;
     text-align: center;
+    flex-shrink: 0;
+}
+.heatmap-weekday {
+    height: 12px;
+    line-height: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 .heatmap-months {
     display: flex;
@@ -1145,4 +1238,391 @@ box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
+}
+
+/* =========================================================
+   TELA DE PERFIL
+   ========================================================= */
+.perfil-conteudo {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding-bottom: 40px;
+    max-width: 400px;
+    margin: 0 auto;
+}
+.btn-voltar-perfil {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(244, 233, 193, 0.3);
+    color: var(--accent-gold);
+    padding: 10px 16px;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, opacity 0.2s;
+}
+.btn-voltar-perfil:hover {
+    background: rgba(244, 233, 193, 0.2);
+}
+.btn-voltar-perfil:active {
+    opacity: 0.9;
+}
+
+.perfil-header-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 28px 20px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(244, 233, 193, 0.2);
+    border-radius: 20px;
+    margin-bottom: 8px;
+}
+.perfil-foto-wrap {
+    position: relative;
+    margin-bottom: 16px;
+    overflow: visible;
+}
+.perfil-foto-img,
+.perfil-foto-emoji {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+    background: rgba(255, 255, 255, 0.08);
+}
+.perfil-foto-emoji {
+    font-size: 52px;
+    line-height: 100px;
+    text-align: center;
+}
+.perfil-foto-editar {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--primary-green);
+    border: 2px solid var(--accent-gold);
+    color: var(--accent-gold);
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s, background 0.2s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+.perfil-foto-editar:hover {
+    background: rgba(244, 233, 193, 0.2);
+    transform: scale(1.05);
+}
+.perfil-foto-menu {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-top: 8px;
+    background: var(--primary-green);
+    border: 1px solid var(--accent-gold);
+    border-radius: 12px;
+    padding: 8px;
+    min-width: 200px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+    z-index: 100;
+    flex-direction: column;
+    gap: 4px;
+}
+.perfil-foto-menu-item {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(244, 233, 193, 0.2);
+    color: var(--accent-gold);
+    padding: 12px 14px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.2s;
+}
+.perfil-foto-menu-item:hover {
+    background: rgba(244, 233, 193, 0.2);
+}
+.perfil-nome {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--white);
+    margin: 0 0 6px 0;
+    letter-spacing: 0.5px;
+}
+.perfil-email {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin: 0;
+}
+
+.perfil-card {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(244, 233, 193, 0.2);
+    border-radius: 18px;
+    padding: 20px;
+}
+.perfil-card-titulo {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--accent-gold);
+    margin: 0 0 14px 0;
+    letter-spacing: 0.3px;
+}
+.perfil-label {
+    display: block;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.85);
+    margin-bottom: 8px;
+}
+.perfil-input-numero {
+    width: 100%;
+    max-width: 120px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid rgba(244, 233, 193, 0.3);
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--white);
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+.perfil-input-numero::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+.perfil-input-numero:focus {
+    outline: none;
+    border-color: var(--accent-gold);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.perfil-lembrete-row {
+    margin-bottom: 12px;
+}
+.perfil-lembrete-row:last-child {
+    margin-bottom: 0;
+}
+.perfil-toggle-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    gap: 12px;
+}
+.perfil-toggle-text {
+    font-size: 0.95rem;
+    color: var(--white);
+    font-weight: 500;
+}
+.perfil-toggle-input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.perfil-toggle-slider {
+    position: relative;
+    width: 52px;
+    height: 28px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 28px;
+    transition: background 0.25s;
+}
+.perfil-toggle-slider::after {
+    content: '';
+    position: absolute;
+    width: 22px;
+    height: 22px;
+    left: 3px;
+    top: 3px;
+    background: var(--white);
+    border-radius: 50%;
+    transition: transform 0.25s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+.perfil-toggle-input:checked + .perfil-toggle-slider {
+    background: var(--accent-gold);
+}
+.perfil-toggle-input:checked + .perfil-toggle-slider::after {
+    transform: translateX(24px);
+}
+.perfil-input-time {
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(244, 233, 193, 0.3);
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--white);
+    font-size: 1rem;
+    margin-top: 4px;
+}
+.perfil-input-time:focus {
+    outline: none;
+    border-color: var(--accent-gold);
+}
+
+.perfil-streak-card {
+    text-align: center;
+    padding: 24px;
+}
+.perfil-streak-valor {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--accent-gold);
+    margin-bottom: 4px;
+}
+.perfil-streak-sub {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.65);
+    display: block;
+}
+
+.perfil-btn-suporte {
+    width: 100%;
+    padding: 16px 20px;
+    border-radius: 14px;
+    border: 1px solid rgba(244, 233, 193, 0.35);
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--accent-gold);
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+}
+.perfil-btn-suporte:hover {
+    background: rgba(244, 233, 193, 0.2);
+}
+.perfil-btn-suporte:active {
+    transform: scale(0.98);
+}
+
+/* Cor de fundo no wrap quando foto é emoji (estilo WhatsApp) */
+.perfil-foto-wrap.perfil-foto-emoji-wrap {
+    border-radius: 50%;
+}
+
+/* =========================================================
+   MODAL EMOJI PICKER (estilo teclado nativo / WhatsApp)
+   ========================================================= */
+.emoji-picker-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 10003;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+.emoji-picker-box {
+    background: var(--primary-green);
+    border: 1px solid rgba(244, 233, 193, 0.3);
+    border-radius: 20px;
+    padding: 20px;
+    max-width: 400px;
+    width: 100%;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+}
+.emoji-picker-title {
+    margin: 0 0 8px 0;
+    font-size: 1.15rem;
+    color: var(--accent-gold);
+    text-align: center;
+}
+.emoji-picker-dica {
+    margin: 0 0 12px 0;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.75);
+    text-align: center;
+    line-height: 1.35;
+}
+.emoji-picker-input {
+    width: 100%;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    border-radius: 12px;
+    border: 1px solid rgba(244, 233, 193, 0.3);
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--white);
+    font-size: 1.5rem;
+    text-align: center;
+    box-sizing: border-box;
+}
+.emoji-picker-input::placeholder {
+    color: rgba(255, 255, 255, 0.45);
+    font-size: 1rem;
+}
+.emoji-picker-input:focus {
+    outline: none;
+    border-color: var(--accent-gold);
+    background: rgba(255, 255, 255, 0.12);
+}
+.emoji-picker-cor-label {
+    margin: 0 0 10px 0;
+    font-size: 0.9rem;
+    color: var(--accent-gold);
+    font-weight: 600;
+}
+.emoji-picker-cores {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+.emoji-cor-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 3px solid transparent;
+    cursor: pointer;
+    transition: transform 0.15s, border-color 0.15s;
+    flex-shrink: 0;
+}
+.emoji-cor-btn:hover {
+    transform: scale(1.1);
+}
+.emoji-cor-btn.emoji-cor-ativo {
+    border-color: var(--white);
+    box-shadow: 0 0 0 2px var(--primary-green);
+}
+.emoji-picker-cor-custom {
+    margin-bottom: 14px;
+}
+.emoji-picker-cor-custom input[type="color"] {
+    width: 100%;
+    height: 44px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    background: transparent;
+}
+.emoji-picker-preview {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin: 0 auto 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.8rem;
+    border: 3px solid rgba(244, 233, 193, 0.3);
+}
+.emoji-picker-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+}
+.emoji-picker-actions .btn-cancelar,
+.emoji-picker-actions .btn-gold {
+    flex: 1;
 }
