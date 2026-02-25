@@ -574,10 +574,17 @@ function atualizarBotoesTema() {
 }
 
 function initTemaAuto() {
-    var tema = localStorage.getItem(ARION_TEMA_KEY);
-    if (tema !== 'auto') return;
     var mq = window.matchMedia('(prefers-color-scheme: dark)');
-    mq.addEventListener('change', function () { aplicarTema('auto'); });
+    mq.addEventListener('change', function () {
+        if (localStorage.getItem(ARION_TEMA_KEY) === 'auto') aplicarTema('auto');
+    });
+    document.addEventListener('visibilitychange', function () {
+        if (document.visibilityState !== 'visible') return;
+        if (localStorage.getItem(ARION_TEMA_KEY) === 'auto') aplicarTema('auto');
+    });
+    window.addEventListener('pageshow', function (e) {
+        if (e.persisted && localStorage.getItem(ARION_TEMA_KEY) === 'auto') aplicarTema('auto');
+    });
 }
 
 function initPerfilPreferencias() {
