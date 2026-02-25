@@ -41,7 +41,7 @@ function renderizar() {
     const container = document.getElementById('deck-list');
     if (container) {
         const btnEstudarTudo = `
-            <div class="deck-item study-all" onclick="estudarTudo()" style="background: linear-gradient(315deg,rgb(68, 131, 61),rgb(90, 138, 85)); color: white; margin-bottom: 20px; border: none; cursor: pointer; padding: 25px 15px 25px 15px;border-radius: 18px; overflow: hidden;">
+            <div class="deck-item study-all" onclick="abrirDetalhesEstudarTudo()" style="background: linear-gradient(315deg,rgb(68, 131, 61),rgb(90, 138, 85)); color: white; margin-bottom: 20px; border: none; cursor: pointer; padding: 25px 15px 25px 15px;border-radius: 18px; overflow: hidden;">
                 <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                     <strong style="font-size: 1.1em;">🔥 Estudar Tudo</strong>
                     <small style="opacity: 1; color: white; white-space: nowrap;">

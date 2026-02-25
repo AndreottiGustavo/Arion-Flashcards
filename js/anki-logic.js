@@ -12,6 +12,39 @@ const ANKI = {
     maxInterval: 75
 };
 
+function abrirDetalhesEstudarTudo() {
+    const h = Date.now();
+    let novos = 0, revisao = 0;
+    baralhos.forEach(b => {
+        if (b.nome === TUTORIAL_DECK_NOME) return;
+        b.cards.forEach(c => {
+            const pendente = c.state === 'new' || c.rev <= h;
+            const liberado = !b.premium || c.liberado === true;
+            if (pendente && liberado) {
+                if (c.state === 'new') novos++; else revisao++;
+            }
+        });
+    });
+    const total = novos + revisao;
+    mudarTela('details-screen');
+    document.getElementById('details-deck-name').innerText = 'Estudar Tudo';
+    const area = document.getElementById('stats-area');
+    const actions = document.getElementById('details-actions');
+    const isDisabled = total === 0;
+    const heatmapHtml = typeof gerarHeatmapHtml === 'function' ? gerarHeatmapHtml(true) : '';
+    area.innerHTML = `
+        <div class="anki-stats-card" style="box-shadow: 0 10px 25px rgba(0,0,0,0.15); border: none;">
+            <div style="text-align:left">
+                <div class="stat-row">Novo: <span style="color:#2185d0; font-weight:bold">${novos}</span></div>
+                <div class="stat-row">A Revisar: <span style="color:#2e7d32; font-weight:bold">${revisao}</span></div>
+            </div>
+            <button class="btn-anki" style="background:${isDisabled ? '#e0e0e0' : '#2185d0'}; color:${isDisabled ? '#999' : 'white'}; padding:12px 20px; width:auto; height:auto; cursor:${isDisabled ? 'not-allowed' : 'pointer'}; opacity:${isDisabled ? '0.7' : '1'}; border-radius:10px; border:none; font-weight:bold;" onclick="${isDisabled ? '' : 'estudarTudo()'}" ${isDisabled ? 'disabled' : ''}>Estudar agora</button>
+        </div>`;
+    const heatmapCard = heatmapHtml ? `<div class="stats-card details-heatmap-card"><h3>Calendário de estudo (heatmap)</h3>${heatmapHtml}</div>` : '';
+    actions.innerHTML = heatmapCard;
+    if (heatmapHtml && typeof initHeatmapTooltip === 'function') initHeatmapTooltip(actions);
+}
+
 function abrirDetalhes(i, finalizou = false) {
     dIdx = i;
     const b = baralhos[i];
@@ -45,6 +78,16 @@ function abrirDetalhes(i, finalizou = false) {
     }
 }
 
+function sairEstudo() {
+    if (veioDeEstudarTudo) {
+        veioDeEstudarTudo = false;
+        mudarTela('deck-screen');
+        if (typeof atualizarNav === 'function') atualizarNav('nav-decks');
+    } else {
+        abrirDetalhes(dIdx);
+    }
+}
+
 function estudarTudo() {
     let filaGeral = [];
     const agora = Date.now();
@@ -60,6 +103,7 @@ function estudarTudo() {
         alert("Nada para estudar por hoje! Volte amanhã.");
         return;
     }
+    veioDeEstudarTudo = true;
     filaGeral.sort(() => Math.random() - 0.5);
     fila = filaGeral;
     if (document.getElementById('study-container')) document.getElementById('study-container').style.display = 'block';
@@ -69,6 +113,7 @@ function estudarTudo() {
 }
 
 function iniciarEstudo(i) {
+    veioDeEstudarTudo = false;
     if (i !== undefined) dIdx = i;
     const elTitle = document.getElementById('study-title');
     if (elTitle && baralhos[dIdx]) elTitle.textContent = baralhos[dIdx].nome;

@@ -23,7 +23,10 @@ function mudarTela(id) {
     } else {
         if (nav) nav.style.display = 'flex';
         if (header) header.style.display = 'flex';
-        if (id === 'deck-screen') atualizarNav('nav-decks');
+        if (id === 'deck-screen') {
+        if (typeof veioDeEstudarTudo !== 'undefined') veioDeEstudarTudo = false;
+        atualizarNav('nav-decks');
+    }
         if (id === 'perfil-screen') preencherTelaPerfil();
     }
     window.scrollTo(0, 0);

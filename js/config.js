@@ -3,7 +3,7 @@ const meuUIDAdmin = 'DYQ7xDOhJXVa93n7T7dzDhlCgDg2';
 const TUTORIAL_DECK_NOME = "🚀 Tutorial Rápido – Aprenda usar o Árion em 1min!";
 let meusVestibulares = JSON.parse(localStorage.getItem('meusVestibulares')) || [];
 let baralhos = [];
-let dIdx = 0, fila = [], respondido = false, cardVirado = false;
+let dIdx = 0, fila = [], respondido = false, cardVirado = false, veioDeEstudarTudo = false;
 let corAtual = "#ff0000";
 let onboardingFeito = localStorage.getItem('arion_onboarding') === 'true';
 let usuarioLogado = null;
