@@ -560,6 +560,8 @@ function aplicarTema(tema) {
     var usarEscuro = tema === 'dark' || (tema === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
     if (usarEscuro) document.documentElement.classList.add('theme-night');
     else document.documentElement.classList.remove('theme-night');
+    var metaTheme = document.querySelector('meta[name="theme-color"]');
+    if (metaTheme) metaTheme.setAttribute('content', usarEscuro ? '#051e1c' : '#0a3d3a');
 }
 
 function atualizarBotoesTema() {
