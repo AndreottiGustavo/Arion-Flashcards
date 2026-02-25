@@ -27,7 +27,10 @@
         if (!t && localStorage.getItem('arion_modo_noturno') === 'true') { t = 'dark'; localStorage.setItem('arion_tema', 'dark'); }
         if (!t) t = 'auto';
         if (t === 'auto') t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-        if (t === 'dark') document.documentElement.classList.add('theme-night');
+        var usarEscuro = (t === 'dark') || (t === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        if (usarEscuro) document.documentElement.classList.add('theme-night');
+        var metaTheme = document.querySelector('meta[name="theme-color"]');
+        if (metaTheme) metaTheme.setAttribute('content', usarEscuro ? '#051e1c' : '#0a3d3a');
     })();
     </script>
 
