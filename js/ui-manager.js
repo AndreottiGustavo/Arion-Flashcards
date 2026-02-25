@@ -20,9 +20,12 @@ function mudarTela(id) {
     if (id === 'splash-screen' || id === 'login-forced-screen') {
         if (nav) nav.style.display = 'none';
         if (header) header.style.display = 'none';
+        var offEl = document.getElementById('sync-offline-bar');
+        if (offEl) { offEl.style.display = 'none'; document.body.classList.remove('sync-offline-bar-visible'); }
     } else {
         if (nav) nav.style.display = 'flex';
         if (header) header.style.display = 'flex';
+        if (typeof atualizarIndicadorOffline === 'function') atualizarIndicadorOffline();
         if (id === 'deck-screen') {
         if (typeof veioDeEstudarTudo !== 'undefined') veioDeEstudarTudo = false;
         atualizarNav('nav-decks');

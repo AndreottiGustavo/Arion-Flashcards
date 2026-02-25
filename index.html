@@ -56,7 +56,11 @@
                 </nav>
             </div>
         </header>
-    
+
+    <div id="sync-offline-bar" class="sync-offline-bar" role="status" aria-live="polite" style="display: none;">
+        <span class="sync-offline-bar-icon"></span>
+        <span class="sync-offline-bar-text"></span>
+    </div>
 
  
     <div id="splash-screen">
@@ -190,6 +194,7 @@
     <div id="deck-screen" class="screen">
         <header><h1>Meus Baralhos</h1></header>
         <div id="deck-notices" class="deck-notices"></div>
+        <div id="deck-filter-archived" class="deck-filter-archived"></div>
         <div class="deck-list" id="deck-list"></div>
         <button class="btn-gold fab-button" onclick="abrirModalCriar()">
             + Novo Baralho</button>    
@@ -316,7 +321,7 @@
     <div id="study-screen" class="screen">
         <header>
             <h1 id="study-title">Estudo</h1>
-            <button onclick="abrirDetalhes(dIdx)" style="background:none; border:1px solid white; color:white; border-radius:8px; padding:5px 15px;">Sair</button>
+            <button onclick="sairEstudo()" style="background:none; border:1px solid white; color:white; border-radius:8px; padding:5px 15px;">Sair</button>
         </header>
         <div id="study-container">
             <div class="card-box">

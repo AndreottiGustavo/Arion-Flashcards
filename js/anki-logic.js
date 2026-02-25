@@ -16,7 +16,7 @@ function abrirDetalhesEstudarTudo() {
     const h = Date.now();
     let novos = 0, revisao = 0;
     baralhos.forEach(b => {
-        if (b.nome === TUTORIAL_DECK_NOME) return;
+        if (b.nome === TUTORIAL_DECK_NOME || b.arquivado) return;
         b.cards.forEach(c => {
             const pendente = c.state === 'new' || c.rev <= h;
             const liberado = !b.premium || c.liberado === true;
@@ -92,7 +92,7 @@ function estudarTudo() {
     let filaGeral = [];
     const agora = Date.now();
     baralhos.forEach((b, deckIdx) => {
-        if (b.nome === TUTORIAL_DECK_NOME) return;
+        if (b.nome === TUTORIAL_DECK_NOME || b.arquivado) return;
         b.cards.forEach((c, cardIdx) => {
             const isPendente = c.state === 'new' || c.rev <= agora;
             const isLiberado = b.premium ? c.liberado : true;

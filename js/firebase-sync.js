@@ -170,6 +170,12 @@ function salvar() {
     // 2. Se não estiver logado, para por aqui
     if (!usuarioLogado || !window.db) return;
 
+    if (!navigator.onLine) {
+        localStorage.setItem('arion_pending_sync', '1');
+        if (typeof atualizarIndicadorOffline === 'function') atualizarIndicadorOffline();
+        return;
+    }
+
     try {
         const docRef = window.db.collection("usuarios").doc(usuarioLogado.uid);
         const payload = removerUndefinedParaFirestore({
@@ -184,9 +190,112 @@ function salvar() {
             fotoPerfilCustom: fotoPerfilCustom && (!fotoPerfilCustom.startsWith('data:') || fotoPerfilCustom.length < 100000) ? fotoPerfilCustom : null,
         });
         docRef.set(payload, { merge: true })
-            .then(() => console.log("Nuvem atualizada com sucesso (Upload OK)"))
-            .catch(e => console.error("Erro ao enviar para nuvem:", e));
+            .then(function () {
+                localStorage.removeItem('arion_pending_sync');
+                console.log("Nuvem atualizada com sucesso (Upload OK)");
+                if (typeof atualizarIndicadorOffline === 'function') atualizarIndicadorOffline();
+            })
+            .catch(function (e) {
+                console.error("Erro ao enviar para nuvem:", e);
+                localStorage.setItem('arion_pending_sync', '1');
+                if (typeof atualizarIndicadorOffline === 'function') atualizarIndicadorOffline();
+            });
     } catch (e) {
         console.error("Erro na função salvar:", e);
+        localStorage.setItem('arion_pending_sync', '1');
     }
+}
+
+function atualizarIndicadorOffline() {
+    var el = document.getElementById('sync-offline-bar');
+    if (!el) return;
+    if (el.classList.contains('sync-state')) return;
+    var telaAtiva = document.querySelector('.screen.active');
+    var idAtiva = telaAtiva ? telaAtiva.id : '';
+    var esconderEmSplashOuLogin = (idAtiva === 'splash-screen' || idAtiva === 'login-forced-screen');
+    if (!navigator.onLine && !esconderEmSplashOuLogin) {
+        el.className = 'sync-offline-bar offline-state';
+        el.onclick = tentarSincronizar;
+        var icon = el.querySelector('.sync-offline-bar-icon');
+        var text = el.querySelector('.sync-offline-bar-text');
+        if (icon) icon.textContent = '📡';
+        if (text) text.textContent = 'Sem internet. Suas alterações serão sincronizadas quando a conexão voltar.';
+        el.style.display = 'flex';
+        document.body.classList.add('sync-offline-bar-visible');
+    } else {
+        el.style.display = 'none';
+        el.onclick = null;
+        document.body.classList.remove('sync-offline-bar-visible');
+    }
+}
+
+function mostrarBarraSync(mensagem, duracaoMs) {
+    var bar = document.getElementById('sync-offline-bar');
+    if (!bar) return;
+    bar.className = 'sync-offline-bar sync-state';
+    bar.onclick = null;
+    var icon = bar.querySelector('.sync-offline-bar-icon');
+    var text = bar.querySelector('.sync-offline-bar-text');
+    if (icon) icon.textContent = mensagem.indexOf('Sincronizando') !== -1 ? '⟳' : '✓';
+    if (text) text.textContent = mensagem;
+    bar.style.display = 'flex';
+    document.body.classList.add('sync-offline-bar-visible');
+    clearTimeout(bar._syncTimeout);
+    bar._syncTimeout = setTimeout(function () {
+        bar.style.display = 'none';
+        bar.classList.remove('sync-state');
+        document.body.classList.remove('sync-offline-bar-visible');
+        atualizarIndicadorOffline();
+    }, duracaoMs || 2500);
+}
+
+function tentarSincronizar() {
+    if (navigator.onLine) {
+        flushFilaSyncQuandoOnline();
+    } else {
+        var bar = document.getElementById('sync-offline-bar');
+        if (bar && bar.classList.contains('offline-state')) {
+            var text = bar.querySelector('.sync-offline-bar-text');
+            if (text) text.textContent = 'Sem conexão. Tente novamente quando estiver online.';
+            clearTimeout(bar._msgTimeout);
+            bar._msgTimeout = setTimeout(function () {
+                if (text) text.textContent = 'Sem internet. Suas alterações serão sincronizadas quando a conexão voltar.';
+            }, 3000);
+        }
+    }
+}
+
+function flushFilaSyncQuandoOnline() {
+    if (!navigator.onLine) return;
+    var tinhaPendente = localStorage.getItem('arion_pending_sync') === '1';
+    if (tinhaPendente && typeof salvar === 'function') {
+        mostrarBarraSync('Sincronizando…', 2000);
+        salvar();
+    }
+    if (usuarioLogado && typeof sincronizarComNuvem === 'function') {
+        sincronizarComNuvem().then(function () {
+            if (tinhaPendente) mostrarBarraSync('Sincronizado com a nuvem.', 2500);
+        }).catch(function () {});
+    }
+    atualizarIndicadorOffline();
+}
+
+function initOfflineSync() {
+    atualizarIndicadorOffline();
+    window.addEventListener('offline', function () {
+        localStorage.setItem('arion_pending_sync', '1');
+        atualizarIndicadorOffline();
+    });
+    window.addEventListener('online', function () {
+        flushFilaSyncQuandoOnline();
+    });
+    if (navigator.onLine && localStorage.getItem('arion_pending_sync') === '1') {
+        flushFilaSyncQuandoOnline();
+    }
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initOfflineSync);
+} else {
+    initOfflineSync();
 }

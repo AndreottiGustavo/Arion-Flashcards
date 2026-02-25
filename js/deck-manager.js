@@ -1,29 +1,50 @@
-// ========== LISTA DE BARALHOS (renderizar, fixar) ==========
+// ========== LISTA DE BARALHOS (renderizar, fixar, arquivar) ==========
+var mostrandoArquivados = false;
+
 function renderizar() {
     let totalNovos = 0;
     let totalRevisao = 0;
     const agora = Date.now();
-    const comIndice = baralhos.map((b, i) => ({ b, i })).filter(({ b }) => !b.premium || b.cards.some(c => c.liberado === true));
+    mostrandoArquivados = localStorage.getItem('arion_ver_arquivados') === 'true';
+    const baseFiltro = baralhos.map((b, i) => ({ b, i })).filter(({ b }) => (!b.premium || b.cards.some(c => c.liberado === true)) && (mostrandoArquivados ? (b.arquivado === true) : (b.arquivado !== true)));
 
-    comIndice.forEach(({ b: d }) => {
-        if (d.nome === TUTORIAL_DECK_NOME) return;
-        totalNovos += d.cards.filter(c => c.state === 'new' && (d.premium ? c.liberado : true)).length;
-        totalRevisao += d.cards.filter(c => c.state !== 'new' && c.rev <= agora && (d.premium ? c.liberado : true)).length;
+    baralhos.forEach((b) => {
+        if (b.arquivado || b.nome === TUTORIAL_DECK_NOME) return;
+        if (b.premium && !b.cards.some(c => c.liberado === true)) return;
+        totalNovos += b.cards.filter(c => c.state === 'new' && (b.premium ? c.liberado : true)).length;
+        totalRevisao += b.cards.filter(c => c.state !== 'new' && c.rev <= agora && (b.premium ? c.liberado : true)).length;
     });
 
+    const numArquivados = baralhos.filter(b => b.arquivado === true && (!b.premium || b.cards.some(c => c.liberado === true))).length;
+    const filtroEl = document.getElementById('deck-filter-archived');
+    if (filtroEl) {
+        if (numArquivados > 0 || mostrandoArquivados) {
+            filtroEl.style.display = 'block';
+            filtroEl.innerHTML = mostrandoArquivados
+                ? `<button type="button" class="deck-filter-btn" onclick="toggleVerArquivados()">← Ver ativos</button>`
+                : `<button type="button" class="deck-filter-btn" onclick="toggleVerArquivados()">📦 Ver arquivados (${numArquivados})</button>`;
+        } else {
+            filtroEl.style.display = 'none';
+            filtroEl.innerHTML = '';
+        }
+    }
     const iconePinVetor = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="display:inline-block; vertical-align:middle; margin-right:5px;"><path d="M16,12V4H17V2H7V4H8V12L6,14V16H11.2V22H12.8V16H18V14L16,12Z" /></svg>`;
-    const ordenados = [...comIndice].sort((x, y) => (y.b.fixado ? 1 : 0) - (x.b.fixado ? 1 : 0));
+    const ordenados = [...baseFiltro].sort((x, y) => (y.b.fixado ? 1 : 0) - (x.b.fixado ? 1 : 0));
     const listaHtml = ordenados.map(({ b, i }) => {
         const n = b.cards.filter(c => c.state === 'new' && (b.premium ? c.liberado : true)).length;
         const r = b.cards.filter(c => c.state !== 'new' && c.rev <= agora && (b.premium ? c.liberado : true)).length;
         const estaFixado = b.fixado === true;
+        const labelArquivar = b.arquivado ? 'DESARQ.' : 'ARQUIVAR';
         return `
             <div class="deck-item ${b.premium ? 'premium' : ''}" style="position: relative; margin-top: 10px; margin-bottom: 8px; background: transparent; border: none; padding: 0; min-height: auto; overflow: visible;">
                 <div class="deck-actions" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: space-between; align-items: center; border-radius: 18px; overflow: hidden; z-index: 1;">
-                    <div onclick="alternarFixar(${i})" style="background: ${estaFixado ? '#8e8e93' : '#007aff'}; width: 80px; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 0.65rem;">${estaFixado ? 'DESAFIXAR' : 'FIXAR'}</div>
+                    <div style="display: flex; height: 100%;">
+                        <div onclick="alternarFixar(${i})" style="background: ${estaFixado ? '#8e8e93' : '#007aff'}; width: 80px; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 0.65rem;">${estaFixado ? 'DESAFIXAR' : 'FIXAR'}</div>
+                        <div onclick="alternarArquivar(${i})" style="background: #6d6d6d; width: 68px; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 0.6rem;">${labelArquivar}</div>
+                    </div>
                     <div style="display:flex; height: 100%;">
-                        ${b.premium ? '' : `<div onclick="prepararRenomear(${i})" style="background: #ff9500; width: 75px; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 0.65rem;">EDITAR</div>`}
-                        <div onclick="prepararExclusao(${i})" style="background: #ff3b30; width: 75px; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 0.65rem;">APAGAR</div>
+                        ${b.premium ? '' : `<div onclick="abrirConfigurarDeck(${i})" style="background: #ff9500; width: 70px; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 0.6rem;">CONFIG</div>`}
+                        <div onclick="prepararExclusao(${i})" style="background: #ff3b30; width: 70px; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 0.65rem;">APAGAR</div>
                     </div>
                 </div>
                 ${b.premium ? '<div class="premium-badge" style="position: absolute; top: -10px; left: 15px; z-index: 10;">PREMIUM</div>' : ''}
@@ -40,7 +61,7 @@ function renderizar() {
 
     const container = document.getElementById('deck-list');
     if (container) {
-        const btnEstudarTudo = `
+        const btnEstudarTudo = mostrandoArquivados ? '' : `
             <div class="deck-item study-all" onclick="abrirDetalhesEstudarTudo()" style="background: linear-gradient(315deg,rgb(68, 131, 61),rgb(90, 138, 85)); color: white; margin-bottom: 20px; border: none; cursor: pointer; padding: 25px 15px 25px 15px;border-radius: 18px; overflow: hidden;">
                 <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                     <strong style="font-size: 1.1em;">🔥 Estudar Tudo</strong>
@@ -62,4 +83,17 @@ function alternarFixar(i) {
 
 function fixarDeck(i) {
     alternarFixar(i);
+}
+
+function alternarArquivar(i) {
+    if (i < 0 || i >= baralhos.length) return;
+    baralhos[i].arquivado = !baralhos[i].arquivado;
+    salvar();
+    renderizar();
+}
+
+function toggleVerArquivados() {
+    mostrandoArquivados = !mostrandoArquivados;
+    localStorage.setItem('arion_ver_arquivados', mostrandoArquivados ? 'true' : 'false');
+    renderizar();
 }
