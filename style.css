@@ -386,7 +386,7 @@ h1 { color: var(--accent-gold); margin: 0; font-size: 1.4rem; letter-spacing: 2p
 .stats-container {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 10px;
     padding-bottom: 30px;
 }
 .stats-card {
@@ -1904,3 +1904,4 @@ box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     background: #f5ecc1;
 
 }
+
