@@ -41,14 +41,14 @@ function renderizar() {
         const labelArquivar = b.arquivado ? 'DESARQ.' : 'ARQUIVAR';
         return `
             <div class="deck-item ${b.premium ? 'premium' : ''}" style="position: relative; margin-top: 10px; margin-bottom: 8px; background: transparent; border: none; padding: 0; min-height: auto; overflow: visible;">
-                <div class="deck-actions" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: space-between; align-items: center; border-radius: 18px; overflow: hidden; z-index: 1;">
+                <div class="deck-actions deck-action-bar" data-deck-index="${i}" onclick="if (!event.target.closest('.deck-action-btn')) { var idx = parseInt(this.getAttribute('data-deck-index'),10); if (!isNaN(idx) && typeof abrirDetalhes === 'function') abrirDetalhes(idx); }" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: space-between; align-items: center; border-radius: 18px; overflow: hidden; z-index: 1;">
                     <div style="display: flex; height: 100%;">
-                        <div onclick="alternarFixar(${i})" style="background: ${estaFixado ? '#8e8e93' : '#007aff'}; width: 80px; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 0.65rem;">${estaFixado ? 'DESAFIXAR' : 'FIXAR'}</div>
-                        <div onclick="alternarArquivar(${i})" style="background: #6d6d6d; width: 68px; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 0.6rem;">${labelArquivar}</div>
+                        <div class="deck-action-btn" onclick="alternarFixar(${i})" style="background: ${estaFixado ? '#8e8e93' : '#007aff'}; width: 80px; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 0.65rem;">${estaFixado ? 'DESAFIXAR' : 'FIXAR'}</div>
+                        <div class="deck-action-btn" onclick="alternarArquivar(${i})" style="background: #6d6d6d; width: 68px; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 0.6rem;">${labelArquivar}</div>
                     </div>
                     <div style="display:flex; height: 100%;">
-                        ${b.premium ? '' : `<div onclick="abrirConfigurarDeck(${i})" style="background: #ff9500; width: 70px; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 0.6rem;">CONFIG</div>`}
-                        <div onclick="prepararExclusao(${i})" style="background: #ff3b30; width: 70px; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 0.65rem;">APAGAR</div>
+                        ${b.premium ? '' : `<div class="deck-action-btn" onclick="abrirConfigurarDeck(${i})" style="background: #ff9500; width: 70px; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 0.6rem;">CONFIG</div>`}
+                        <div class="deck-action-btn" onclick="prepararExclusao(${i})" style="background: #ff3b30; width: 70px; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 0.65rem;">APAGAR</div>
                     </div>
                 </div>
                 ${b.premium ? '<div class="premium-badge" style="position: absolute; top: -10px; left: 15px; z-index: 10;">PREMIUM</div>' : ''}

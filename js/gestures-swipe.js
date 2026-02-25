@@ -235,7 +235,7 @@ function resetSwipe(el) {
 
 const SWIPE_ACTIVATE_PX = 28;
 const SWIPE_OPEN_MENU_PX = 95;
-const SWIPE_OPEN_LEFT_PX = 165;
+const SWIPE_OPEN_LEFT_PX = 170;
 let swipeStartX = 0;
 let swipeStartY = 0;
 let currentSwipeX = 0;
@@ -312,9 +312,18 @@ function getPointerY(e) { return e.touches ? e.touches[0].clientY : e.clientY; }
         deckSwipeEl = null;
         deckSwipeActivated = false;
         el.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-        if (finalDiff < -SWIPE_OPEN_MENU_PX) { el.style.transform = `translateX(-${SWIPE_OPEN_LEFT_PX}px)`; lastSwipeTarget = el; lastSwipeTime = Date.now(); }
-        else if (finalDiff > 50) el.style.transform = 'translateX(80px)';
-        else el.style.transform = 'translateX(0)';
+        if (finalDiff < -SWIPE_OPEN_MENU_PX) {
+            el.style.transform = `translateX(-${SWIPE_OPEN_LEFT_PX}px)`;
+            el.classList.add('deck-content--open');
+            lastSwipeTarget = el;
+            lastSwipeTime = Date.now();
+        } else if (finalDiff > 50) {
+            el.style.transform = 'translateX(80px)';
+            el.classList.remove('deck-content--open');
+        } else {
+            el.style.transform = 'translateX(0)';
+            el.classList.remove('deck-content--open');
+        }
     }
 
     list.addEventListener('touchstart', e => {
@@ -329,8 +338,8 @@ function getPointerY(e) { return e.touches ? e.touches[0].clientY : e.clientY; }
         if (!deckSwipeEl) return;
         const card = e.target.closest('.deck-content');
         if (!card || card !== deckSwipeEl) return;
-        if (e.cancelable) e.preventDefault();
         deckSwipeMove(getPointerX(e), getPointerY(e));
+        if (deckSwipeActivated && e.cancelable) e.preventDefault();
     }, { passive: false, capture: true });
     list.addEventListener('touchend', deckSwipeEnd, { passive: true, capture: true });
     list.addEventListener('touchcancel', () => { deckSwipeEl = null; deckSwipeActivated = false; }, { passive: true, capture: true });
@@ -362,6 +371,7 @@ function fecharTodosSwipes() {
         if (card.style.transform !== 'translateX(0px)' && card.style.transform !== '') {
             card.style.transition = 'transform 0.3s ease';
             card.style.transform = 'translateX(0px)';
+            card.classList.remove('deck-content--open');
         }
     });
 }

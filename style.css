@@ -321,7 +321,14 @@ body.sync-offline-bar-visible .screen { padding-top: 108px; }
 h1 { color: var(--accent-gold); margin: 0; font-size: 1.4rem; letter-spacing: 2px; text-transform: uppercase; }
 
 /* LISTA DE BARALHOS */
-.deck-list { overflow-y: auto; overflow-x: hidden;flex-grow: 1; padding-bottom: 70px;}
+.deck-list {
+    overflow-y: auto;
+    overflow-x: hidden;
+    flex-grow: 1;
+    padding-bottom: 70px;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+}
 .deck-list::-webkit-scrollbar {
     display: none !important;
     width: 0;
@@ -353,6 +360,9 @@ h1 { color: var(--accent-gold); margin: 0; font-size: 1.4rem; letter-spacing: 2p
     width: 100%;
     box-sizing: border-box;
     cursor: pointer;
+}
+.deck-content.deck-content--open {
+    pointer-events: none;
 }
 
 /* MOLDURA PREMIUM: Agora ela é aplicada ao CONTENT, para deslizar junto */
