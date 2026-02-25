@@ -8,6 +8,12 @@
     --font-main: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
+/* Modo noturno: verde ainda mais escuro, dourado mais suave */
+html.theme-night {
+    --primary-green: #051e1c;
+    --accent-gold: #d9cfaa;
+}
+
 body, html {
     margin: 0; 
     padding: 0;
@@ -20,6 +26,7 @@ body, html {
     position: fixed;
     overscroll-behavior: none;
     -webkit-tap-highlight-color: transparent;
+    transition: background-color 0.25s ease, color 0.2s ease;
 }
 
 /* ============================================================================
@@ -333,7 +340,7 @@ h1 { color: var(--accent-gold); margin: 0; font-size: 1.4rem; letter-spacing: 2p
 
 /* O CONTEÚDO QUE DESLIZA: Toda a estética fica aqui agora */
 .deck-content {
-    background: #0a3d3a; /* Fundo sólido para esconder os botões atrás */
+    background: var(--primary-green); /* Fundo sólido para esconder os botões atrás */
     border: 1px solid rgba(244, 233, 193, 0.3);
     padding: 25px; 
     border-radius: 18px;
@@ -351,7 +358,7 @@ h1 { color: var(--accent-gold); margin: 0; font-size: 1.4rem; letter-spacing: 2p
 /* MOLDURA PREMIUM: Agora ela é aplicada ao CONTENT, para deslizar junto */
 .premium .deck-content {
     border: 2px solid var(--premium-gold) !important;
-    background: linear-gradient(145deg, rgba(255, 215, 0, 0.15), #0a3d3a);
+    background: linear-gradient(145deg, rgba(255, 215, 0, 0.15), var(--primary-green));
     box-shadow: 0 0 15px rgba(255, 215, 0, 0.1);
 }
 
@@ -1305,7 +1312,7 @@ box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     top: 0; left: 0;
     width: 100%; height: 100%;
     /* Degradê sutil para profundidade */
-    background: linear-gradient(180deg, #0a3d3a 0%, #155e5a 100%);
+    background: linear-gradient(180deg, var(--primary-green) 0%, #155e5a 100%);
     /* Z-index 10001 garante que fique ACIMA do Header (que é 10000) */
     z-index: 10005; 
     align-items: center;
@@ -1716,6 +1723,69 @@ box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 .perfil-lembrete-row:last-child {
     margin-bottom: 0;
 }
+
+/* Aparência: três ícones Claro / Escuro / Auto (estilo iPhone) */
+.perfil-tema-row {
+    display: flex;
+    gap: 0;
+    border-radius: 12px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.08);
+    padding: 4px;
+}
+.perfil-tema-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 14px 8px;
+    border: none;
+    border-radius: 10px;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.8rem;
+    font-family: var(--font-main);
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+}
+.perfil-tema-btn:hover {
+    color: var(--white);
+    background: rgba(255, 255, 255, 0.06);
+}
+.perfil-tema-btn.selected {
+    background: rgba(244, 233, 193, 0.2);
+    color: var(--accent-gold);
+}
+.perfil-tema-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+}
+.perfil-tema-icon svg {
+    width: 22px;
+    height: 22px;
+}
+.perfil-tema-label {
+    font-weight: 500;
+}
+.perfil-idioma-btn .perfil-tema-icon {
+    display: none;
+}
+.perfil-idioma-btn {
+    padding: 12px 8px;
+}
+.perfil-tema-desc {
+    display: block;
+    margin-top: 10px;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.65);
+    line-height: 1.35;
+}
+
 .perfil-toggle-label {
     display: flex;
     align-items: center;

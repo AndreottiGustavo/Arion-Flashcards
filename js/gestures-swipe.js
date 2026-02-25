@@ -235,6 +235,7 @@ function resetSwipe(el) {
 
 const SWIPE_ACTIVATE_PX = 28;
 const SWIPE_OPEN_MENU_PX = 95;
+const SWIPE_OPEN_LEFT_PX = 165;
 let swipeStartX = 0;
 let swipeStartY = 0;
 let currentSwipeX = 0;
@@ -242,6 +243,7 @@ let deckSwipeEl = null;
 let deckSwipeActivated = false;
 let lastSwipeTarget = null;
 let lastSwipeTime = 0;
+let ignorarProximoDeckSwipeStart = false;
 
 function handleSwipeStart(e) {
     swipeStartX = e.touches[0].clientX;
@@ -299,7 +301,7 @@ function getPointerY(e) { return e.touches ? e.touches[0].clientY : e.clientY; }
         }
         let diff = diffX;
         if (diff > 100) diff = 100;
-        if (diff < -180) diff = -180;
+        if (diff < -SWIPE_OPEN_LEFT_PX - 20) diff = -SWIPE_OPEN_LEFT_PX - 20;
         currentSwipeX = clientX;
         deckSwipeEl.style.transform = `translateX(${diff}px)`;
     }
@@ -310,12 +312,15 @@ function getPointerY(e) { return e.touches ? e.touches[0].clientY : e.clientY; }
         deckSwipeEl = null;
         deckSwipeActivated = false;
         el.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-        if (finalDiff < -SWIPE_OPEN_MENU_PX) { el.style.transform = 'translateX(-150px)'; lastSwipeTarget = el; lastSwipeTime = Date.now(); }
+        if (finalDiff < -SWIPE_OPEN_MENU_PX) { el.style.transform = `translateX(-${SWIPE_OPEN_LEFT_PX}px)`; lastSwipeTarget = el; lastSwipeTime = Date.now(); }
         else if (finalDiff > 50) el.style.transform = 'translateX(80px)';
         else el.style.transform = 'translateX(0)';
     }
 
     list.addEventListener('touchstart', e => {
+        if (ignorarProximoDeckSwipeStart) { ignorarProximoDeckSwipeStart = false; return; }
+        const itemAberto = getDeckItemAberto();
+        if (itemAberto && !itemAberto.contains(e.target)) return;
         const card = e.target.closest('.deck-content');
         if (!card) return;
         deckSwipeStart(e, getPointerX(e), getPointerY(e));
@@ -377,6 +382,7 @@ function fecharSeClicouFora(e) {
     const itemAberto = getDeckItemAberto();
     if (!itemAberto) return;
     if (itemAberto.contains(e.target)) return;
+    ignorarProximoDeckSwipeStart = true;
     fecharTodosSwipes();
 }
 

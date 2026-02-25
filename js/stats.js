@@ -1,9 +1,17 @@
 // =============================== ESTATÍSTICAS ===========================================
-var DIAS_SEMANA_HEATMAP = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
-var MESES_HEATMAP = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
 var NUM_SEMANAS_HEATMAP = 53;
 
+function getHeatmapWeekdays() {
+    return (typeof t === 'function' ? t('heatmap_weekdays') : 'Domingo,Segunda-feira,Terça-feira,Quarta-feira,Quinta-feira,Sexta-feira,Sábado').split(',');
+}
+function getHeatmapMonths() {
+    return (typeof t === 'function' ? t('heatmap_months') : 'janeiro,fevereiro,março,abril,maio,junho,julho,agosto,setembro,outubro,novembro,dezembro').split(',');
+}
+
 function gerarHeatmapHtml(paraDetalhes) {
+    const DIAS_SEMANA_HEATMAP = getHeatmapWeekdays();
+    const MESES_HEATMAP = getHeatmapMonths();
+    const _t = typeof t === 'function' ? t : function(k) { return k; };
     const heatmap = getHeatmapData();
     const hoje = new Date();
     const inicio = new Date(hoje.getFullYear(), 0, 1);
@@ -73,7 +81,7 @@ function gerarHeatmapHtml(paraDetalhes) {
             const isFuturo = c > colHoje || (c === colHoje && r > rowHoje);
             const dataCell = dataParaCell(r, c);
             const dataStr = formatarData(dataCell);
-            let parteContagem = isFuturo ? 'Dia futuro' : (count === 0 ? 'Nenhum card revisado' : (count === 1 ? '1 card revisado' : count + ' cards revisados'));
+            let parteContagem = isFuturo ? _t('heatmap_dia_futuro') : (count === 0 ? _t('heatmap_nenhum_card') : (count === 1 ? _t('heatmap_1_card') : count + ' ' + _t('heatmap_n_cards')));
             const title = parteContagem + ' - ' + dataStr;
             const futuroClass = isFuturo ? ' heatmap-cell-future' : '';
             const tituloEscapado = title.replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -84,9 +92,9 @@ function gerarHeatmapHtml(paraDetalhes) {
     }
     html += '</div></div>';
     html += '<div class="heatmap-tooltip" aria-live="polite"></div>';
-    html += '<div class="stats-heatmap-legend"><span>Menos</span>';
+    html += '<div class="stats-heatmap-legend"><span>' + _t('heatmap_menos') + '</span>';
     for (let i = 0; i <= 5; i++) html += `<div class="heatmap-cell" data-level="${i}"></div>`;
-    html += '<span>Mais</span></div>';
+    html += '<span>' + _t('heatmap_mais') + '</span></div>';
     return html;
 }
 
@@ -159,14 +167,15 @@ function renderEstatisticas() {
     const metaAtingida = metaDiaria > 0 && hojeRespondidos >= metaDiaria;
 
     const heatmapHtml = gerarHeatmapHtml(false);
+    const _t = typeof t === 'function' ? t : function(k) { return k; };
 
     const percentualTexto = Math.round(progressoDia) + '%';
     const textoCardsDia = totalDisponivelHoje === 0
-        ? 'Nada para estudar hoje'
-        : `${hojeRespondidos} de ${totalDisponivelHoje} cards do dia`;
+        ? _t('stats_nada_hoje')
+        : `${hojeRespondidos} de ${totalDisponivelHoje} ` + _t('stats_cards_do_dia');
     const metaLinha = metaDiaria > 0
-        ? `<div class="stats-meta-meta-linha">Sua meta: ${metaDiaria} cards/dia${metaAtingida ? ' <span class="stats-meta-atingida">· Meta atingida ✓</span>' : ''}</div>`
-        : '<div class="stats-meta-meta-linha stats-meta-meta-opcional">Meta opcional no <strong>Perfil</strong></div>';
+        ? `<div class="stats-meta-meta-linha">${_t('stats_meta_sua')} ${metaDiaria} cards/dia${metaAtingida ? ' <span class="stats-meta-atingida">· ' + _t('stats_meta_atingida') + '</span>' : ''}</div>`
+        : '<div class="stats-meta-meta-linha stats-meta-meta-opcional">' + _t('stats_meta_opcional') + ' <strong>' + _t('stats_perfil') + '</strong></div>';
 
     const metaBarraHtml = `<div class="stats-meta-bar-wrap">
             <div class="stats-meta-bar" role="progressbar" aria-valuenow="${hojeRespondidos}" aria-valuemin="0" aria-valuemax="${totalDisponivelHoje || 1}" style="width:${progressoDia}%"></div>
@@ -175,38 +184,39 @@ function renderEstatisticas() {
            <div class="stats-meta-text">${textoCardsDia}</div>
            ${metaLinha}`;
 
+    const locale = (typeof getIdioma === 'function' && getIdioma() === 'en') ? 'en-US' : 'pt-BR';
     container.innerHTML = `
         <div class="stats-card stats-card-meta">
-            <h3>📋 Progresso do dia</h3>
+            <h3>📋 ${_t('stats_progresso_dia')}</h3>
             ${metaBarraHtml}
         </div>
         <div class="stats-card">
-            <h3>🔥 Streak</h3>
-            <div class="stats-value">${streakData.contagem} ${streakData.contagem === 1 ? 'dia' : 'dias'}</div>
-            <small style="opacity:0.8">${streakData.ultimaData ? 'Último estudo: ' + streakData.ultimaData : 'Estude para começar'}</small>
+            <h3>🔥 ${_t('stats_streak')}</h3>
+            <div class="stats-value">${streakData.contagem} ${streakData.contagem === 1 ? _t('dia') : _t('dias')}</div>
+            <small style="opacity:0.8">${streakData.ultimaData ? _t('ultimo_estudo') + ': ' + streakData.ultimaData : _t('estude_para_comecar')}</small>
         </div>
         <div class="stats-grid">
             <div class="stats-card">
-                <h3>📝 Cartões respondidos</h3>
-                <div class="stats-value">${totalRespondidos.toLocaleString('pt-BR')}</div>
+                <h3>📝 ${_t('stats_cartoes_respondidos')}</h3>
+                <div class="stats-value">${totalRespondidos.toLocaleString(locale)}</div>
             </div>
             <div class="stats-card">
-                <h3>📚 Total de cartões</h3>
-                <div class="stats-value">${totalCartoes.toLocaleString('pt-BR')}</div>
+                <h3>📚 ${_t('stats_total_cartoes')}</h3>
+                <div class="stats-value">${totalCartoes.toLocaleString(locale)}</div>
             </div>
             <div class="stats-card">
-                <h3>✅ Hoje</h3>
+                <h3>✅ ${_t('stats_hoje')}</h3>
                 <div class="stats-value">${hojeRespondidos}</div>
-                <small style="opacity:0.8">revisões hoje</small>
+                <small style="opacity:0.8">${_t('stats_revisoes_hoje')}</small>
             </div>
             <div class="stats-card">
-                <h3>📊 Média de revisões por dia</h3>
+                <h3>📊 ${_t('stats_media_revisoes')}</h3>
                 <div class="stats-value">${mediaPorDia}</div>
-                <small style="opacity:0.8">em dias em que você estudou</small>
+                <small style="opacity:0.8">${_t('stats_em_dias_estudo')}</small>
             </div>
         </div>
         <div class="stats-card">
-            <h3>Calendário de estudo (heatmap)</h3>
+            <h3>${_t('heatmap_calendario')}</h3>
             ${heatmapHtml}
         </div>
     `;

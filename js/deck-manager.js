@@ -20,15 +20,19 @@ function renderizar() {
     if (filtroEl) {
         if (numArquivados > 0 || mostrandoArquivados) {
             filtroEl.style.display = 'block';
+            var verAtivos = (typeof t === 'function' ? t('filtro_ver_ativos') : 'Ver ativos');
+            var verArquivados = (typeof t === 'function' ? t('filtro_ver_arquivados') : 'Ver arquivados');
             filtroEl.innerHTML = mostrandoArquivados
-                ? `<button type="button" class="deck-filter-btn" onclick="toggleVerArquivados()">← Ver ativos</button>`
-                : `<button type="button" class="deck-filter-btn" onclick="toggleVerArquivados()">📦 Ver arquivados (${numArquivados})</button>`;
+                ? `<button type="button" class="deck-filter-btn" onclick="toggleVerArquivados()">← ${verAtivos}</button>`
+                : `<button type="button" class="deck-filter-btn" onclick="toggleVerArquivados()">📦 ${verArquivados} (${numArquivados})</button>`;
         } else {
             filtroEl.style.display = 'none';
             filtroEl.innerHTML = '';
         }
     }
     const iconePinVetor = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="display:inline-block; vertical-align:middle; margin-right:5px;"><path d="M16,12V4H17V2H7V4H8V12L6,14V16H11.2V22H12.8V16H18V14L16,12Z" /></svg>`;
+    var lblNovos = typeof t === 'function' ? t('study_novos') : 'novos';
+    var lblRevisoes = typeof t === 'function' ? t('study_revisar') : 'revisões';
     const ordenados = [...baseFiltro].sort((x, y) => (y.b.fixado ? 1 : 0) - (x.b.fixado ? 1 : 0));
     const listaHtml = ordenados.map(({ b, i }) => {
         const n = b.cards.filter(c => c.state === 'new' && (b.premium ? c.liberado : true)).length;
@@ -52,7 +56,7 @@ function renderizar() {
                     <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                         <strong style="${b.premium ? 'color:var(--premium-gold)' : 'color: white;'}">${estaFixado ? iconePinVetor : ''}${b.nome}</strong>
                         <small style="white-space: nowrap; color: white;">
-                            <span style="color: #2185d0; font-weight: bold;">${n}</span> novos <span style="color: #ccc; margin: 0 2px;">|</span> <span style="color: #21ba45; font-weight: bold;">${r}</span> revisões
+                            <span style="color: #2185d0; font-weight: bold;">${n}</span> ${lblNovos} <span style="color: #ccc; margin: 0 2px;">|</span> <span style="color: #21ba45; font-weight: bold;">${r}</span> ${lblRevisoes}
                         </small>
                     </div>
                 </div>
@@ -61,12 +65,13 @@ function renderizar() {
 
     const container = document.getElementById('deck-list');
     if (container) {
+        var estudarTudoLabel = typeof t === 'function' ? t('estudar_tudo') : 'Estudar Tudo';
         const btnEstudarTudo = mostrandoArquivados ? '' : `
             <div class="deck-item study-all" onclick="abrirDetalhesEstudarTudo()" style="background: linear-gradient(315deg,rgb(68, 131, 61),rgb(90, 138, 85)); color: white; margin-bottom: 20px; border: none; cursor: pointer; padding: 25px 15px 25px 15px;border-radius: 18px; overflow: hidden;">
                 <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                    <strong style="font-size: 1.1em;">🔥 Estudar Tudo</strong>
+                    <strong style="font-size: 1.1em;">🔥 ${estudarTudoLabel}</strong>
                     <small style="opacity: 1; color: white; white-space: nowrap;">
-                        <span style="color: #90caf9; font-weight: bold;">${totalNovos}</span> novos | <span style="color: #a5d6a7; font-weight: bold;">${totalRevisao}</span> revisões
+                        <span style="color: #90caf9; font-weight: bold;">${totalNovos}</span> ${lblNovos} | <span style="color: #a5d6a7; font-weight: bold;">${totalRevisao}</span> ${lblRevisoes}
                     </small>
                 </div>
             </div>`;

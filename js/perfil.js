@@ -466,6 +466,8 @@ function preencherTelaPerfil() {
     if (metaInput) metaInput.value = localStorage.getItem('arion_meta_diaria') || '';
     if (horarioInput) horarioInput.value = localStorage.getItem('arion_horario_lembrete') || '';
     if (lembreteToggle) lembreteToggle.checked = localStorage.getItem('arion_lembrete_ativo') === 'true';
+    if (typeof atualizarBotoesTema === 'function') atualizarBotoesTema();
+    if (typeof atualizarBotoesIdioma === 'function') atualizarBotoesIdioma();
 
     const streakData = JSON.parse(localStorage.getItem('arion_streak_data')) || { contagem: 0, ultimaData: null };
     if (streakValor) streakValor.textContent = streakData.contagem + ' ' + (streakData.contagem === 1 ? 'dia' : 'dias');
@@ -552,6 +554,30 @@ function initPerfilFotoEditar() {
     }
 }
 
+var ARION_TEMA_KEY = 'arion_tema';
+
+function aplicarTema(tema) {
+    var usarEscuro = tema === 'dark' || (tema === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    if (usarEscuro) document.documentElement.classList.add('theme-night');
+    else document.documentElement.classList.remove('theme-night');
+}
+
+function atualizarBotoesTema() {
+    var tema = localStorage.getItem(ARION_TEMA_KEY) || 'auto';
+    document.querySelectorAll('.perfil-tema-btn').forEach(function (btn) {
+        var isSelected = btn.getAttribute('data-tema') === tema;
+        btn.classList.toggle('selected', isSelected);
+        btn.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
+    });
+}
+
+function initTemaAuto() {
+    var tema = localStorage.getItem(ARION_TEMA_KEY);
+    if (tema !== 'auto') return;
+    var mq = window.matchMedia('(prefers-color-scheme: dark)');
+    mq.addEventListener('change', function () { aplicarTema('auto'); });
+}
+
 function initPerfilPreferencias() {
     var metaInput = document.getElementById('perfil-meta-diaria');
     var horarioInput = document.getElementById('perfil-horario-lembrete');
@@ -576,7 +602,36 @@ function initPerfilPreferencias() {
     if (horarioInput) horarioInput.addEventListener('change', persistirLembrete);
     if (lembreteToggle) lembreteToggle.addEventListener('change', persistirLembrete);
 
+    document.querySelectorAll('.perfil-tema-btn[data-tema]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var tema = this.getAttribute('data-tema');
+            if (!tema) return;
+            localStorage.setItem(ARION_TEMA_KEY, tema);
+            aplicarTema(tema);
+            atualizarBotoesTema();
+        });
+    });
+    atualizarBotoesTema();
+    initTemaAuto();
+
+    document.querySelectorAll('.perfil-idioma-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var lang = this.getAttribute('data-lang');
+            if (lang && typeof setIdioma === 'function') setIdioma(lang);
+        });
+    });
+    if (typeof atualizarBotoesIdioma === 'function') atualizarBotoesIdioma();
+
     iniciarLembretePWA();
+}
+
+function atualizarBotoesIdioma() {
+    var lang = typeof getIdioma === 'function' ? getIdioma() : 'pt';
+    document.querySelectorAll('.perfil-idioma-btn').forEach(function (btn) {
+        var isSelected = btn.getAttribute('data-lang') === lang;
+        btn.classList.toggle('selected', isSelected);
+        btn.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
+    });
 }
 
 if (typeof document !== 'undefined') {

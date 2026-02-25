@@ -27,7 +27,8 @@ function abrirDetalhesEstudarTudo() {
     });
     const total = novos + revisao;
     mudarTela('details-screen');
-    document.getElementById('details-deck-name').innerText = 'Estudar Tudo';
+    const _t = typeof t === 'function' ? t : function(k) { return k; };
+    document.getElementById('details-deck-name').innerText = _t('estudar_tudo');
     const area = document.getElementById('stats-area');
     const actions = document.getElementById('details-actions');
     const isDisabled = total === 0;
@@ -35,12 +36,12 @@ function abrirDetalhesEstudarTudo() {
     area.innerHTML = `
         <div class="anki-stats-card" style="box-shadow: 0 10px 25px rgba(0,0,0,0.15); border: none;">
             <div style="text-align:left">
-                <div class="stat-row">Novo: <span style="color:#2185d0; font-weight:bold">${novos}</span></div>
-                <div class="stat-row">A Revisar: <span style="color:#2e7d32; font-weight:bold">${revisao}</span></div>
+                <div class="stat-row">${_t('study_label_novo')}: <span style="color:#2185d0; font-weight:bold">${novos}</span></div>
+                <div class="stat-row">${_t('study_label_revisar')}: <span style="color:#2e7d32; font-weight:bold">${revisao}</span></div>
             </div>
-            <button class="btn-anki" style="background:${isDisabled ? '#e0e0e0' : '#2185d0'}; color:${isDisabled ? '#999' : 'white'}; padding:12px 20px; width:auto; height:auto; cursor:${isDisabled ? 'not-allowed' : 'pointer'}; opacity:${isDisabled ? '0.7' : '1'}; border-radius:10px; border:none; font-weight:bold;" onclick="${isDisabled ? '' : 'estudarTudo()'}" ${isDisabled ? 'disabled' : ''}>Estudar agora</button>
+            <button class="btn-anki" style="background:${isDisabled ? '#e0e0e0' : '#2185d0'}; color:${isDisabled ? '#999' : 'white'}; padding:12px 20px; width:auto; height:auto; cursor:${isDisabled ? 'not-allowed' : 'pointer'}; opacity:${isDisabled ? '0.7' : '1'}; border-radius:10px; border:none; font-weight:bold;" onclick="${isDisabled ? '' : 'estudarTudo()'}" ${isDisabled ? 'disabled' : ''}>${_t('study_agora')}</button>
         </div>`;
-    const heatmapCard = heatmapHtml ? `<div class="stats-card details-heatmap-card"><h3>Calendário de estudo (heatmap)</h3>${heatmapHtml}</div>` : '';
+    const heatmapCard = heatmapHtml ? `<div class="stats-card details-heatmap-card"><h3>${_t('heatmap_calendario')}</h3>${heatmapHtml}</div>` : '';
     actions.innerHTML = heatmapCard;
     if (heatmapHtml && typeof initHeatmapTooltip === 'function') initHeatmapTooltip(actions);
 }
@@ -58,22 +59,23 @@ function abrirDetalhes(i, finalizou = false) {
     const area = document.getElementById('stats-area');
     const actions = document.getElementById('details-actions');
 
+    const _t = typeof t === 'function' ? t : function(k) { return k; };
     if (finalizou && fila.length === 0) {
-        area.innerHTML = `<div class="congratulations-rect">Parabéns! Você finalizou os flashcards previstos para hoje</div>`;
-        actions.innerHTML = `<button class="btn-gold" onclick="mudarTela('deck-screen')">VOLTAR PARA MEUS BARALHOS</button>`;
+        area.innerHTML = `<div class="congratulations-rect">${_t('parabens_finalizou')}</div>`;
+        actions.innerHTML = `<button class="btn-gold" onclick="mudarTela('deck-screen')">${_t('voltar_baralhos')}</button>`;
     } else {
         const isDisabled = fila.length === 0;
         const heatmapHtml = typeof gerarHeatmapHtml === 'function' ? gerarHeatmapHtml(true) : '';
         area.innerHTML = `
             <div class="anki-stats-card" style="box-shadow: 0 10px 25px rgba(0,0,0,0.15); border: none;">
                 <div style="text-align:left">
-                    <div class="stat-row">Novo: <span style="color:#2185d0; font-weight:bold">${novos}</span></div>
-                    <div class="stat-row">A Revisar: <span style="color:#2e7d32; font-weight:bold">${revisao}</span></div>
+                    <div class="stat-row">${_t('study_label_novo')}: <span style="color:#2185d0; font-weight:bold">${novos}</span></div>
+                    <div class="stat-row">${_t('study_label_revisar')}: <span style="color:#2e7d32; font-weight:bold">${revisao}</span></div>
                 </div>
-                <button class="btn-anki" style="background:${isDisabled ? '#e0e0e0' : '#2185d0'}; color:${isDisabled ? '#999' : 'white'}; padding:12px 20px; width:auto; height:auto; cursor:${isDisabled ? 'not-allowed' : 'pointer'}; opacity:${isDisabled ? '0.7' : '1'}; border-radius:10px; border:none; font-weight:bold;" onclick="${isDisabled ? '' : 'iniciarEstudo(' + dIdx + ')'}" ${isDisabled ? 'disabled' : ''}>Estudar agora</button>
+                <button class="btn-anki" style="background:${isDisabled ? '#e0e0e0' : '#2185d0'}; color:${isDisabled ? '#999' : 'white'}; padding:12px 20px; width:auto; height:auto; cursor:${isDisabled ? 'not-allowed' : 'pointer'}; opacity:${isDisabled ? '0.7' : '1'}; border-radius:10px; border:none; font-weight:bold;" onclick="${isDisabled ? '' : 'iniciarEstudo(' + dIdx + ')'}" ${isDisabled ? 'disabled' : ''}>${_t('study_agora')}</button>
             </div>`;
-        const heatmapCard = heatmapHtml ? `<div class="stats-card details-heatmap-card"><h3>Calendário de estudo (heatmap)</h3>${heatmapHtml}</div>` : '';
-        actions.innerHTML = (b.premium ? '' : `<button class="btn-gold" onclick="abrirCriador(${i})">+ ADICIONAR CARDS</button>`) + heatmapCard;
+        const heatmapCard = heatmapHtml ? `<div class="stats-card details-heatmap-card"><h3>${_t('heatmap_calendario')}</h3>${heatmapHtml}</div>` : '';
+        actions.innerHTML = (b.premium ? '' : `<button class="btn-gold" onclick="abrirCriador(${i})">${_t('btn_adicionar_cards')}</button>`) + heatmapCard;
         if (heatmapHtml && typeof initHeatmapTooltip === 'function') initHeatmapTooltip(actions);
     }
 }

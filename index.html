@@ -21,7 +21,15 @@
 
 </head>
 <body>
-
+    <script>
+    (function(){
+        var t = localStorage.getItem('arion_tema');
+        if (!t && localStorage.getItem('arion_modo_noturno') === 'true') { t = 'dark'; localStorage.setItem('arion_tema', 'dark'); }
+        if (!t) t = 'auto';
+        if (t === 'auto') t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        if (t === 'dark') document.documentElement.classList.add('theme-night');
+    })();
+    </script>
 
     
     <!-- =========================================================
@@ -46,13 +54,13 @@
                             <img id="foto-perfil-menu" class="foto-perfil-menu" src="" alt="Foto do perfil" referrerpolicy="no-referrer">
                         </div>
                     </div>
-                    <button class="nav-btn" id="nav-decks" onclick="mudarTela('deck-screen'); atualizarNav('nav-decks')">🃏 Baralhos</button>
-                    <button class="nav-btn" onclick="abrirVestibulares()">📅 Meus Vestibulares</button>
-                    <button class="nav-btn" id="nav-stats" onclick="abrirEstatisticas(); atualizarNav('nav-stats')">📊 Estatísticas</button>
-                    <button class="nav-btn" id="nav-browse" onclick="abrirPainel(); atualizarNav('nav-browse')">📁 Painel (Cards)</button>
-                    <button class="nav-btn efeito brilho" id="nav-store" onclick="mudarTela('store-screen'); atualizarNav('nav-store')" style="color:var(--premium-gold); border-color:var(--premium-gold)">✨ Baralhos Prontos</button>
-                    <button class="nav-btn" onclick="dispararImportacao()">📥 Importar do Anki</button>
-                    <button class="nav-btn" id="nav-browse" onclick="deslogar()" style="color: #ff4d4d; font-weight: bold;">Sair</button>
+                    <button class="nav-btn" id="nav-decks" onclick="mudarTela('deck-screen'); atualizarNav('nav-decks')">🃏 <span data-i18n="nav_decks">Baralhos</span></button>
+                    <button class="nav-btn" onclick="abrirVestibulares()">📅 <span data-i18n="nav_vestibulares">Meus Vestibulares</span></button>
+                    <button class="nav-btn" id="nav-stats" onclick="abrirEstatisticas(); atualizarNav('nav-stats')">📊 <span data-i18n="nav_stats">Estatísticas</span></button>
+                    <button class="nav-btn" id="nav-browse" onclick="abrirPainel(); atualizarNav('nav-browse')">📁 <span data-i18n="nav_browse">Painel (Cards)</span></button>
+                    <button class="nav-btn efeito brilho" id="nav-store" onclick="mudarTela('store-screen'); atualizarNav('nav-store')" style="color:var(--premium-gold); border-color:var(--premium-gold)">✨ <span data-i18n="nav_store">Baralhos Prontos</span></button>
+                    <button class="nav-btn" onclick="mudarTela('perfil-screen'); var m=document.getElementById('main-nav'); if(m) m.classList.remove('show');">⚙️ <span data-i18n="nav_config">Configurações</span></button>
+                    <button class="nav-btn" id="nav-sair" onclick="deslogar()" style="color: #ff4d4d; font-weight: bold;"><span data-i18n="nav_sair">Sair</span></button>
                 </nav>
             </div>
         </header>
@@ -106,11 +114,11 @@
     <div id="vestibulares-screen" class="screen">
         <header>
             <button onclick="mudarTela('deck-screen')" class="hamburger-btn">←</button>
-            <h1>Calendário de Provas</h1>
+            <h1 data-i18n="vestibulares_titulo">Calendário de Provas</h1>
             <div style="width: 40px;"></div> </header>
     
         <div style="padding: 15px 15px 0 15px;">
-            <button onclick="abrirModalVestibular()" class="btn-adicionar-largo" style="background-color: var(--accent-gold); color: var(--primary-green);">
+            <button onclick="abrirModalVestibular()" class="btn-adicionar-largo" style="background-color: var(--accent-gold); color: var(--primary-green);" data-i18n="btn_adicionar_prova">
                 + ADICIONAR NOVA PROVA
             </button>
         </div>
@@ -128,15 +136,15 @@
 
     <div id="modal-vestibular" class="modal">
         <div class="modal-content">
-            <h3 style="margin-top: 0; color: var(--primary-green);">Novo Vestibular</h3>
+            <h3 style="margin-top: 0; color: var(--primary-green);" data-i18n="vest_novo">Novo Vestibular</h3>
             
-            <label style="display:block; text-align:left; font-size:0.8rem; margin-bottom:5px;">Nome da Instituição:</label>
-            <input type="text" id="vest-nome" placeholder="Prova (Ex: Enem, UFSC...)">
+            <label style="display:block; text-align:left; font-size:0.8rem; margin-bottom:5px;" data-i18n="vest_label_instituicao">Nome da Instituição:</label>
+            <input type="text" id="vest-nome" placeholder="Prova (Ex: Enem, UFSC...)" data-i18n="vest_prova" data-i18n-placeholder>
             
-            <label style="display:block; text-align:left; font-size:0.8rem; margin-bottom:5px; margin-top:10px;">Data da Prova:</label>
-            <input type="text" id="vest-data" placeholder="dd/mm/aaaa" onfocus="(this.type='date')" onblur="if(!this.value)this.type='text'">
+            <label style="display:block; text-align:left; font-size:0.8rem; margin-bottom:5px; margin-top:10px;" data-i18n="vest_label_data">Data da Prova:</label>
+            <input type="text" id="vest-data" placeholder="dd/mm/aaaa" data-i18n="vest_data" data-i18n-placeholder onfocus="(this.type='date')" onblur="if(!this.value)this.type='text'">
             
-            <p style="font-size: 0.8rem; margin-bottom: 5px; text-align: left; margin-top:10px;">Escolha uma cor para o card:</p>
+            <p style="font-size: 0.8rem; margin-bottom: 5px; text-align: left; margin-top:10px;" data-i18n="vest_cor_card">Escolha uma cor para o card:</p>
             <div class="color-options">
                 <div class="color-dot selected" style="background: #ffffff;" onclick="selectColor(this, '#ffffff')"></div>
                 <div class="color-dot" style="background: #f4e9c1;" onclick="selectColor(this, '#f4e9c1')"></div>
@@ -148,8 +156,8 @@
             </div>
     
             <div class="modal-buttons">
-                <button onclick="fecharModalVestibular()" class="btn-cancelar">Cancelar</button>
-                <button onclick="salvarVestibular()" class="btn-confirmar">Salvar</button>
+                <button onclick="fecharModalVestibular()" class="btn-cancelar" data-i18n="btn_cancelar">Cancelar</button>
+                <button onclick="salvarVestibular()" class="btn-confirmar" data-i18n="btn_salvar">Salvar</button>
             </div>
         </div>
     </div>
@@ -192,28 +200,28 @@
 
     <!-- ======== tela inicial baralhos =============-->
     <div id="deck-screen" class="screen">
-        <header><h1>Meus Baralhos</h1></header>
+        <header><h1 data-i18n="screen_decks">Meus Baralhos</h1></header>
         <div id="deck-notices" class="deck-notices"></div>
         <div id="deck-filter-archived" class="deck-filter-archived"></div>
         <div class="deck-list" id="deck-list"></div>
         <button class="btn-gold fab-button" onclick="abrirModalCriar()">
-            + Novo Baralho</button>    
+            <span data-i18n="screen_novo_baralho">+ Novo Baralho</span></button>    
     </div>
     </div>
 
     <div id="stats-screen" class="screen">
-        <header><h1>Estatísticas</h1></header>
+        <header><h1 data-i18n="screen_estatisticas">Estatísticas</h1></header>
         <div id="stats-content" class="stats-container"></div>
     </div>
 
     <div id="store-screen" class="screen">
-        <header><h1>Loja Árion</h1></header>
+        <header><h1 data-i18n="screen_loja">Loja Árion</h1></header>
         <div class="store-card">
-            <h2 style="margin:0">Biologia Completa</h2>
-            <p style="color:#666; font-size:0.9rem">Cronograma completo do Ensino Médio separado por módulos.</p>
+            <h2 style="margin:0" data-i18n="store_biologia">Biologia Completa</h2>
+            <p style="color:#666; font-size:0.9rem" data-i18n="store_desc">Cronograma completo do Ensino Médio separado por módulos.</p>
             <div class="price-tag">R$ 19,90 / mês</div>
-            <button class="btn-gold" onclick="simularAssinatura()">ASSINAR AGORA</button>
-            <button class="btn-outline" onclick="atualizarConteudoPremium()" style="margin-top:10px; font-size:0.85rem;">Já sou assinante – Atualizar conteúdo</button>
+            <button class="btn-gold" onclick="simularAssinatura()" data-i18n="store_assinatura">ASSINAR AGORA</button>
+            <button class="btn-outline" onclick="atualizarConteudoPremium()" style="margin-top:10px; font-size:0.85rem;" data-i18n="store_atualizar">Já sou assinante – Atualizar conteúdo</button>
         </div>
     </div>
 
@@ -221,7 +229,7 @@
     <section id="perfil-screen" class="screen">
         <header>
             <button type="button" onclick="mudarTela('deck-screen')" class="btn-voltar-perfil">← Voltar</button>
-            <h1>Perfil</h1>
+            <h1 data-i18n="screen_perfil">Perfil</h1>
             <div style="width: 90px;"></div>
         </header>
 
@@ -247,37 +255,79 @@
                 <p class="perfil-email" id="perfil-email">email@exemplo.com</p>
             </div>
 
+            <!-- Aparência: Claro / Escuro / Automático (estilo iPhone) -->
+            <div class="perfil-card">
+                <h3 class="perfil-card-titulo" data-i18n="perfil_aparencia">Aparência</h3>
+                <div class="perfil-tema-row" role="group" aria-label="Tema de aparência">
+                    <button type="button" class="perfil-tema-btn" data-tema="light" title="Claro" aria-pressed="false">
+                        <span class="perfil-tema-icon" aria-hidden="true">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                        </span>
+                        <span class="perfil-tema-label" data-i18n="perfil_claro">Claro</span>
+                    </button>
+                    <button type="button" class="perfil-tema-btn" data-tema="dark" title="Escuro" aria-pressed="false">
+                        <span class="perfil-tema-icon" aria-hidden="true">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                        </span>
+                        <span class="perfil-tema-label" data-i18n="perfil_escuro">Escuro</span>
+                    </button>
+                    <button type="button" class="perfil-tema-btn" data-tema="auto" title="Automático" aria-pressed="false">
+                        <span class="perfil-tema-icon" aria-hidden="true">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                        </span>
+                        <span class="perfil-tema-label" data-i18n="perfil_auto">Auto</span>
+                    </button>
+                </div>
+                <small class="perfil-tema-desc" data-i18n="tema_desc"></small>
+            </div>
+
+            <!-- Idioma -->
+            <div class="perfil-card">
+                <h3 class="perfil-card-titulo" data-i18n="perfil_idioma">Idioma</h3>
+                <div class="perfil-tema-row" role="group" aria-label="Idioma">
+                    <button type="button" class="perfil-tema-btn perfil-idioma-btn" data-lang="pt" title="Português">
+                        <span class="perfil-tema-label" data-i18n="perfil_idioma_pt">Português</span>
+                    </button>
+                    <button type="button" class="perfil-tema-btn perfil-idioma-btn" data-lang="en" title="English">
+                        <span class="perfil-tema-label" data-i18n="perfil_idioma_en">English</span>
+                    </button>
+                </div>
+            </div>
+
             <!-- Funcionalidades de estudo -->
             <div class="perfil-card">
-                <h3 class="perfil-card-titulo">📚 Meta de estudo</h3>
-                <label class="perfil-label" for="perfil-meta-diaria">Meta de cards novos por dia</label>
+                <h3 class="perfil-card-titulo">📚 <span data-i18n="perfil_meta">Meta de estudo</span></h3>
+                <label class="perfil-label" for="perfil-meta-diaria" data-i18n="perfil_meta_label">Meta de cards novos por dia</label>
                 <input type="number" id="perfil-meta-diaria" class="perfil-input-numero" min="1" max="500" placeholder="Ex: 20" inputmode="numeric">
             </div>
 
             <div class="perfil-card">
-                <h3 class="perfil-card-titulo">🔔 Lembrete de revisões</h3>
+                <h3 class="perfil-card-titulo">🔔 <span data-i18n="perfil_lembrete">Lembrete de revisões</span></h3>
                 <div class="perfil-lembrete-row">
                     <label class="perfil-toggle-label">
-                        <span class="perfil-toggle-text">Lembrete diário</span>
+                        <span class="perfil-toggle-text" data-i18n="perfil_lembrete_toggle">Lembrete diário</span>
                         <input type="checkbox" id="perfil-lembrete-ativo" class="perfil-toggle-input">
                         <span class="perfil-toggle-slider"></span>
                     </label>
                 </div>
                 <div class="perfil-lembrete-row">
-                    <label class="perfil-label" for="perfil-horario-lembrete">Horário</label>
+                    <label class="perfil-label" for="perfil-horario-lembrete" data-i18n="perfil_horario">Horário</label>
                     <input type="time" id="perfil-horario-lembrete" class="perfil-input-time">
                 </div>
             </div>
 
             <!-- Streak -->
             <div class="perfil-card perfil-streak-card" id="perfil-streak-card">
-                <h3 class="perfil-card-titulo">🔥 Sua sequência</h3>
+                <h3 class="perfil-card-titulo">🔥 <span data-i18n="perfil_streak">Sua sequência</span></h3>
                 <div class="perfil-streak-valor" id="perfil-streak-valor">0 dias</div>
                 <small class="perfil-streak-sub" id="perfil-streak-sub">Estude para começar</small>
             </div>
 
+            <!-- Importar do Anki -->
+            <button type="button" class="perfil-btn-suporte perfil-btn-importar" onclick="dispararImportacao()">📥 <span data-i18n="perfil_importar_anki">Importar do Anki</span></button>
+
             <!-- Suporte -->
-            <button type="button" class="perfil-btn-suporte" id="perfil-btn-suporte">✉️ Suporte e Feedback</button>
+            <button type="button" class="perfil-btn-suporte" id="perfil-btn-suporte">✉️ <span data-i18n="perfil_suporte">Suporte e Feedback</span></button>
         </div>
     </section>
 
@@ -320,8 +370,8 @@
     
     <div id="study-screen" class="screen">
         <header>
-            <h1 id="study-title">Estudo</h1>
-            <button onclick="sairEstudo()" style="background:none; border:1px solid white; color:white; border-radius:8px; padding:5px 15px;">Sair</button>
+            <h1 id="study-title" data-i18n="screen_estudo">Estudo</h1>
+            <button onclick="sairEstudo()" style="background:none; border:1px solid white; color:white; border-radius:8px; padding:5px 15px;" data-i18n="study_sair">Sair</button>
         </header>
         <div id="study-container">
             <div class="card-box">
@@ -336,16 +386,16 @@
                 
                 <div id="display-back" style="font-size:1.4rem; font-weight:bold; color:var(--primary-green); display:none"></div>
             
-                <button id="btn-show-answer" class="btn-gold" style="margin-top: 20px; width: 100%;" onclick="virarCard()">
+                <button id="btn-show-answer" class="btn-gold" style="margin-top: 20px; width: 100%;" onclick="virarCard()" data-i18n="mostrar_resposta">
                     MOSTRAR RESPOSTA
                 </button>
             </div>
             <div class="anki-footer" id="anki-btns">
                 <div class="btn-group"><span class="time-label"></span><button class="btn-anki" style="background:#f0f0f0; color:#666" onclick="abrirModalEditarCard()">✎ Editar</button></div>
-                <div class="btn-group"><span class="time-label" id="t0"></span><button class="btn-anki" style="color:#d9534f" onclick="responder(0)">De novo</button></div>
-                <div class="btn-group"><span class="time-label" id="t1"></span><button class="btn-anki" style="color:#f0ad4e" onclick="responder(1)">Difícil</button></div>
-                <div class="btn-group"><span class="time-label" id="t2"></span><button class="btn-anki" style="color:#5cb85c" onclick="responder(2)">Bom</button></div>
-                <div class="btn-group"><span class="time-label" id="t3"></span><button class="btn-anki" style="color:#5bc0de" onclick="responder(3)">Fácil</button></div>
+                <div class="btn-group"><span class="time-label" id="t0"></span><button class="btn-anki" style="color:#d9534f" onclick="responder(0)" data-i18n="anki_denovo">De novo</button></div>
+                <div class="btn-group"><span class="time-label" id="t1"></span><button class="btn-anki" style="color:#f0ad4e" onclick="responder(1)" data-i18n="anki_dificil">Difícil</button></div>
+                <div class="btn-group"><span class="time-label" id="t2"></span><button class="btn-anki" style="color:#5cb85c" onclick="responder(2)" data-i18n="anki_bom">Bom</button></div>
+                <div class="btn-group"><span class="time-label" id="t3"></span><button class="btn-anki" style="color:#5bc0de" onclick="responder(3)" data-i18n="anki_facil">Fácil</button></div>
             </div>
         </div>
     
@@ -438,6 +488,7 @@ window.OAuthProvider = firebase.auth.OAuthProvider;
 
 <!-- Módulos Árion (ordem por dependência) -->
 <script src="js/config.js"></script>
+<script src="js/i18n.js"></script>
 <script src="js/heatmap-streak.js"></script>
 <script src="js/tutorial.js"></script>
 <script src="js/firebase-sync.js"></script>
