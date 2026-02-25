@@ -46,7 +46,7 @@
     let initialLeft = 0;
     let telaAtual = null;
     let telaFundo = null;
-    const bordaSensivel = 40;
+    const bordaSensivel = 28;
     const distanciaMinima = 100;
     window.addEventListener('touchstart', e => {
         const menu = document.getElementById('main-nav');
@@ -95,7 +95,7 @@
             if (telaFundo) { telaFundo.style.opacity = '1'; telaFundo.style.transform = 'scale(1)'; }
             setTimeout(() => {
                 const idAtual = telaAtual.id;
-                if (idAtual === 'study-screen') abrirDetalhes(dIdx);
+                if (idAtual === 'study-screen') sairEstudo();
                 else { mudarTela('deck-screen'); atualizarNav('nav-decks'); }
                 requestAnimationFrame(() => { resetEstilos(telaAtual); if (telaFundo) resetEstilos(telaFundo); telaAtual = null; telaFundo = null; });
             }, 300);
@@ -106,6 +106,14 @@
                 telaFundo.style.transform = 'scale(0.95)';
                 setTimeout(() => { if (telaFundo && !telaFundo.classList.contains('active')) { telaFundo.style.display = 'none'; resetEstilos(telaFundo); } }, 300);
             }
+            setTimeout(() => {
+                if (telaAtual) {
+                    telaAtual.style.left = '';
+                    telaAtual.style.transform = '';
+                    telaAtual.style.boxShadow = '';
+                    telaAtual.style.transition = '';
+                }
+            }, 300);
         }
     }, { passive: true });
 })();
@@ -153,20 +161,20 @@ document.addEventListener('touchstart', e => {
     currentSwipeEl = e.target.closest('.screen.active');
 }, { passive: true });
 document.addEventListener('touchmove', e => {
-    if (!currentSwipeEl || touchStartX > 80) return;
+    if (!currentSwipeEl || touchStartX > 50) return;
     if (e.target.closest('.deck-content') || e.target.closest('.card-box')) return;
     const touch = (e.touches && e.touches[0]) ? e.touches[0] : e.changedTouches[0];
     let moveX = touch.screenX - touchStartX;
     if (moveX > 0) { currentSwipeEl.style.transform = `translateX(calc(-50% + ${moveX}px))`; currentSwipeEl.style.transition = 'none'; }
 }, { passive: true });
 document.addEventListener('touchend', e => {
-    if (!currentSwipeEl || touchStartX > 80) return;
+    if (!currentSwipeEl || touchStartX > 50) return;
     touchEndX = e.changedTouches[0].screenX;
     let diff = touchEndX - touchStartX;
     if (diff > 100) {
         const idAtual = currentSwipeEl.id;
         if (idAtual === 'details-screen' || idAtual === 'store-screen' || idAtual === 'browse-screen' || idAtual === 'create-screen' || idAtual === 'stats-screen' || idAtual === 'vestibulares-screen') mudarTela('deck-screen');
-        else if (idAtual === 'study-screen') abrirDetalhes(dIdx);
+        else if (idAtual === 'study-screen') sairEstudo();
         else resetSwipe(currentSwipeEl);
     } else resetSwipe(currentSwipeEl);
     currentSwipeEl = null;
