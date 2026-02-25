@@ -130,6 +130,7 @@ async function sincronizarComNuvem() {
 
         renderizar();
         if (typeof renderizarVestibulares === 'function') renderizarVestibulares();
+        if (usuarioLogado && typeof atualizarFotoMenuSuspenso === 'function') atualizarFotoMenuSuspenso();
     } catch (e) {
         console.error("Erro na sincronização:", e);
     }

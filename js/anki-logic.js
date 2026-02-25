@@ -82,8 +82,26 @@ function iniciarEstudo(i) {
     carregarCard();
 }
 
+function atualizarContadoresEstudo() {
+    const elNovo = document.getElementById('study-count-novo');
+    const elRevisar = document.getElementById('study-count-revisar');
+    if (!elNovo || !elRevisar) return;
+    const novos = fila.filter(c => c.state === 'new').length;
+    const revisar = fila.filter(c => c.state !== 'new').length;
+    elNovo.textContent = novos;
+    elRevisar.textContent = revisar;
+    elNovo.classList.remove('current');
+    elRevisar.classList.remove('current');
+    if (fila.length > 0) {
+        const atual = fila[0];
+        if (atual.state === 'new') elNovo.classList.add('current');
+        else elRevisar.classList.add('current');
+    }
+}
+
 function carregarCard() {
     const c = fila[0];
+    atualizarContadoresEstudo();
     const elTitle = document.getElementById('study-title');
     if (elTitle) elTitle.textContent = (c && c._deckNome) ? c._deckNome : (baralhos[dIdx] ? baralhos[dIdx].nome : 'Estudo');
     respondido = false;
@@ -287,6 +305,10 @@ function responder(q) {
 }
 
 function mostrarParabens() {
+    const elNovo = document.getElementById('study-count-novo');
+    const elRevisar = document.getElementById('study-count-revisar');
+    if (elNovo) { elNovo.textContent = '0'; elNovo.classList.remove('current'); }
+    if (elRevisar) { elRevisar.textContent = '0'; elRevisar.classList.remove('current'); }
     const studyContainer = document.getElementById('study-container');
     if (studyContainer) studyContainer.style.display = 'none';
     const finishArea = document.getElementById('finish-area');

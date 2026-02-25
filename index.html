@@ -42,7 +42,7 @@
                 <nav class="nav-menu-dropdown" id="main-nav">
                     <div class="menu-profile-area" id="menu-profile-area">
                         <span id="nome-usuario-menu" class="nome-usuario-menu nome-usuario-clicavel" onclick="mudarTela('perfil-screen'); document.getElementById('main-nav') && document.getElementById('main-nav').classList.remove('show');" role="button" tabindex="0"></span>
-                        <div class="menu-profile-foto-wrap" id="menu-profile-foto-wrap">
+                        <div class="menu-profile-foto-wrap menu-profile-foto-clicavel" id="menu-profile-foto-wrap" onclick="mudarTela('perfil-screen'); document.getElementById('main-nav') && document.getElementById('main-nav').classList.remove('show');" role="button" tabindex="0" title="Abrir perfil">
                             <img id="foto-perfil-menu" class="foto-perfil-menu" src="" alt="Foto do perfil" referrerpolicy="no-referrer">
                         </div>
                     </div>
@@ -230,9 +230,11 @@
                     </div>
                     <button type="button" class="perfil-foto-editar" id="perfil-btn-editar-foto" title="Editar foto" aria-label="Editar foto">✎</button>
                     <div class="perfil-foto-menu" id="perfil-foto-menu" style="display:none;">
-                        <button type="button" class="perfil-foto-menu-item" id="perfil-opcao-trocar">📷 Trocar Imagem</button>
-                        <button type="button" class="perfil-foto-menu-item" id="perfil-opcao-emoji">😀 Usar Emoji como Foto</button>
-                        <button type="button" class="perfil-foto-menu-item" id="perfil-opcao-conta">👤 Usar foto da conta</button>
+                        <button type="button" class="perfil-foto-menu-item" id="perfil-opcao-trocar"><span class="perfil-foto-menu-icone">📷</span>Trocar Imagem</button>
+                        <span class="perfil-foto-menu-divider"></span>
+                        <button type="button" class="perfil-foto-menu-item" id="perfil-opcao-emoji"><span class="perfil-foto-menu-icone">😀</span>Usar Emoji como Foto</button>
+                        <span class="perfil-foto-menu-divider"></span>
+                        <button type="button" class="perfil-foto-menu-item" id="perfil-opcao-conta"><span class="perfil-foto-menu-icone">↩</span>Usar foto da conta</button>
                     </div>
                     <input type="file" id="perfil-input-file" accept="image/*" style="display:none;">
                 </div>
@@ -316,9 +318,13 @@
             <h1 id="study-title">Estudo</h1>
             <button onclick="abrirDetalhes(dIdx)" style="background:none; border:1px solid white; color:white; border-radius:8px; padding:5px 15px;">Sair</button>
         </header>
-    
         <div id="study-container">
             <div class="card-box">
+                <div id="study-counters" class="study-counters">
+                    <span id="study-count-novo" class="study-count-num study-count-novo">0</span>
+                    <span class="study-counter-sep">|</span>
+                    <span id="study-count-revisar" class="study-count-num study-count-revisar">0</span>
+                </div>
                 <div id="display-front" style="font-size:1.4rem"></div>
                 
                 <div class="divider" id="card-divider"></div>
