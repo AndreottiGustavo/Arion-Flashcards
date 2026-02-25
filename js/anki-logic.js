@@ -30,6 +30,7 @@ function abrirDetalhes(i, finalizou = false) {
         actions.innerHTML = `<button class="btn-gold" onclick="mudarTela('deck-screen')">VOLTAR PARA MEUS BARALHOS</button>`;
     } else {
         const isDisabled = fila.length === 0;
+        const heatmapHtml = typeof gerarHeatmapHtml === 'function' ? gerarHeatmapHtml(true) : '';
         area.innerHTML = `
             <div class="anki-stats-card" style="box-shadow: 0 10px 25px rgba(0,0,0,0.15); border: none;">
                 <div style="text-align:left">
@@ -38,7 +39,9 @@ function abrirDetalhes(i, finalizou = false) {
                 </div>
                 <button class="btn-anki" style="background:${isDisabled ? '#e0e0e0' : '#2185d0'}; color:${isDisabled ? '#999' : 'white'}; padding:12px 20px; width:auto; height:auto; cursor:${isDisabled ? 'not-allowed' : 'pointer'}; opacity:${isDisabled ? '0.7' : '1'}; border-radius:10px; border:none; font-weight:bold;" onclick="${isDisabled ? '' : 'iniciarEstudo(' + dIdx + ')'}" ${isDisabled ? 'disabled' : ''}>Estudar agora</button>
             </div>`;
-        actions.innerHTML = b.premium ? '' : `<button class="btn-gold" onclick="abrirCriador(${i})">+ ADICIONAR CARDS</button>`;
+        const heatmapCard = heatmapHtml ? `<div class="stats-card details-heatmap-card"><h3>Calendário de estudo (heatmap)</h3>${heatmapHtml}</div>` : '';
+        actions.innerHTML = (b.premium ? '' : `<button class="btn-gold" onclick="abrirCriador(${i})">+ ADICIONAR CARDS</button>`) + heatmapCard;
+        if (heatmapHtml && typeof initHeatmapTooltip === 'function') initHeatmapTooltip(actions);
     }
 }
 

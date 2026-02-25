@@ -9,7 +9,12 @@ function mudarTela(id) {
         s.style.transform = '';
     });
     const target = document.getElementById(id);
-    if (target) target.classList.add('active');
+    if (target) {
+        target.classList.add('active');
+        target.scrollTop = 0;
+        var deckList = document.getElementById('deck-list');
+        if (deckList) deckList.scrollTop = 0;
+    }
     const nav = document.getElementById('main-nav');
     const header = document.querySelector('.top-header');
     if (id === 'splash-screen' || id === 'login-forced-screen') {
