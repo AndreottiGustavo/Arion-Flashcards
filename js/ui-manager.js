@@ -53,6 +53,7 @@ function mudarTela(id) {
         if (id === 'deck-screen') {
         if (typeof veioDeEstudarTudo !== 'undefined') veioDeEstudarTudo = false;
         atualizarNav('nav-decks');
+        mostrarDicaDeckSwipeSePrimeiraVez();
     }
         if (id === 'perfil-screen') preencherTelaPerfil();
     }
@@ -93,8 +94,7 @@ function formatarDataRevisao(c) {
     if (isNaN(d.getTime())) return 'Novo';
     var day = ('0' + d.getDate()).slice(-2);
     var month = ('0' + (d.getMonth() + 1)).slice(-2);
-    var year = d.getFullYear();
-    return day + '/' + month + '/' + year;
+    return day + '/' + month;
 }
 
 function abrirModalOverlay() {
@@ -107,9 +107,9 @@ function abrirModalOverlay() {
 function fecharModal() {
     document.getElementById('modal-overlay').style.display = 'none';
     var btn = document.getElementById('modal-confirm-btn');
-    if (btn) { btn.textContent = 'CONFIRMAR'; btn.className = 'btn-gold modal-confirm-btn'; }
+    if (btn) { btn.textContent = 'CONFIRMAR'; btn.className = 'btn-gold modal-confirm-btn'; btn.style.display = 'block'; }
     var cb = document.getElementById('modal-cancel-btn');
-    if (cb) cb.onclick = fecharModal;
+    if (cb) { cb.onclick = fecharModal; cb.style.display = 'block'; }
 }
 
 function abrirPainel() {
@@ -132,6 +132,55 @@ function abrirPainel() {
     mudarTela('browse-screen');
     atualizarNav('nav-browse');
     initBrowseFabPesquisarObserver();
+    mostrarDicaPainelSePrimeiraVez();
+}
+function mostrarDicaPainelSePrimeiraVez() {
+    if (localStorage.getItem(PAINEL_DICA_KEY)) return;
+    var headerBox = document.getElementById('browse-table-header-box');
+    if (!headerBox || !headerBox.parentNode) return;
+    var dicaEl = document.getElementById('browse-dica-primeira-vez');
+    if (dicaEl) return;
+    var msg = typeof _t === 'function' ? _t('painel_dica_toque_card') : 'Toque em um card para editar ou ver o conteúdo.';
+    var btnTxt = typeof _t === 'function' ? _t('painel_dica_entendi') : 'Entendi';
+    dicaEl = document.createElement('div');
+    dicaEl.id = 'browse-dica-primeira-vez';
+    dicaEl.className = 'browse-dica-primeira-vez';
+    dicaEl.innerHTML = '<p class="browse-dica-texto">' + msg + '</p><button type="button" class="browse-dica-btn">' + btnTxt + '</button>';
+    headerBox.parentNode.insertBefore(dicaEl, headerBox.nextSibling);
+    dicaEl.querySelector('.browse-dica-btn').onclick = function() {
+        localStorage.setItem(PAINEL_DICA_KEY, '1');
+        esconderDicaPainel();
+    };
+}
+function esconderDicaPainel() {
+    var el = document.getElementById('browse-dica-primeira-vez');
+    if (el) el.remove();
+}
+
+function mostrarDicaDeckSwipeSePrimeiraVez() {
+    if (localStorage.getItem(DECK_SWIPE_DICA_KEY)) return;
+    var deckList = document.getElementById('deck-list');
+    if (!deckList || !deckList.parentNode) return;
+    var dicaEl = document.getElementById('deck-dica-swipe');
+    if (dicaEl) return;
+    var msg = typeof _t === 'function' ? _t('deck_dica_swipe') : 'Deslize um baralho para a esquerda para ver as opções (fixar, arquivar, apagar).';
+    var btnTxt = typeof _t === 'function' ? _t('painel_dica_entendi') : 'Entendi';
+    dicaEl = document.createElement('div');
+    dicaEl.id = 'deck-dica-swipe';
+    dicaEl.className = 'deck-dica-swipe';
+    dicaEl.innerHTML = '<p class="deck-dica-swipe-texto">' + msg + '</p><button type="button" class="deck-dica-swipe-btn">' + btnTxt + '</button>';
+    deckList.parentNode.insertBefore(dicaEl, deckList);
+    dicaEl.querySelector('.deck-dica-swipe-btn').onclick = function() {
+        marcarDicaDeckSwipeVista();
+    };
+}
+function esconderDicaDeckSwipe() {
+    var el = document.getElementById('deck-dica-swipe');
+    if (el) el.remove();
+}
+function marcarDicaDeckSwipeVista() {
+    if (typeof localStorage !== 'undefined') localStorage.setItem(DECK_SWIPE_DICA_KEY, '1');
+    esconderDicaDeckSwipe();
 }
 var _browseFabPesquisarObserver = null;
 function initBrowseFabPesquisarObserver() {
@@ -154,10 +203,36 @@ function browseFabPesquisar() {
     if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); setTimeout(function() { var s = document.getElementById('browse-search'); if (s) s.focus(); }, 400); }
 }
 
-function abrirCriador() {
+function abrirCriador(deckIndex) {
+    if (deckIndex !== undefined && !isNaN(deckIndex)) dIdx = deckIndex;
+    var titleEl = document.getElementById('create-screen-title');
+    if (titleEl && typeof baralhos !== 'undefined' && baralhos[dIdx]) titleEl.textContent = baralhos[dIdx].nome;
     document.getElementById('front').innerHTML = "";
     document.getElementById('back').innerHTML = "";
     mudarTela('create-screen');
+    mostrarDicaFormatacaoSePrimeiraVez();
+}
+function mostrarDicaFormatacaoSePrimeiraVez() {
+    if (localStorage.getItem(CREATE_FORMATACAO_DICA_KEY)) return;
+    var toolbar = document.querySelector('#create-screen .toolbar');
+    if (!toolbar || !toolbar.parentNode) return;
+    var dicaEl = document.getElementById('create-dica-formatacao');
+    if (dicaEl) return;
+    var msg = typeof _t === 'function' ? _t('create_dica_formatacao') : 'Use a barra de formatação para negrito, itálico, sublinhado e cores no texto.';
+    var btnTxt = typeof _t === 'function' ? _t('painel_dica_entendi') : 'Entendi';
+    dicaEl = document.createElement('div');
+    dicaEl.id = 'create-dica-formatacao';
+    dicaEl.className = 'dica-arion-balloon';
+    dicaEl.innerHTML = '<p class="dica-arion-texto"><strong>Dica Árion:</strong> ' + msg + '</p><button type="button" class="dica-arion-btn">' + btnTxt + '</button>';
+    toolbar.parentNode.insertBefore(dicaEl, toolbar.nextSibling);
+    dicaEl.querySelector('.dica-arion-btn').onclick = function() {
+        if (typeof localStorage !== 'undefined') localStorage.setItem(CREATE_FORMATACAO_DICA_KEY, '1');
+        esconderDicaFormatacao();
+    };
+}
+function esconderDicaFormatacao() {
+    var el = document.getElementById('create-dica-formatacao');
+    if (el) el.remove();
 }
 
 function salvarCard() {
@@ -195,11 +270,17 @@ function renderizarGerenciadorPremium() {
         return;
     }
     if (!onboardingFeito) {
+        const msg = typeof _t === 'function' ? _t('premium_dica_liberar') : 'Toda vez que estudar um conteúdo novo em aula, libere os flashcards aqui para que eles apareçam no seu estudo diário. 😊';
+        const btnTxt = typeof _t === 'function' ? _t('painel_dica_entendi') : 'Entendi';
         const balloon = document.createElement('div');
-        balloon.className = 'onboarding-balloon';
-        balloon.innerHTML = `<strong>Dica Árion:</strong> Toda vez que estudar um conteúdo novo em aula, você deve liberar os flashcards aqui para que eles apareçam no seu estudo diário. 😊`;
-        balloon.onclick = () => { balloon.remove(); onboardingFeito = true; localStorage.setItem('arion_onboarding', 'true'); };
+        balloon.className = 'dica-arion-balloon';
+        balloon.innerHTML = '<p class="dica-arion-texto"><strong>Dica Árion:</strong> ' + msg + '</p><button type="button" class="dica-arion-btn">' + btnTxt + '</button>';
         root.appendChild(balloon);
+        balloon.querySelector('.dica-arion-btn').onclick = function() {
+            onboardingFeito = true;
+            localStorage.setItem('arion_onboarding', 'true');
+            balloon.remove();
+        };
     }
     baralhos.forEach((b, dIdx) => {
         if (!b.premium) return;
@@ -237,6 +318,15 @@ function toggleSubmodulo(dI, mod, sub, status) {
     salvar();
 }
 
+function stripHtmlForPreview(html) {
+    if (!html) return '';
+    var div = document.createElement('div');
+    div.innerHTML = html;
+    return (div.textContent || div.innerText || '').trim();
+}
+function escapeHtmlForCell(text) {
+    return (text || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
 function filtrarPainel() {
     const termo = document.getElementById('browse-search').value.toLowerCase().trim();
     const list = document.getElementById('browse-list');
@@ -255,15 +345,17 @@ function filtrarPainel() {
             if (!passaFiltro(b, c)) return;
             const tr = document.createElement('tr');
             tr.className = 'card-row';
-            const frente = (c.f || '').replace(/</g, '&lt;').substring(0, 80);
-            const verso = (c.v || '').replace(/</g, '&lt;').substring(0, 80);
+            const frentePlain = stripHtmlForPreview(c.f || '');
+            const versoPlain = stripHtmlForPreview(c.v || '');
+            const frente = frentePlain.substring(0, 80);
+            const verso = versoPlain.substring(0, 80);
             const podeEditar = !b.premium;
             const podeApagar = !b.premium && b.nome !== (typeof TUTORIAL_DECK_NOME !== 'undefined' ? TUTORIAL_DECK_NOME : 'Tutorial');
             var aRevisar = formatarDataRevisao(c);
-            tr.innerHTML = '<td class="browse-cell-frente">' + frente + (frente.length >= 80 ? '…' : '') + '</td><td class="browse-cell-verso">' + verso + (verso.length >= 80 ? '…' : '') + '</td><td class="browse-cell-deck">' + (b.nome || '') + '</td><td class="browse-cell-revisao">' + aRevisar + '</td>';
+            tr.innerHTML = '<td class="browse-cell-frente">' + escapeHtmlForCell(frente) + (frentePlain.length > 80 ? '…' : '') + '</td><td class="browse-cell-verso">' + escapeHtmlForCell(verso) + (versoPlain.length > 80 ? '…' : '') + '</td><td class="browse-cell-deck">' + escapeHtmlForCell(b.nome || '') + '</td><td class="browse-cell-revisao">' + escapeHtmlForCell(aRevisar) + '</td>';
             tr.dataset.deckIdx = deckIdx;
             tr.dataset.cardIdx = cardIdx;
-            if (podeEditar) tr.onclick = function() { editarCardPainel(deckIdx, cardIdx); };
+            tr.onclick = function() { if (podeEditar) editarCardPainel(deckIdx, cardIdx); else visualizarCardPainel(deckIdx, cardIdx); };
             list.appendChild(tr);
         });
     });
@@ -293,7 +385,29 @@ function confirmarApagarCardPainel(deckIdx, cardIdx) {
     abrirModalConfirmarApagarCard(deckIdx, cardIdx, false);
 }
 
+function visualizarCardPainel(di, ci) {
+    if (typeof localStorage !== 'undefined') localStorage.setItem(PAINEL_DICA_KEY, '1');
+    esconderDicaPainel();
+    const c = baralhos[di].cards[ci];
+    abrirModalOverlay();
+    document.getElementById('modal-title').innerText = "Visualizar Card";
+    document.getElementById('modal-content').innerHTML =
+        '<label style="font-size:0.8rem;color:#666;margin-bottom:4px">Frente</label>' +
+        '<div class="main-input browse-card-view" style="min-height:50px; background:#f5f5f5; border-radius:10px; padding:12px; margin-bottom:12px; overflow-y:auto; max-height:200px;">' + (c.f || '') + '</div>' +
+        '<label style="font-size:0.8rem;color:#666;margin-bottom:4px">Verso</label>' +
+        '<div class="main-input browse-card-view" style="min-height:50px; background:#f5f5f5; border-radius:10px; padding:12px; margin-bottom:12px; overflow-y:auto; max-height:200px;">' + (c.v || '') + '</div>';
+    var btnConfirm = document.getElementById('modal-confirm-btn');
+    var btnCancel = document.getElementById('modal-cancel-btn');
+    btnConfirm.textContent = 'Fechar';
+    btnConfirm.style.display = 'block';
+    btnConfirm.onclick = function() { fecharModal(); };
+    if (btnCancel) btnCancel.style.display = 'none';
+    btnConfirm.className = 'btn-gold modal-confirm-btn';
+}
+
 function editarCardPainel(di, ci) {
+    if (typeof localStorage !== 'undefined') localStorage.setItem(PAINEL_DICA_KEY, '1');
+    esconderDicaPainel();
     const c = baralhos[di].cards[ci];
     abrirModalOverlay();
     document.getElementById('modal-title').innerText = "Editar Card";
@@ -331,10 +445,41 @@ function abrirModalCriar() {
 function prepararRenomear(i) {
     abrirModalOverlay();
     document.getElementById('modal-title').innerText = "Renomear Baralho";
-    document.getElementById('modal-content').innerHTML = `<input type="text" id="edit-n" value="${baralhos[i].nome}">`;
+    document.getElementById('modal-content').innerHTML = `<input type="text" id="edit-n" placeholder="Nome do baralho...">`;
+    var inputEl = document.getElementById('edit-n');
+    if (inputEl) inputEl.value = (baralhos[i] && baralhos[i].nome) || '';
     document.getElementById('modal-confirm-btn').onclick = () => {
         let n = document.getElementById('edit-n').value;
-        if (n.trim()) { baralhos[i].nome = n; salvar(); fecharModal(); }
+        if (n.trim()) { baralhos[i].nome = n.trim(); salvar(); fecharModal(); if (typeof renderizar === 'function') renderizar(); }
+    };
+}
+
+function abrirConfigurarDeck(i) {
+    if (i < 0 || i >= baralhos.length) return;
+    var _t = typeof t === 'function' ? t : function(k) { return k; };
+    abrirModalOverlay();
+    document.getElementById('modal-title').innerText = _t('config_titulo') || "Configurar Baralho";
+    var ordemAtual = (baralhos[i].ordemEstudo || 'mixed');
+    document.getElementById('modal-content').innerHTML =
+        '<label style="display:block; text-align:left; font-size:0.8rem; margin-bottom:6px; color:var(--text-dark);">' + (_t('config_nome_baralho') || 'Nome do baralho') + '</label>' +
+        '<input type="text" id="edit-n" placeholder="Nome do baralho..." style="margin-bottom:16px;">' +
+        '<label style="display:block; text-align:left; font-size:0.8rem; margin-bottom:6px; color:var(--text-dark);">' + (_t('config_ordem_cards') || 'Ordem dos cards ao estudar') + '</label>' +
+        '<select id="config-ordem-estudo" class="modal-box" style="width:100%; padding:12px; margin:0 0 8px 0; border-radius:12px; border:1px solid #ddd; font-size:1rem; background:var(--white); color:var(--text-dark); cursor:pointer;">' +
+        '<option value="new_first"' + (ordemAtual === 'new_first' ? ' selected' : '') + '>' + (_t('config_ordem_novos_primeiro') || 'Novos primeiro') + '</option>' +
+        '<option value="review_first"' + (ordemAtual === 'review_first' ? ' selected' : '') + '>' + (_t('config_ordem_revisao_primeiro') || 'Revisão primeiro') + '</option>' +
+        '<option value="mixed"' + (ordemAtual === 'mixed' ? ' selected' : '') + '>' + (_t('config_ordem_misturado') || 'Misturado') + '</option>' +
+        '</select>';
+    var inputEl = document.getElementById('edit-n');
+    if (inputEl) inputEl.value = baralhos[i].nome || '';
+    document.getElementById('modal-confirm-btn').onclick = function() {
+        var n = document.getElementById('edit-n').value;
+        var ordemSelect = document.getElementById('config-ordem-estudo');
+        var ordem = ordemSelect ? ordemSelect.value : 'mixed';
+        if (n && n.trim()) baralhos[i].nome = n.trim();
+        baralhos[i].ordemEstudo = (ordem === 'new_first' || ordem === 'review_first') ? ordem : 'mixed';
+        salvar();
+        fecharModal();
+        if (typeof renderizar === 'function') renderizar();
     };
 }
 

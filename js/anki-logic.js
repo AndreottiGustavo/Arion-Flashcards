@@ -132,8 +132,33 @@ function iniciarEstudo(i) {
         mostrarParabens();
         return;
     }
+    aplicarOrdemFila(b);
     mudarTela('study-screen');
     carregarCard();
+}
+
+function aplicarOrdemFila(deck) {
+    var ordem = (deck && deck.ordemEstudo) || 'mixed';
+    if (ordem === 'new_first') {
+        fila.sort(function (a, b) {
+            var aNew = a.state === 'new' ? 0 : 1;
+            var bNew = b.state === 'new' ? 0 : 1;
+            return aNew - bNew;
+        });
+    } else if (ordem === 'review_first') {
+        fila.sort(function (a, b) {
+            var aNew = a.state === 'new' ? 1 : 0;
+            var bNew = b.state === 'new' ? 1 : 0;
+            return aNew - bNew;
+        });
+    } else {
+        for (var j = fila.length - 1; j > 0; j--) {
+            var r = Math.floor(Math.random() * (j + 1));
+            var tmp = fila[j];
+            fila[j] = fila[r];
+            fila[r] = tmp;
+        }
+    }
 }
 
 function atualizarContadoresEstudo() {

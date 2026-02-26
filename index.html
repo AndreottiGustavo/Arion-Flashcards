@@ -330,7 +330,7 @@
             <button type="button" class="perfil-btn-suporte perfil-btn-importar" onclick="dispararImportacao()">📥 <span data-i18n="perfil_importar_anki">Importar do Anki</span></button>
 
             <!-- Suporte -->
-            <button type="button" class="perfil-btn-suporte" id="perfil-btn-suporte">✉️ <span data-i18n="perfil_suporte">Suporte e Feedback</span></button>
+            <button type="button" class="perfil-btn-suporte" id="perfil-btn-suporte" onclick="abrirSuporteEmail()">✉️ <span data-i18n="perfil_suporte">Suporte e Feedback</span></button>
         </div>
     </section>
 
@@ -429,7 +429,7 @@
     </div>
 
 <div id="create-screen" class="screen">
-    <header><h1>Criar flashcards</h1></header>
+    <header><h1 id="create-screen-title">Criar flashcards</h1></header>
     
     <div class="toolbar" style="margin-bottom: 15px;">
         <button class="tool-btn" onclick="formatar('bold')">B</button>

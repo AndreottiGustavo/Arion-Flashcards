@@ -37,6 +37,11 @@ var i18n = {
         tab_todos: 'Todos',
         tab_premium: 'Gerenciar Premium',
         search_placeholder: 'Pesquisar nos flashcards...',
+        painel_dica_toque_card: 'Toque em um card para editar ou ver o conteúdo.',
+        painel_dica_entendi: 'Entendi',
+        deck_dica_swipe: 'Deslize um baralho para a esquerda para ver as opções (fixar, arquivar, apagar).',
+        create_dica_formatacao: 'Use a barra de formatação para negrito, itálico, sublinhado e cores no texto.',
+        premium_dica_liberar: 'Toda vez que estudar um conteúdo novo em aula, libere os flashcards aqui para que eles apareçam no seu estudo diário. 😊',
         study_novos: 'novos',
         study_revisar: 'revisões',
         study_sair: 'Sair',
@@ -107,7 +112,13 @@ var i18n = {
         stats_perfil: 'Perfil',
         mostrar_resposta: 'MOSTRAR RESPOSTA',
         heatmap_weekdays: 'Domingo,Segunda-feira,Terça-feira,Quarta-feira,Quinta-feira,Sexta-feira,Sábado',
-        heatmap_months: 'janeiro,fevereiro,março,abril,maio,junho,julho,agosto,setembro,outubro,novembro,dezembro'
+        heatmap_months: 'janeiro,fevereiro,março,abril,maio,junho,julho,agosto,setembro,outubro,novembro,dezembro',
+        config_titulo: 'Configurar Baralho',
+        config_nome_baralho: 'Nome do baralho',
+        config_ordem_cards: 'Ordem dos cards ao estudar',
+        config_ordem_novos_primeiro: 'Novos primeiro',
+        config_ordem_revisao_primeiro: 'Revisão primeiro',
+        config_ordem_misturado: 'Misturado'
     },
     en: {
         nav_decks: 'Decks',
@@ -144,6 +155,11 @@ var i18n = {
         tab_todos: 'All',
         tab_premium: 'Manage Premium',
         search_placeholder: 'Search flashcards...',
+        painel_dica_toque_card: 'Tap a card to edit or view its content.',
+        painel_dica_entendi: 'Got it',
+        deck_dica_swipe: 'Swipe a deck to the left to see options (pin, archive, delete).',
+        create_dica_formatacao: 'Use the formatting bar for bold, italic, underline and text colors.',
+        premium_dica_liberar: 'Whenever you study new content in class, release the flashcards here so they appear in your daily study. 😊',
         study_novos: 'new',
         study_revisar: 'reviews',
         study_sair: 'Exit',
@@ -214,7 +230,13 @@ var i18n = {
         stats_perfil: 'Profile',
         mostrar_resposta: 'SHOW ANSWER',
         heatmap_weekdays: 'Sunday,Monday,Tuesday,Wednesday,Thursday,Friday,Saturday',
-        heatmap_months: 'January,February,March,April,May,June,July,August,September,October,November,December'
+        heatmap_months: 'January,February,March,April,May,June,July,August,September,October,November,December',
+        config_titulo: 'Configure Deck',
+        config_nome_baralho: 'Deck name',
+        config_ordem_cards: 'Card order when studying',
+        config_ordem_novos_primeiro: 'New first',
+        config_ordem_revisao_primeiro: 'Review first',
+        config_ordem_misturado: 'Mixed'
     }
 };
 

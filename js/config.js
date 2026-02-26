@@ -6,6 +6,9 @@ let baralhos = [];
 let dIdx = 0, fila = [], respondido = false, cardVirado = false, veioDeEstudarTudo = false;
 let corAtual = "#ff0000";
 let onboardingFeito = localStorage.getItem('arion_onboarding') === 'true';
+const PAINEL_DICA_KEY = 'arion_painel_dica_vista';
+const DECK_SWIPE_DICA_KEY = 'arion_deck_swipe_dica_vista';
+const CREATE_FORMATACAO_DICA_KEY = 'arion_create_formatacao_dica_vista';
 let usuarioLogado = null;
 
 // Placeholder: avatar "bonequinho" quando não há foto (Google/Apple) ou falha no carregamento

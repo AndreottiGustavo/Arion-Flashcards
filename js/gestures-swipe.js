@@ -317,6 +317,7 @@ function getPointerY(e) { return e.touches ? e.touches[0].clientY : e.clientY; }
             el.classList.add('deck-content--open');
             lastSwipeTarget = el;
             lastSwipeTime = Date.now();
+            if (typeof marcarDicaDeckSwipeVista === 'function') marcarDicaDeckSwipeVista();
         } else if (finalDiff > 50) {
             el.style.transform = 'translateX(80px)';
             el.classList.remove('deck-content--open');
