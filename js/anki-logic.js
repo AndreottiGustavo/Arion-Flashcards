@@ -12,6 +12,8 @@ const ANKI = {
     maxInterval: 75
 };
 
+const ARION_ESTUDAR_TUDO_ORDEM_KEY = 'arion_estudar_tudo_ordem';
+
 function abrirDetalhesEstudarTudo() {
     const h = Date.now();
     const assinante = typeof localStorage !== 'undefined' && localStorage.getItem('arion_assinante') === 'true';
@@ -33,6 +35,7 @@ function abrirDetalhesEstudarTudo() {
     const area = document.getElementById('stats-area');
     const actions = document.getElementById('details-actions');
     const isDisabled = total === 0;
+    const ordemAtual = (typeof localStorage !== 'undefined' && localStorage.getItem(ARION_ESTUDAR_TUDO_ORDEM_KEY)) || 'mixed';
     const heatmapHtml = typeof gerarHeatmapHtml === 'function' ? gerarHeatmapHtml(true) : '';
     area.innerHTML = `
         <div class="anki-stats-card" style="box-shadow: 0 10px 25px rgba(0,0,0,0.15); border: none;">
@@ -40,8 +43,24 @@ function abrirDetalhesEstudarTudo() {
                 <div class="stat-row">${_t('study_label_novo')}: <span style="color:#2185d0; font-weight:bold">${novos}</span></div>
                 <div class="stat-row">${_t('study_label_revisar')}: <span style="color:#2e7d32; font-weight:bold">${revisao}</span></div>
             </div>
-            <button class="btn-anki" style="background:${isDisabled ? '#e0e0e0' : '#2185d0'}; color:${isDisabled ? '#999' : 'white'}; padding:12px 20px; width:auto; height:auto; cursor:${isDisabled ? 'not-allowed' : 'pointer'}; opacity:${isDisabled ? '0.7' : '1'}; border-radius:10px; border:none; font-weight:bold;" onclick="${isDisabled ? '' : 'estudarTudo()'}" ${isDisabled ? 'disabled' : ''}>${_t('study_agora')}</button>
+            <div class="details-btn-ordem-col">
+                <button class="btn-anki" style="background:${isDisabled ? '#e0e0e0' : '#2185d0'}; color:${isDisabled ? '#999' : 'white'}; padding:12px 20px; width:auto; height:auto; cursor:${isDisabled ? 'not-allowed' : 'pointer'}; opacity:${isDisabled ? '0.7' : '1'}; border-radius:10px; border:none; font-weight:bold;" onclick="${isDisabled ? '' : 'estudarTudo()'}" ${isDisabled ? 'disabled' : ''}>${_t('study_agora')}</button>
+                <div class="details-ordem-wrap">
+                    <select id="estudar-tudo-ordem" class="details-ordem-select" title="${_t('config_ordem_cards')}">
+                        <option value="" disabled${ordemAtual === 'mixed' ? ' selected' : ''}>Ordem dos Cards</option>
+                        <option value="new_first"${ordemAtual === 'new_first' ? ' selected' : ''}>${_t('config_ordem_novos_primeiro')}</option>
+                        <option value="review_first"${ordemAtual === 'review_first' ? ' selected' : ''}>${_t('config_ordem_revisao_primeiro')}</option>
+                        <option value="mixed">${_t('config_ordem_misturado')}</option>
+                    </select>
+                </div>
+            </div>
         </div>`;
+    const selectEl = document.getElementById('estudar-tudo-ordem');
+    if (selectEl) {
+        selectEl.onchange = function() {
+            if (typeof localStorage !== 'undefined') localStorage.setItem(ARION_ESTUDAR_TUDO_ORDEM_KEY, selectEl.value || 'mixed');
+        };
+    }
     const heatmapCard = heatmapHtml ? `<div class="stats-card details-heatmap-card"><h3>${_t('heatmap_calendario')}</h3>${heatmapHtml}</div>` : '';
     actions.innerHTML = heatmapCard;
     if (heatmapHtml && typeof initHeatmapTooltip === 'function') initHeatmapTooltip(actions);
@@ -67,6 +86,16 @@ function abrirDetalhes(i, finalizou = false) {
         actions.innerHTML = `<button class="btn-gold" onclick="mudarTela('deck-screen')">${_t('voltar_baralhos')}</button>`;
     } else {
         const isDisabled = fila.length === 0;
+        const ordemAtual = (b.ordemEstudo || 'mixed');
+        const ordemSelectHtml = b.premium ? `
+            <div class="details-ordem-wrap">
+                <select id="details-deck-ordem" class="details-ordem-select" title="${_t('config_ordem_cards')}">
+                    <option value="" disabled${ordemAtual === 'mixed' ? ' selected' : ''}>Ordem dos Cards</option>
+                    <option value="new_first"${ordemAtual === 'new_first' ? ' selected' : ''}>${_t('config_ordem_novos_primeiro')}</option>
+                    <option value="review_first"${ordemAtual === 'review_first' ? ' selected' : ''}>${_t('config_ordem_revisao_primeiro')}</option>
+                    <option value="mixed">${_t('config_ordem_misturado')}</option>
+                </select>
+            </div>` : '';
         const heatmapHtml = typeof gerarHeatmapHtml === 'function' ? gerarHeatmapHtml(true) : '';
         area.innerHTML = `
             <div class="anki-stats-card" style="box-shadow: 0 10px 25px rgba(0,0,0,0.15); border: none;">
@@ -74,8 +103,21 @@ function abrirDetalhes(i, finalizou = false) {
                     <div class="stat-row">${_t('study_label_novo')}: <span style="color:#2185d0; font-weight:bold">${novos}</span></div>
                     <div class="stat-row">${_t('study_label_revisar')}: <span style="color:#2e7d32; font-weight:bold">${revisao}</span></div>
                 </div>
-                <button class="btn-anki" style="background:${isDisabled ? '#e0e0e0' : '#2185d0'}; color:${isDisabled ? '#999' : 'white'}; padding:12px 20px; width:auto; height:auto; cursor:${isDisabled ? 'not-allowed' : 'pointer'}; opacity:${isDisabled ? '0.7' : '1'}; border-radius:10px; border:none; font-weight:bold;" onclick="${isDisabled ? '' : 'iniciarEstudo(' + dIdx + ')'}" ${isDisabled ? 'disabled' : ''}>${_t('study_agora')}</button>
+                <div class="details-btn-ordem-col">
+                    <button class="btn-anki" style="background:${isDisabled ? '#e0e0e0' : '#2185d0'}; color:${isDisabled ? '#999' : 'white'}; padding:12px 20px; width:auto; height:auto; cursor:${isDisabled ? 'not-allowed' : 'pointer'}; opacity:${isDisabled ? '0.7' : '1'}; border-radius:10px; border:none; font-weight:bold;" onclick="${isDisabled ? '' : 'iniciarEstudo(' + dIdx + ')'}" ${isDisabled ? 'disabled' : ''}>${_t('study_agora')}</button>
+                    ${ordemSelectHtml}
+                </div>
             </div>`;
+        const selectDeck = document.getElementById('details-deck-ordem');
+        if (selectDeck && b.premium) {
+            selectDeck.onchange = function() {
+                var ordem = selectDeck.value || 'mixed';
+                if (baralhos[dIdx]) {
+                    baralhos[dIdx].ordemEstudo = (ordem === 'new_first' || ordem === 'review_first') ? ordem : 'mixed';
+                    salvar();
+                }
+            };
+        }
         const heatmapCard = heatmapHtml ? `<div class="stats-card details-heatmap-card"><h3>${_t('heatmap_calendario')}</h3>${heatmapHtml}</div>` : '';
         actions.innerHTML = (b.premium ? '' : `<button class="btn-gold" onclick="abrirCriador(${i})">${_t('btn_adicionar_cards')}</button>`) + heatmapCard;
         if (heatmapHtml && typeof initHeatmapTooltip === 'function') initHeatmapTooltip(actions);
@@ -109,8 +151,9 @@ function estudarTudo() {
         return;
     }
     veioDeEstudarTudo = true;
-    filaGeral.sort(() => Math.random() - 0.5);
     fila = filaGeral;
+    var ordemTudo = (typeof localStorage !== 'undefined' && localStorage.getItem(ARION_ESTUDAR_TUDO_ORDEM_KEY)) || 'mixed';
+    aplicarOrdemFila({ ordemEstudo: ordemTudo });
     if (document.getElementById('study-container')) document.getElementById('study-container').style.display = 'block';
     if (document.getElementById('finish-area')) document.getElementById('finish-area').style.display = 'none';
     mudarTela('study-screen');

@@ -1,0 +1,27 @@
+rules_version = '2';
+// Regras de segurança Firestore – Árion Flashcards
+// Coleção usuarios: cada usuário só acessa seu próprio documento.
+// Coleção cards_estudo: usuário lê seus cards + cards premium do admin; pode criar/atualizar só os seus.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Só o dono do documento pode ler e escrever
+    match /usuarios/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // UID do admin (baralhos premium) – deve ser o mesmo de config.js (meuUIDAdmin)
+    function isAdmin() {
+      return request.auth.uid == 'DYQ7xDOhJXVa93n7T7dzDhlCgDg2';
+    }
+
+    // Cards de estudo: usuário lê os próprios ou os premium do admin; cria/atualiza/apaga só os próprios
+    match /cards_estudo/{docId} {
+      allow read: if request.auth != null
+        && (resource.data.uid == request.auth.uid || resource.data.uid == 'DYQ7xDOhJXVa93n7T7dzDhlCgDg2');
+      allow create: if request.auth != null && request.resource.data.uid == request.auth.uid;
+      allow update, delete: if request.auth != null && resource.data.uid == request.auth.uid;
+    }
+  }
+}

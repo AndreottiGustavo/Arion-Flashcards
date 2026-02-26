@@ -440,6 +440,7 @@ h1 { color: var(--accent-gold); margin: 0; font-size: 1.4rem; letter-spacing: 2p
     background: white; color: var(--text-dark); border-radius: 20px;
     padding: 20px; margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px;
 }
+.store-card h2 { color: var(--primary-green); }
 .price-tag { color: #2e7d32; font-weight: bold; font-size: 1.2rem; }
 
 /* Contato no rodapé da loja (fora do card, fundo da página, fonte clara) */
@@ -1481,6 +1482,49 @@ box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 
 /* Modo noturno: todo fundo branco/claro → cinza escuro (usar #1c1c1e, #242426, #2c2c2e). Manter para novos blocos. */
 .theme-night .anki-stats-card {
+    background: #1c1c1e;
+    color: #e5e5e7;
+}
+/* Botão e lista "Ordem dos Cards" em coluna (logo abaixo do botão) */
+.details-btn-ordem-col {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+}
+/* Lista "Ordem dos Cards" – abaixo do Estudar agora, discreta (Estudar tudo + premium) */
+.details-ordem-wrap {
+    margin: 0;
+    padding: 0;
+}
+.details-ordem-select {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 8px 28px 8px 12px;
+    font-size: 0.8rem;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    background: #fff;
+    color: rgba(0, 0, 0, 0.6);
+    cursor: pointer;
+    font-family: var(--font-main);
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 12 12'%3E%3Cpath fill='%23999' d='M6 8L2 4h8z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+}
+.details-ordem-select:hover { border-color: rgba(0, 0, 0, 0.18); color: var(--text-dark); }
+.details-ordem-select:focus { outline: none; border-color: rgba(0, 0, 0, 0.25); }
+.theme-night .details-ordem-wrap { padding: 0; }
+.theme-night .details-ordem-select {
+    background-color: #2c2c2e;
+    color: #e5e5e7;
+    border-color: rgba(255, 255, 255, 0.15);
+}
+.theme-night .details-ordem-select:hover { border-color: rgba(255, 255, 255, 0.25); color: #fff; }
+.theme-night .details-ordem-select:focus { border-color: var(--accent-gold); color: #fff; }
+.theme-night .details-ordem-select option {
     background: #1c1c1e;
     color: #e5e5e7;
 }
