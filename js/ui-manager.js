@@ -97,6 +97,13 @@ function formatarDataRevisao(c) {
     return day + '/' + month + '/' + year;
 }
 
+function abrirModalOverlay() {
+    var o = document.getElementById('modal-overlay');
+    o.style.display = 'flex';
+    o.scrollTop = 0;
+    var box = document.getElementById('custom-modal');
+    if (box) box.scrollTop = 0;
+}
 function fecharModal() {
     document.getElementById('modal-overlay').style.display = 'none';
     var btn = document.getElementById('modal-confirm-btn');
@@ -253,11 +260,9 @@ function filtrarPainel() {
             const podeEditar = !b.premium;
             const podeApagar = !b.premium && b.nome !== (typeof TUTORIAL_DECK_NOME !== 'undefined' ? TUTORIAL_DECK_NOME : 'Tutorial');
             var aRevisar = formatarDataRevisao(c);
-            tr.innerHTML = '<td class="browse-cell-frente">' + frente + (frente.length >= 80 ? '…' : '') + '</td><td class="browse-cell-verso">' + verso + (verso.length >= 80 ? '…' : '') + '</td><td class="browse-cell-deck">' + (b.nome || '') + '</td><td class="browse-cell-revisao">' + aRevisar + '</td><td class="browse-actions-cell"><span class="browse-btn-wrap">' + (podeApagar ? '<button type="button" class="browse-btn browse-btn-delete" title="Apagar">🗑</button>' : '') + '</span></td>';
+            tr.innerHTML = '<td class="browse-cell-frente">' + frente + (frente.length >= 80 ? '…' : '') + '</td><td class="browse-cell-verso">' + verso + (verso.length >= 80 ? '…' : '') + '</td><td class="browse-cell-deck">' + (b.nome || '') + '</td><td class="browse-cell-revisao">' + aRevisar + '</td>';
             tr.dataset.deckIdx = deckIdx;
             tr.dataset.cardIdx = cardIdx;
-            const btnDel = tr.querySelector('.browse-btn-delete');
-            if (btnDel) btnDel.onclick = function(e) { e.stopPropagation(); abrirModalConfirmarApagarCard(deckIdx, cardIdx, false); };
             if (podeEditar) tr.onclick = function() { editarCardPainel(deckIdx, cardIdx); };
             list.appendChild(tr);
         });
@@ -265,7 +270,7 @@ function filtrarPainel() {
 }
 
 function abrirModalConfirmarApagarCard(deckIdx, cardIdx, fromEditModal) {
-    document.getElementById('modal-overlay').style.display = 'flex';
+    abrirModalOverlay();
     document.getElementById('modal-title').innerText = 'Apagar card';
     document.getElementById('modal-content').innerHTML = '<p class="modal-aviso-apagar">Este card será apagado para sempre. Esta ação não pode ser desfeita.</p>';
     var btn = document.getElementById('modal-confirm-btn');
@@ -290,7 +295,7 @@ function confirmarApagarCardPainel(deckIdx, cardIdx) {
 
 function editarCardPainel(di, ci) {
     const c = baralhos[di].cards[ci];
-    document.getElementById('modal-overlay').style.display = 'flex';
+    abrirModalOverlay();
     document.getElementById('modal-title').innerText = "Editar Card";
     document.getElementById('modal-content').innerHTML = getEditCardToolbarHTML() +
         '<div class="divider" style="height:1px;background:#eee;margin:8px 0"></div>' +
@@ -314,7 +319,7 @@ function apagarCardPainelDesdeModal(deckIdx, cardIdx) {
 }
 
 function abrirModalCriar() {
-    document.getElementById('modal-overlay').style.display = 'flex';
+    abrirModalOverlay();
     document.getElementById('modal-title').innerText = "Novo Baralho";
     document.getElementById('modal-content').innerHTML = `<input type="text" id="deck-n" placeholder="Nome do baralho...">`;
     document.getElementById('modal-confirm-btn').onclick = () => {
@@ -324,7 +329,7 @@ function abrirModalCriar() {
 }
 
 function prepararRenomear(i) {
-    document.getElementById('modal-overlay').style.display = 'flex';
+    abrirModalOverlay();
     document.getElementById('modal-title').innerText = "Renomear Baralho";
     document.getElementById('modal-content').innerHTML = `<input type="text" id="edit-n" value="${baralhos[i].nome}">`;
     document.getElementById('modal-confirm-btn').onclick = () => {
@@ -334,7 +339,7 @@ function prepararRenomear(i) {
 }
 
 function prepararExclusao(i) {
-    document.getElementById('modal-overlay').style.display = 'flex';
+    abrirModalOverlay();
     document.getElementById('modal-title').innerText = "Excluir Baralho?";
     document.getElementById('modal-content').innerHTML = `<p style="color:#666">Isso apagará permanentemente todos os cartões deste baralho e seu progesso será perdido.</p>`;
     document.getElementById('modal-confirm-btn').onclick = () => { baralhos.splice(i, 1); salvar(); fecharModal(); };
@@ -342,7 +347,7 @@ function prepararExclusao(i) {
 
 function abrirModalEditarCard() {
     const c = fila[0];
-    document.getElementById('modal-overlay').style.display = 'flex';
+    abrirModalOverlay();
     document.getElementById('modal-title').innerText = "Editar Cartão";
     document.getElementById('modal-content').innerHTML = getEditCardToolbarHTML() +
         '<div class="divider" style="height:1px;background:#eee;margin:8px 0"></div>' +
@@ -392,3 +397,19 @@ function toggleMenu(i) {
     menus.forEach(m => m.style.display = 'none');
     if (!isVisible) targetMenu.style.display = 'block';
 }
+
+// Fechar teclado ao arrastar/rolar em áreas de escrita (criação de cards e modal de editar)
+function deveFecharTecladoNoElemento(el) {
+    if (!el) return false;
+    return el.isContentEditable || el.tagName === 'INPUT' || el.tagName === 'TEXTAREA';
+}
+function fecharTecladoSeEmAreaDeEscrita(e) {
+    var active = document.activeElement;
+    if (!active || !deveFecharTecladoNoElemento(active)) return;
+    var target = e.target;
+    if (target.closest('#create-screen') || target.closest('#modal-overlay')) active.blur();
+}
+(function() {
+    document.addEventListener('scroll', fecharTecladoSeEmAreaDeEscrita, true);
+    document.addEventListener('touchmove', fecharTecladoSeEmAreaDeEscrita, { passive: true, capture: true });
+})();

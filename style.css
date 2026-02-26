@@ -595,13 +595,14 @@ h1 { color: var(--accent-gold); margin: 0; font-size: 1.4rem; letter-spacing: 2p
     outline: none;
 }
 /* Tooltip ao toque/clique no dia (iPhone e desktop) */
-#heatmap-tooltip {
+#heatmap-tooltip,
+.heatmap-tooltip {
     margin-top: 10px;
-    padding: 10px 12px;
+    padding: 8px 10px;
     background: rgba(0, 0, 0, 0.5);
     border: 1px solid rgba(244, 233, 193, 0.3);
     border-radius: 8px;
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     color: var(--accent-gold);
     min-height: 0;
     max-height: 0;
@@ -609,7 +610,8 @@ h1 { color: var(--accent-gold); margin: 0; font-size: 1.4rem; letter-spacing: 2p
     opacity: 0;
     transition: opacity 0.2s, max-height 0.2s;
 }
-#heatmap-tooltip.heatmap-tooltip-visible {
+#heatmap-tooltip.heatmap-tooltip-visible,
+.heatmap-tooltip.heatmap-tooltip-visible {
     min-height: auto;
     max-height: 80px;
     opacity: 1;
@@ -899,7 +901,7 @@ input[type="date"] {
 .browse-deck-select { width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid rgba(244,233,193,0.5); background: rgba(255,255,255,0.95); color: var(--text-dark); font-size: 0.95rem; outline: none; cursor: pointer; }
 .search-input { width: 100%; padding: 12px 15px; border-radius: 12px; border: 1px solid rgba(244,233,193,0.5); background: rgba(255,255,255,0.95); font-size: 0.9rem; outline: none; box-sizing: border-box; }
 
-/* Retângulo do cabeçalho (Frente, Verso, Baralho, A revisar, Ações): mesma largura da tabela, colado acima; ao rolar não passa do topo. Botão 🔍 acompanha (está dentro do bloco sticky). */
+/* Retângulo do cabeçalho (Frente, Verso, Baralho, A revisar): mesma largura da tabela, colado acima; ao rolar não passa do topo. Botão 🔍 acompanha (está dentro do bloco sticky). */
 .browse-table-header-box { position: sticky; top: 0; z-index: 2; width: 100%; border-radius: 16px 16px 0 0; overflow: visible; box-shadow: 0 4px 12px rgba(0,0,0,0.15); background: #f5f5f5; margin-bottom: -1px; }
 .browse-table-header-box::before { content: ''; position: absolute; left: 0; right: 0; bottom: 100%; height: 4px; background: #f5f5f5; pointer-events: none; }
 .theme-night .browse-table-header-box { background: #2c2c2e; box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
@@ -918,10 +920,9 @@ input[type="date"] {
 .browse-table-header-box .browse-table { margin: 0; border-radius: 0; box-shadow: none; background: transparent; }
 .browse-table-header-box .browse-table th { padding: 10px 12px; text-align: left; border: none; border-bottom: 1px solid #e8e8e8; background: #f5f5f5; color: #555; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.5px; }
 .theme-night .browse-table-header-box .browse-table th { background: #2c2c2e; color: #e5e5e7; border-bottom-color: #333; }
-.browse-table-header-box .browse-th-frente, .browse-table-header-box .browse-th-verso { width: 22%; max-width: 120px; }
-.browse-table-header-box .browse-th-deck { width: 16%; max-width: 90px; }
-.browse-table-header-box .browse-th-revisao { width: 18%; min-width: 88px; }
-.browse-table-header-box .browse-th-actions { width: 56px; min-width: 56px; text-align: center; }
+.browse-table-header-box .browse-th-frente, .browse-table-header-box .browse-th-verso { width: 28%; max-width: 220px; }
+.browse-table-header-box .browse-th-deck { width: 14%; max-width: 80px; }
+.browse-table-header-box .browse-th-revisao { width: 18%; min-width: 82px; }
 
 .browse-table-wrap { border-radius: 0 0 16px 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.15); background: #fff; margin-top: -1px; }
 .theme-night .browse-table-wrap { background: #1c1c1e; box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
@@ -929,7 +930,6 @@ input[type="date"] {
 .theme-night .browse-table { background: #1c1c1e; color: #e5e5e7; }
 .browse-table th, .browse-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #eee; }
 .theme-night .browse-table th, .theme-night .browse-table td { border-bottom-color: #333; }
-.browse-table .browse-th-actions { width: 56px; min-width: 56px; text-align: center; }
 .browse-table tbody tr.card-row { cursor: pointer; transition: background 0.15s; }
 .browse-table tbody tr.card-row:nth-child(odd) { background: #fff; }
 .browse-table tbody tr.card-row:nth-child(even) { background: #f5f5f5; }
@@ -937,16 +937,11 @@ input[type="date"] {
 .theme-night .browse-table tbody tr.card-row:nth-child(odd) { background: #1c1c1e; }
 .theme-night .browse-table tbody tr.card-row:nth-child(even) { background: #242426; }
 .theme-night .browse-table tbody tr.card-row:hover { background: #2c2c2e !important; }
-.browse-cell-frente, .browse-cell-verso { width: 22%; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.browse-cell-deck { width: 16%; color: #666; font-size: 0.8rem; max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.browse-cell-frente, .browse-cell-verso { width: 28%; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.browse-cell-deck { width: 14%; color: #666; font-size: 0.8rem; max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .theme-night .browse-cell-deck { color: #aaa; }
-.browse-cell-revisao { width: 18%; font-size: 0.8rem; white-space: nowrap; color: #555; min-width: 88px; }
+.browse-cell-revisao { width: 18%; font-size: 0.8rem; white-space: nowrap; color: #555; min-width: 82px; overflow: hidden; text-overflow: ellipsis; }
 .theme-night .browse-cell-revisao { color: #aaa; }
-.browse-actions-cell { text-align: center; vertical-align: middle; width: 56px; min-width: 56px; }
-.browse-actions-cell .browse-btn-wrap { display: flex; justify-content: center; align-items: center; }
-.browse-btn { width: 36px; height: 36px; border: none; border-radius: 10px; cursor: pointer; font-size: 1rem; display: inline-flex; align-items: center; justify-content: center; transition: transform 0.15s, opacity 0.15s; background: #f0f0f0; color: #555; flex-shrink: 0; }
-.browse-btn:hover { transform: scale(1.08); opacity: 0.9; }
-.browse-btn-delete { background: #ffebee; color: #c62828; }
 .browse-btn-apagar-card:hover { filter: brightness(1.05); }
 
 .modal-confirm-btn { width: 100%; padding: 10px 16px; font-size: 0.9rem !important; border-radius: 10px; box-sizing: border-box; }
@@ -1053,8 +1048,8 @@ input#edit-colorPicker.emoji-picker-input-cor-hidden { position: absolute; opaci
 .stat-row { font-size: 1.1rem; margin: 10px 0; font-weight: 500; }
 
 /* MODAIS */
-#modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 20000; align-items: center; justify-content: center; padding: 20px; }
-.modal-box { background: var(--white); color: var(--text-dark); width: 100%; max-width: 380px; padding: 25px; border-radius: 25px; text-align: center; box-sizing: border-box; }
+#modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 20000; align-items: flex-start; justify-content: center; padding: 20px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.modal-box { background: var(--white); color: var(--text-dark); width: 100%; max-width: 380px; max-height: calc(100vh - 40px); padding: 25px; border-radius: 25px; text-align: center; box-sizing: border-box; overflow-y: auto; -webkit-overflow-scrolling: touch; margin: 0 auto; flex-shrink: 0; }
 .modal-box input, .modal-box textarea { width: 100%; padding: 15px; margin: 10px 0; border: 1px solid #ddd; border-radius: 12px; font-size: 16px; outline: none; box-sizing: border-box; font-family: var(--font-main); }
 
 .congratulations-rect { background: #e8f5e9; color: #2e7d32; border: 2px solid #a5d6a7; padding: 20px; border-radius: 15px; font-weight: bold; text-align: center; width: 100%; margin-bottom: 15px; box-sizing: border-box; }
@@ -1182,8 +1177,11 @@ box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 .theme-night #display-back {
     color: #e5e5e7;
 }
-.theme-night #display-back {
-    color: var(--accent-gold);
+.theme-night #display-back,
+.theme-night #display-back b,
+.theme-night #display-back strong,
+.theme-night #display-back [style*="color"] {
+    color: #e5e5e7 !important;
 }
 
 /* Modo noturno: todo fundo branco/claro → cinza escuro (usar #1c1c1e, #242426, #2c2c2e). Manter para novos blocos. */
@@ -1229,6 +1227,67 @@ box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 .theme-night .btn-anki {
     background: #2c2c2e;
+    color: #e5e5e7;
+}
+
+/* Modal Novo Vestibular: modo noturno (card escurece, texto em branco) */
+.theme-night #modal-vestibular .modal-content {
+    background: #1c1c1e;
+    color: #e5e5e7;
+}
+.theme-night #modal-vestibular .modal-content h3 {
+    color: #e5e5e7 !important;
+}
+.theme-night #modal-vestibular .modal-content label,
+.theme-night #modal-vestibular .modal-content p {
+    color: #e5e5e7;
+}
+.theme-night #modal-vestibular .modal-content input {
+    background: #242426 !important;
+    color: #e5e5e7 !important;
+    border-color: #444;
+}
+.theme-night #modal-vestibular .modal-content input::placeholder {
+    color: #888;
+}
+.theme-night #modal-vestibular .modal-content .btn-cancelar {
+    background: #2c2c2e;
+    color: #e5e5e7;
+    border: 1px solid #444;
+}
+.theme-night #modal-vestibular .modal-content .btn-confirmar {
+    background: var(--primary-green);
+    color: #e5e5e7;
+}
+.theme-night #modal-vestibular .modal-content .color-dot {
+    border-color: #555;
+}
+.theme-night #modal-vestibular .modal-content .color-dot.selected {
+    border-color: var(--accent-gold);
+}
+
+/* Outros textos visíveis no modo noturno */
+.theme-night .modal-aviso-apagar {
+    color: #e5e5e7;
+}
+.theme-night .search-input,
+.theme-night .browse-deck-select {
+    background: #242426 !important;
+    color: #e5e5e7;
+    border-color: #444;
+}
+.theme-night .search-input::placeholder {
+    color: #888;
+}
+.theme-night .submodule-row {
+    background: #242426;
+    color: #e5e5e7;
+}
+.theme-night .options-menu {
+    background: #2c2c2e;
+    color: #e5e5e7;
+}
+.theme-night .options-menu button {
     color: #e5e5e7;
 }
 

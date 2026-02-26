@@ -30,11 +30,20 @@ function renderizarVestibulares() {
 }
 
 function abrirModalVestibular() {
-    document.getElementById('modal-vestibular').style.display = 'flex';
+    const modal = document.getElementById('modal-vestibular');
+    modal.style.display = 'flex';
     corSelecionada = '#ffffff';
     document.querySelectorAll('.color-dot').forEach(dot => {
         dot.classList.remove('selected');
         if (dot.style.backgroundColor === 'rgb(255, 255, 255)' || dot.style.backgroundColor === '#ffffff') dot.classList.add('selected');
+    });
+}
+
+function initModalVestibularFecharFora() {
+    const modal = document.getElementById('modal-vestibular');
+    if (!modal) return;
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) fecharModalVestibular();
     });
 }
 
@@ -76,4 +85,10 @@ function removerVestibular(index) {
     meusVestibulares.splice(index, 1);
     salvar();
     renderizarVestibulares();
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initModalVestibularFecharFora);
+} else {
+    initModalVestibularFecharFora();
 }
