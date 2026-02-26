@@ -19,24 +19,22 @@ function gerarHeatmapHtml(paraDetalhes) {
     const agora = new Date();
     const hojeStr = dataLocalStr(agora);
     const ano = agora.getFullYear();
-    const inicio = new Date(ano, 0, 1);
+    // Semanas civis começando no domingo (estilo Anki/GitHub): coluna 0 = semana que contém 01/01
+    const jan1 = new Date(ano, 0, 1);
+    const startDate = new Date(jan1);
+    startDate.setDate(1 - jan1.getDay());
     const grid = Array(7).fill(null).map(() => Array(NUM_SEMANAS_HEATMAP).fill(0));
-    for (let i = 0; i < NUM_SEMANAS_HEATMAP * 7; i++) {
-        const d = new Date(ano, 0, 1);
-        d.setDate(d.getDate() + i);
-        const dateStr = dataLocalStr(d);
-        const count = (dateStr <= hojeStr) ? (heatmap[dateStr] || 0) : 0;
-        const row = d.getDay();
-        const col = Math.floor(i / 7);
-        if (col >= 0 && col < NUM_SEMANAS_HEATMAP) grid[row][col] = count;
-    }
     function dataParaCell(r, c) {
-        const dStart = new Date(ano, 0, 1);
-        dStart.setDate(dStart.getDate() + c * 7);
-        const offset = (r - dStart.getDay() + 7) % 7;
-        const d = new Date(dStart.getFullYear(), dStart.getMonth(), dStart.getDate());
-        d.setDate(d.getDate() + offset);
+        const d = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+        d.setDate(d.getDate() + c * 7 + r);
         return d;
+    }
+    for (let r = 0; r < 7; r++) {
+        for (let c = 0; c < NUM_SEMANAS_HEATMAP; c++) {
+            const d = dataParaCell(r, c);
+            const dateStr = dataLocalStr(d);
+            grid[r][c] = (dateStr <= hojeStr) ? (heatmap[dateStr] || 0) : 0;
+        }
     }
     function formatarData(d) {
         const mes = MESES_HEATMAP[d.getMonth()];
