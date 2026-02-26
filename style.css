@@ -442,6 +442,64 @@ h1 { color: var(--accent-gold); margin: 0; font-size: 1.4rem; letter-spacing: 2p
 }
 .price-tag { color: #2e7d32; font-weight: bold; font-size: 1.2rem; }
 
+/* Contato no rodapé da loja (fora do card, fundo da página, fonte clara) */
+.store-rodape-contato {
+    margin-top: 32px;
+    padding-bottom: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+.store-rodape-texto {
+    margin: 0;
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.85);
+    text-align: center;
+    line-height: 1.4;
+    max-width: 320px;
+}
+.store-rodape-links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 16px 24px;
+}
+.store-rodape-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 0.9rem;
+    text-decoration: none;
+}
+.store-rodape-link:hover,
+.store-rodape-link:active {
+    color: rgba(255, 255, 255, 0.95);
+}
+.store-rodape-icon {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.7);
+}
+.store-rodape-link:hover .store-rodape-icon,
+.store-rodape-link:active .store-rodape-icon {
+    color: rgba(255, 255, 255, 0.9);
+}
+.store-rodape-icon-insta {
+    color: rgba(255, 255, 255, 0.7);
+}
+.theme-night .store-rodape-link { color: rgba(255, 255, 255, 0.7); }
+.theme-night .store-rodape-link:hover,
+.theme-night .store-rodape-link:active { color: rgba(255, 255, 255, 0.95); }
+.theme-night .store-rodape-icon { color: rgba(255, 255, 255, 0.65); }
+.theme-night .store-rodape-link:hover .store-rodape-icon,
+.theme-night .store-rodape-link:active .store-rodape-icon { color: rgba(255, 255, 255, 0.9); }
+.theme-night .store-rodape-texto { color: rgba(255, 255, 255, 0.8); }
+
 /* ========== ESTATÍSTICAS ========== */
 .stats-container {
     display: flex;
@@ -1081,7 +1139,7 @@ input[type="date"] {
 .browse-table-header-box .browse-th-frente { width: 28%; max-width: 220px; }
 .browse-table-header-box .browse-th-verso { width: 26%; max-width: 210px; }
 .browse-table-header-box .browse-th-deck { width: 14%; max-width: 80px; }
-.browse-table-header-box .browse-th-revisao { width: 20%; min-width: 90px; }
+.browse-table-header-box .browse-th-revisao { width: 20%; min-width: 90px; text-align: center; }
 
 .browse-table-wrap { border-radius: 0 0 16px 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.15); background: #fff; margin-top: -1px; }
 .theme-night .browse-table-wrap { background: #1c1c1e; box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
@@ -1098,9 +1156,9 @@ input[type="date"] {
 .theme-night .browse-table tbody tr.card-row:hover { background: #2c2c2e !important; }
 .browse-cell-frente { width: 28%; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .browse-cell-verso { width: 26%; max-width: 210px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.browse-cell-deck { width: 14%; color: #666; font-size: 0.8rem; max-width: 80px; white-space: normal; word-break: break-word; }
+.browse-cell-deck { width: 14%; color: #666; font-size: 0.8rem; max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .theme-night .browse-cell-deck { color: #aaa; }
-.browse-cell-revisao { width: 20%; font-size: 0.8rem; white-space: nowrap; color: #555; min-width: 90px; overflow: hidden; text-overflow: ellipsis; }
+.browse-cell-revisao { width: 20%; font-size: 0.8rem; white-space: nowrap; color: #555; min-width: 90px; overflow: hidden; text-overflow: ellipsis; text-align: center; }
 .theme-night .browse-cell-revisao { color: #aaa; }
 .browse-btn-apagar-card:hover { filter: brightness(1.05); }
 
@@ -2351,6 +2409,44 @@ box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 .perfil-btn-suporte:active {
     transform: scale(0.98);
 }
+.perfil-contato-rapido {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 16px 24px;
+    margin-top: 12px;
+}
+.perfil-contato-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    max-width: 100%;
+    color: var(--accent-gold);
+    text-decoration: none;
+    font-size: clamp(0.65rem, 2.8vw, 0.85rem);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.perfil-contato-link:hover,
+.perfil-contato-link:active {
+    opacity: 0.9;
+}
+.perfil-contato-ico {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent-gold);
+}
+.perfil-contato-ico-insta {
+    color: var(--accent-gold);
+}
+.perfil-contato-texto {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
 
 /* =========================================================
    TELA DE SUPORTE E FEEDBACK
@@ -2444,11 +2540,11 @@ box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     color: rgba(255, 255, 255, 0.6);
 }
 .suporte-contato-link {
-    font-size: 0.95rem;
+    font-size: clamp(0.65rem, 3.8vw, 0.95rem);
     font-weight: 600;
     color: var(--accent-gold);
     text-decoration: none;
-    word-break: break-all;
+    word-break: break-word;
 }
 .suporte-contato-link:hover {
     text-decoration: underline;
