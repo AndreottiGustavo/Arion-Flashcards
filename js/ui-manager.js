@@ -118,7 +118,7 @@ function abrirPainel() {
     var sel = document.getElementById('browse-deck-filter');
     if (sel) {
         var assinante = localStorage.getItem('arion_assinante') === 'true';
-        sel.innerHTML = '<option value="">Todos os baralhos</option>';
+        sel.innerHTML = '<option value="">' + (typeof t === 'function' ? t('painel_todos_baralhos') : 'Todos os baralhos') + '</option>';
         baralhos.forEach(function(b, i) {
             if (b.premium && !assinante) return;
             if (b.nome === TUTORIAL_DECK_NOME) return;
@@ -199,8 +199,12 @@ function initBrowseFabPesquisarObserver() {
     _browseFabPesquisarObserver.observe(searchEl);
 }
 function browseFabPesquisar() {
+    var s = document.getElementById('browse-search');
+    if (s) {
+        s.focus();
+    }
     var el = document.getElementById('browse-filters');
-    if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); setTimeout(function() { var s = document.getElementById('browse-search'); if (s) s.focus(); }, 400); }
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function abrirCriador(deckIndex) {

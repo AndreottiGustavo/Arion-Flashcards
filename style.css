@@ -8,10 +8,11 @@
     --font-main: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
-/* Modo noturno: verde escuro, dourado brilhante para contraste */
+/* Modo noturno: verde escuro, dourado brilhante para contraste. Texto legível em fundos escuros. */
 html.theme-night {
     --primary-green: #051e1c;
     --accent-gold: #d9cfaa;
+    --text-dark: #e5e5e7;
 }
 
 body, html {
@@ -278,27 +279,32 @@ body.sync-offline-bar-visible .screen { padding-top: 108px; }
 }
 .logo-container { width: 300px; fill: var(--accent-gold); max-width: 80%; }
 
-/* TELAS - CORREÇÃO DE ALINHAMENTO E CAMADAS */
+/* TELAS - Área rolável ocupa toda a largura do viewport para evitar travamento de scroll no iPad ao tocar nas bordas; conteúdo continua centralizado com padding. */
 .screen { 
     display: none; 
     height: 100dvh; 
     width: 100%;
-    max-width: 600px; 
+    max-width: none;
     flex-direction: column; 
-    padding: 15px; 
-    padding-top: 75px; 
+    padding: 75px 15px 15px;
+    padding-left: max(15px, calc((100% - 600px) / 2));
+    padding-right: max(15px, calc((100% - 600px) / 2));
     box-sizing: border-box; 
     
     position: fixed; 
     top: 0;
-    left: 50%;
-    transform: translateX(-50%); 
-    transition: transform 0.3s ease; /* Permite que o reset do swipe seja suave */
+    left: 0;
+    right: 0;
+    transform: none;
+    transition: transform 0.3s ease;
     will-change: transform;
     background: var(--primary-green);
-    overflow-y: auto; 
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
     scrollbar-width: none; /* Firefox */
     -ms-overflow-style: none; /* IE/Edge */
+    touch-action: pan-y;
     z-index: 1;
 }
 .screen::-webkit-scrollbar {
@@ -1072,9 +1078,10 @@ input[type="date"] {
 .browse-table-header-box .browse-table { margin: 0; border-radius: 0; box-shadow: none; background: transparent; }
 .browse-table-header-box .browse-table th { padding: 10px 12px; text-align: left; border: none; border-bottom: 1px solid #e8e8e8; background: #f5f5f5; color: #555; text-transform: uppercase; font-size: 0.62rem; letter-spacing: 0.5px; }
 .theme-night .browse-table-header-box .browse-table th { background: #2c2c2e; color: #e5e5e7; border-bottom-color: #333; }
-.browse-table-header-box .browse-th-frente, .browse-table-header-box .browse-th-verso { width: 28%; max-width: 220px; }
+.browse-table-header-box .browse-th-frente { width: 28%; max-width: 220px; }
+.browse-table-header-box .browse-th-verso { width: 26%; max-width: 210px; }
 .browse-table-header-box .browse-th-deck { width: 14%; max-width: 80px; }
-.browse-table-header-box .browse-th-revisao { width: 18%; min-width: 82px; }
+.browse-table-header-box .browse-th-revisao { width: 20%; min-width: 90px; }
 
 .browse-table-wrap { border-radius: 0 0 16px 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.15); background: #fff; margin-top: -1px; }
 .theme-night .browse-table-wrap { background: #1c1c1e; box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
@@ -1089,10 +1096,11 @@ input[type="date"] {
 .theme-night .browse-table tbody tr.card-row:nth-child(odd) { background: #1c1c1e; }
 .theme-night .browse-table tbody tr.card-row:nth-child(even) { background: #242426; }
 .theme-night .browse-table tbody tr.card-row:hover { background: #2c2c2e !important; }
-.browse-cell-frente, .browse-cell-verso { width: 28%; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.browse-cell-deck { width: 14%; color: #666; font-size: 0.8rem; max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.browse-cell-frente { width: 28%; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.browse-cell-verso { width: 26%; max-width: 210px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.browse-cell-deck { width: 14%; color: #666; font-size: 0.8rem; max-width: 80px; white-space: normal; word-break: break-word; }
 .theme-night .browse-cell-deck { color: #aaa; }
-.browse-cell-revisao { width: 18%; font-size: 0.8rem; white-space: nowrap; color: #555; min-width: 82px; overflow: hidden; text-overflow: ellipsis; }
+.browse-cell-revisao { width: 20%; font-size: 0.8rem; white-space: nowrap; color: #555; min-width: 90px; overflow: hidden; text-overflow: ellipsis; }
 .theme-night .browse-cell-revisao { color: #aaa; }
 .browse-btn-apagar-card:hover { filter: brightness(1.05); }
 
@@ -1262,6 +1270,23 @@ input#edit-colorPicker.emoji-picker-input-cor-hidden { position: absolute; opaci
 #modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 20000; align-items: flex-start; justify-content: center; padding: 20px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
 .modal-box { background: var(--white); color: var(--text-dark); width: 100%; max-width: 380px; max-height: calc(100vh - 40px); padding: 25px; border-radius: 25px; text-align: center; box-sizing: border-box; overflow-y: auto; -webkit-overflow-scrolling: touch; margin: 0 auto; flex-shrink: 0; }
 .modal-box input, .modal-box textarea { width: 100%; padding: 15px; margin: 10px 0; border: 1px solid #ddd; border-radius: 12px; font-size: 16px; outline: none; box-sizing: border-box; font-family: var(--font-main); }
+.modal-cancel-btn {
+    display: block;
+    width: 100%;
+    margin: 15px auto 0;
+    padding: 12px 20px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    background: #f0f0f0;
+    color: #555;
+    font-size: 0.9rem;
+    cursor: pointer;
+    text-align: center;
+    font-family: var(--font-main);
+    box-sizing: border-box;
+}
+.modal-cancel-btn:hover { background: #e8e8e8; }
+.modal-cancel-btn:active { background: #ddd; }
 
 .congratulations-rect { background: #e8f5e9; color: #2e7d32; border: 2px solid #a5d6a7; padding: 20px; border-radius: 15px; font-weight: bold; text-align: center; width: 100%; margin-bottom: 15px; box-sizing: border-box; }
 
@@ -1404,15 +1429,37 @@ box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     background: #1c1c1e;
     color: #e5e5e7;
 }
+/* Sempre que criar novo conteúdo (modais, cards, listas), adicionar regras .theme-night para texto legível (color: #e5e5e7) e fundos escuros (#1c1c1e, #242426, #2c2c2e). */
 .theme-night .modal-box input,
 .theme-night .modal-box textarea,
-.theme-night .modal-box .main-input {
+.theme-night .modal-box .main-input,
+.theme-night .modal-box select {
     background: #242426 !important;
     color: #e5e5e7;
     border-color: #444;
 }
 .theme-night .modal-box label {
-    color: #aaa;
+    color: #e5e5e7 !important;
+}
+.theme-night .modal-box p {
+    color: #e5e5e7 !important;
+}
+.theme-night .modal-box small {
+    color: #aaa !important;
+}
+.theme-night .modal-box #modal-title {
+    color: #e5e5e7;
+}
+.theme-night .modal-box .modal-cancel-btn {
+    background: #2c2c2e;
+    border-color: #555;
+    color: #e5e5e7;
+}
+.theme-night .modal-box .modal-cancel-btn:hover {
+    background: #333;
+}
+.theme-night .modal-box .modal-cancel-btn:active {
+    background: #444;
 }
 .theme-night .toolbar,
 .theme-night .edit-card-toolbar {
@@ -1493,6 +1540,10 @@ box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 .theme-night .submodule-row {
     background: #242426;
     color: #e5e5e7;
+}
+.theme-night .premium-manager-container p,
+.theme-night .premium-manager-container small {
+    color: #e5e5e7 !important;
 }
 .theme-night .options-menu {
     background: #2c2c2e;
@@ -2298,6 +2349,158 @@ box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 .perfil-btn-suporte:active {
     transform: scale(0.98);
+}
+
+/* =========================================================
+   TELA DE SUPORTE E FEEDBACK
+   ========================================================= */
+.suporte-conteudo {
+    padding: 20px 16px 40px;
+    max-width: 420px;
+    margin: 0 auto;
+}
+.suporte-card {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(244, 233, 193, 0.25);
+    border-radius: 20px;
+    padding: 24px 20px;
+    text-align: left;
+}
+.suporte-intro {
+    margin: 0 0 20px 0;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.9);
+}
+.suporte-como {
+    margin: 0 0 10px 0;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--accent-gold);
+}
+.suporte-lista {
+    margin: 0 0 20px 0;
+    padding-left: 20px;
+    font-size: 0.95rem;
+    line-height: 1.55;
+    color: rgba(255, 255, 255, 0.85);
+}
+.suporte-lista li {
+    margin-bottom: 8px;
+}
+.suporte-contato-titulo {
+    margin: 24px 0 14px 0;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--accent-gold);
+}
+.suporte-contatos {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 20px;
+}
+.suporte-contato-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(244, 233, 193, 0.2);
+    border-radius: 14px;
+}
+.suporte-contato-icon {
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(244, 233, 193, 0.15);
+    border-radius: 12px;
+    color: var(--accent-gold);
+}
+.suporte-contato-icon svg {
+    width: 24px;
+    height: 24px;
+}
+.suporte-contato-icon-insta {
+    color: var(--accent-gold);
+    background: rgba(244, 233, 193, 0.15);
+}
+.suporte-contato-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.suporte-contato-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: rgba(255, 255, 255, 0.6);
+}
+.suporte-contato-link {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--accent-gold);
+    text-decoration: none;
+    word-break: break-all;
+}
+.suporte-contato-link:hover {
+    text-decoration: underline;
+}
+.suporte-contato-link.suporte-contato-insta {
+    color: var(--accent-gold);
+}
+.suporte-dica {
+    margin: 0 0 24px 0;
+    font-size: 0.9rem;
+    line-height: 1.45;
+    color: rgba(255, 255, 255, 0.7);
+}
+.suporte-btn-enviar {
+    width: 100%;
+    margin-top: 8px;
+}
+.theme-night .suporte-card {
+    background: #1c1c1e;
+    border-color: #444;
+}
+.theme-night .suporte-intro,
+.theme-night .suporte-lista,
+.theme-night .suporte-lista li {
+    color: #e5e5e7;
+}
+.theme-night .suporte-como,
+.theme-night .suporte-contato-titulo {
+    color: var(--accent-gold);
+}
+.theme-night .suporte-contato-item {
+    background: #242426;
+    border-color: #444;
+}
+.theme-night .suporte-contato-icon {
+    background: rgba(244, 233, 193, 0.1);
+    color: var(--accent-gold);
+}
+.theme-night .suporte-contato-icon-insta {
+    color: var(--accent-gold);
+    background: rgba(244, 233, 193, 0.1);
+}
+.theme-night .suporte-contato-label {
+    color: #888;
+}
+.theme-night .suporte-contato-link {
+    color: var(--accent-gold);
+}
+.theme-night .suporte-contato-link.suporte-contato-insta {
+    color: var(--accent-gold);
+}
+.theme-night .suporte-dica {
+    color: #aaa;
 }
 
 /* Cor de fundo no wrap quando foto é emoji (estilo WhatsApp) */

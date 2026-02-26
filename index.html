@@ -173,12 +173,12 @@
 
     
 
-    <div id="modal-overlay">
+    <div id="modal-overlay" onclick="if(event.target===this)fecharModal()">
         <div class="modal-box" id="custom-modal">
             <h3 id="modal-title">Título</h3>
             <div id="modal-content"></div>
             <button class="btn-gold modal-confirm-btn" id="modal-confirm-btn" style="margin-top:10px">CONFIRMAR</button>
-            <button id="modal-cancel-btn" onclick="fecharModal()" style="background:none; border:none; margin-top:15px; color:gray; cursor:pointer; font-size:0.9rem">Cancelar</button>
+            <button type="button" id="modal-cancel-btn" class="modal-cancel-btn" onclick="fecharModal()">Cancelar</button>
         </div>
     </div>
 
@@ -330,7 +330,53 @@
             <button type="button" class="perfil-btn-suporte perfil-btn-importar" onclick="dispararImportacao()">📥 <span data-i18n="perfil_importar_anki">Importar do Anki</span></button>
 
             <!-- Suporte -->
-            <button type="button" class="perfil-btn-suporte" id="perfil-btn-suporte" onclick="abrirSuporteEmail()">✉️ <span data-i18n="perfil_suporte">Suporte e Feedback</span></button>
+            <button type="button" class="perfil-btn-suporte" id="perfil-btn-suporte" onclick="abrirTelaSuporte()">✉️ <span data-i18n="perfil_suporte">Suporte e Feedback</span></button>
+        </div>
+    </section>
+
+    <!-- Tela de Suporte e Feedback -->
+    <section id="suporte-screen" class="screen">
+        <header>
+            <button type="button" onclick="mudarTela('perfil-screen')" class="btn-voltar-perfil">← Voltar</button>
+            <h1 data-i18n="suporte_titulo">Suporte e Feedback</h1>
+            <div style="width: 90px;"></div>
+        </header>
+        <div class="suporte-conteudo">
+            <div class="suporte-card">
+                <p class="suporte-intro" data-i18n="suporte_intro">Estamos aqui para ajudar. Ao entrar em contato por e-mail, identifique-se com seu nome e WhatsApp para que possamos responder. Se você encontrou algum problema, tem uma sugestão ou quer contar sua experiência com o Árion, sua mensagem é muito importante para nós.</p>
+                <p class="suporte-como" data-i18n="suporte_como">Como podemos ajudar?</p>
+                <ul class="suporte-lista">
+                    <li data-i18n="suporte_erro">Relate um erro ou bug — descreva o que aconteceu e em qual tela ou ação.</li>
+                    <li data-i18n="suporte_feedback">Envie sugestões ou feedback — ideias para melhorar o app.</li>
+                    <li data-i18n="suporte_duvida">Tire dúvidas sobre o uso do app ou dos baralhos.</li>
+                    <li data-i18n="suporte_identifique">Identifique-se com nome e WhatsApp (com DDD) no e-mail para contato.</li>
+                </ul>
+                <p class="suporte-contato-titulo" data-i18n="suporte_fale_conosco">Fale conosco</p>
+                <div class="suporte-contatos">
+                    <div class="suporte-contato-item">
+                        <span class="suporte-contato-icon" aria-hidden="true">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                        </span>
+                        <div class="suporte-contato-info">
+                            <span class="suporte-contato-label" data-i18n="suporte_email">E-mail</span>
+                            <a href="mailto:arion.discursivas@gmail.com" class="suporte-contato-link" id="suporte-email-link">arion.discursivas@gmail.com</a>
+                        </div>
+                    </div>
+                    <div class="suporte-contato-item">
+                        <span class="suporte-contato-icon suporte-contato-icon-insta" aria-hidden="true">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+                        </span>
+                        <div class="suporte-contato-info">
+                            <span class="suporte-contato-label" data-i18n="suporte_instagram">Instagram</span>
+                            <a href="https://www.instagram.com/arion.discursivas" target="_blank" rel="noopener noreferrer" class="suporte-contato-link suporte-contato-insta">@arion.discursivas</a>
+                        </div>
+                    </div>
+                </div>
+                <p class="suporte-dica" data-i18n="suporte_dica">Descreva o que ocorreu com o máximo de detalhes — assim conseguimos responder e corrigir mais rápido.</p>
+                <button type="button" class="btn-gold suporte-btn-enviar" onclick="abrirEmailSuporte()">
+                    <span data-i18n="suporte_btn_enviar">Abrir e-mail para contato</span>
+                </button>
+            </div>
         </div>
     </section>
 
@@ -344,7 +390,7 @@
         <div id="browse-all-section" class="browse-all-wrap">
             <div id="browse-filters" class="browse-filters">
                 <div class="browse-filter-row">
-                    <label class="browse-filter-label" for="browse-deck-filter">Baralho</label>
+                    <label class="browse-filter-label" for="browse-deck-filter" data-i18n="col_baralho">Baralho</label>
                     <select id="browse-deck-filter" class="browse-deck-select" onchange="filtrarPainel()">
                         <option value="">Todos os baralhos</option>
                     </select>
@@ -356,7 +402,7 @@
             <div id="browse-table-header-box" class="browse-table-header-box">
                 <table class="browse-table browse-table-head" aria-hidden="true">
                     <thead>
-                        <tr><th class="browse-th-frente">Frente</th><th class="browse-th-verso">Verso</th><th class="browse-th-deck">Baralho</th><th class="browse-th-revisao">A revisar</th></tr>
+                        <tr><th class="browse-th-frente" data-i18n="col_frente">Frente</th><th class="browse-th-verso" data-i18n="col_verso">Verso</th><th class="browse-th-deck" data-i18n="col_baralho">Baralho</th><th class="browse-th-revisao" data-i18n="study_label_revisar">A revisar</th></tr>
                     </thead>
                 </table>
             </div>

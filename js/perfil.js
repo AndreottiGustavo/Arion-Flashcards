@@ -407,10 +407,14 @@ function iniciarLembretePWA() {
     }
 }
 
-function abrirSuporteEmail() {
+function abrirTelaSuporte() {
+    mudarTela('suporte-screen');
+}
+
+function abrirEmailSuporte() {
     const nome = (usuarioLogado && (usuarioLogado.displayName || usuarioLogado.email)) ? (usuarioLogado.displayName || usuarioLogado.email) : 'Usuário';
-    const assunto = 'Suporte Árion - Usuário: ' + encodeURIComponent(nome);
-    const corpo = encodeURIComponent('Olá equipe Árion, estou entrando em contato pois...');
+    const assunto = 'Suporte Árion - ' + encodeURIComponent(nome);
+    const corpo = encodeURIComponent('Olá equipe Árion,\n\nMeu nome: \nMeu WhatsApp (com DDD): \n\nEstou entrando em contato porque:\n\n[Descreva aqui o problema, sugestão ou dúvida. Se for um erro, informe em qual tela ou ação ocorreu.]\n\n');
     window.location.href = 'mailto:arion.discursivas@gmail.com?subject=' + assunto + '&body=' + corpo;
 }
 

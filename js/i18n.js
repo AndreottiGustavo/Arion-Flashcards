@@ -118,7 +118,22 @@ var i18n = {
         config_ordem_cards: 'Ordem dos cards ao estudar',
         config_ordem_novos_primeiro: 'Novos primeiro',
         config_ordem_revisao_primeiro: 'Revisão primeiro',
-        config_ordem_misturado: 'Misturado'
+        config_ordem_misturado: 'Misturado',
+        painel_todos_baralhos: 'Todos os baralhos',
+        suporte_titulo: 'Suporte e Feedback',
+        suporte_intro: 'Estamos aqui para ajudar. Ao entrar em contato por e-mail, identifique-se com seu nome e WhatsApp para que possamos responder. Se você encontrou algum problema, tem uma sugestão ou quer contar sua experiência com o Árion, sua mensagem é muito importante para nós.',
+        suporte_como: 'Como podemos ajudar?',
+        suporte_erro: 'Relate um erro ou bug — descreva o que aconteceu e em qual tela ou ação.',
+        suporte_feedback: 'Envie sugestões ou feedback — ideias para melhorar o app.',
+        suporte_duvida: 'Tire dúvidas sobre o uso do app ou dos baralhos.',
+        suporte_identifique: 'Identifique-se com nome e WhatsApp (com DDD) no e-mail para contato.',
+        suporte_fale_conosco: 'Fale conosco',
+        suporte_email: 'E-mail',
+        suporte_instagram: 'Instagram',
+        suporte_envie_para: 'Envie um e-mail para:',
+        suporte_dica: 'Descreva o que ocorreu com o máximo de detalhes — assim conseguimos responder e corrigir mais rápido.',
+        suporte_btn_abrir_email: 'Abrir e-mail',
+        suporte_btn_enviar: 'Abrir e-mail para contato'
     },
     en: {
         nav_decks: 'Decks',
@@ -236,7 +251,22 @@ var i18n = {
         config_ordem_cards: 'Card order when studying',
         config_ordem_novos_primeiro: 'New first',
         config_ordem_revisao_primeiro: 'Review first',
-        config_ordem_misturado: 'Mixed'
+        config_ordem_misturado: 'Mixed',
+        painel_todos_baralhos: 'All decks',
+        suporte_titulo: 'Support & Feedback',
+        suporte_intro: 'We\'re here to help. When contacting us by email, please identify yourself with your name and WhatsApp so we can get back to you. If you ran into a problem, have a suggestion, or want to share your experience with Árion, your message matters to us.',
+        suporte_como: 'How can we help?',
+        suporte_erro: 'Report an error or bug — describe what happened and on which screen or action.',
+        suporte_feedback: 'Send suggestions or feedback — ideas to improve the app.',
+        suporte_duvida: 'Ask questions about using the app or the decks.',
+        suporte_identifique: 'Identify yourself with your name and WhatsApp (with area code) in the email for contact.',
+        suporte_fale_conosco: 'Get in touch',
+        suporte_email: 'Email',
+        suporte_instagram: 'Instagram',
+        suporte_envie_para: 'Send an email to:',
+        suporte_dica: 'Describe what happened in as much detail as you can — that helps us reply and fix issues faster.',
+        suporte_btn_abrir_email: 'Open email',
+        suporte_btn_enviar: 'Open email to contact'
     }
 };
 
@@ -268,6 +298,8 @@ function aplicarIdioma() {
         }
     });
     if (typeof atualizarBotoesIdioma === 'function') atualizarBotoesIdioma();
+    var selAll = document.getElementById('browse-deck-filter');
+    if (selAll && selAll.options.length > 0) selAll.options[0].text = strings.painel_todos_baralhos || (i18n.pt && i18n.pt.painel_todos_baralhos) || 'Todos os baralhos';
     if (typeof renderizar === 'function') renderizar();
     if (typeof preencherTelaPerfil === 'function') preencherTelaPerfil();
     if (typeof renderEstatisticas === 'function') renderEstatisticas();

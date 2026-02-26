@@ -8,26 +8,35 @@ function getHeatmapMonths() {
     return (typeof t === 'function' ? t('heatmap_months') : 'janeiro,fevereiro,março,abril,maio,junho,julho,agosto,setembro,outubro,novembro,dezembro').split(',');
 }
 
+function dataLocalStr(d) {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
 function gerarHeatmapHtml(paraDetalhes) {
     const DIAS_SEMANA_HEATMAP = getHeatmapWeekdays();
     const MESES_HEATMAP = getHeatmapMonths();
     const _t = typeof t === 'function' ? t : function(k) { return k; };
     const heatmap = getHeatmapData();
-    const hoje = new Date();
-    const inicio = new Date(hoje.getFullYear(), 0, 1);
+    const agora = new Date();
+    const hojeStr = dataLocalStr(agora);
+    const ano = agora.getFullYear();
+    const inicio = new Date(ano, 0, 1);
     const grid = Array(7).fill(null).map(() => Array(NUM_SEMANAS_HEATMAP).fill(0));
     for (let i = 0; i < NUM_SEMANAS_HEATMAP * 7; i++) {
-        const d = new Date(inicio.getTime() + i * 86400000);
-        const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-        const count = (d <= hoje) ? (heatmap[dateStr] || 0) : 0;
+        const d = new Date(ano, 0, 1);
+        d.setDate(d.getDate() + i);
+        const dateStr = dataLocalStr(d);
+        const count = (dateStr <= hojeStr) ? (heatmap[dateStr] || 0) : 0;
         const row = d.getDay();
         const col = Math.floor(i / 7);
         if (col >= 0 && col < NUM_SEMANAS_HEATMAP) grid[row][col] = count;
     }
     function dataParaCell(r, c) {
-        const dStart = new Date(inicio.getTime() + c * 7 * 86400000);
+        const dStart = new Date(ano, 0, 1);
+        dStart.setDate(dStart.getDate() + c * 7);
         const offset = (r - dStart.getDay() + 7) % 7;
-        return new Date(dStart.getTime() + offset * 86400000);
+        const d = new Date(dStart.getFullYear(), dStart.getMonth(), dStart.getDate());
+        d.setDate(d.getDate() + offset);
+        return d;
     }
     function formatarData(d) {
         const mes = MESES_HEATMAP[d.getMonth()];
@@ -63,12 +72,12 @@ function gerarHeatmapHtml(paraDetalhes) {
     let rowHoje = -1, colHoje = -1;
     for (let r = 0; r < 7; r++) {
         for (let c = 0; c < NUM_SEMANAS_HEATMAP; c++) {
-            if (dataParaCell(r, c).toDateString() === hoje.toDateString()) { rowHoje = r; colHoje = c; break; }
+            if (dataLocalStr(dataParaCell(r, c)) === hojeStr) { rowHoje = r; colHoje = c; break; }
         }
         if (rowHoje >= 0) break;
     }
     if (colHoje < 0) colHoje = 0;
-    if (rowHoje < 0) rowHoje = hoje.getDay();
+    if (rowHoje < 0) rowHoje = agora.getDay();
     let html = '<div class="heatmap-wrapper details-heatmap-wrapper" style="display:flex; direction:ltr; align-items:flex-start">';
     html += '<div class="heatmap-weekdays">';
     for (let r = 0; r < 7; r++) html += `<div class="heatmap-weekday">${DIAS_SEMANA_HEATMAP[r].charAt(0)}</div>`;

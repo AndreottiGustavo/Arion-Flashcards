@@ -167,12 +167,12 @@ function resetEstilos(el) {
         return;
     }
     el.style.transition = 'none';
-    el.style.left = '50%';
-    el.style.transform = 'translateX(-50%)';
+    el.style.left = '';
+    el.style.transform = '';
     el.style.boxShadow = '';
     el.style.zIndex = '';
     el.style.opacity = '';
-    setTimeout(() => { el.style.left = ''; el.style.transition = ''; }, 0);
+    setTimeout(() => { el.style.transition = ''; }, 0);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -200,7 +200,7 @@ function screenSwipeBackStart(screenX) {
 function screenSwipeBackMove(screenX) {
     if (!currentSwipeEl || touchStartX > 50) return;
     let moveX = screenX - touchStartX;
-    if (moveX > 0) { currentSwipeEl.style.transform = `translateX(calc(-50% + ${moveX}px))`; currentSwipeEl.style.transition = 'none'; }
+    if (moveX > 0) { currentSwipeEl.style.transform = `translateX(${moveX}px)`; currentSwipeEl.style.transition = 'none'; }
 }
 function screenSwipeBackEnd(screenX) {
     if (!currentSwipeEl || touchStartX > 50) return;
@@ -230,7 +230,7 @@ document.addEventListener('touchend', e => {
 function resetSwipe(el) {
     if (!el) return;
     el.style.transition = 'transform 0.3s ease';
-    el.style.transform = 'translateX(-50%)';
+    el.style.transform = 'translateX(0)';
 }
 
 const SWIPE_ACTIVATE_PX = 28;
