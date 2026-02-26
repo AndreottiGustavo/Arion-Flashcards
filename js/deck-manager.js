@@ -5,17 +5,19 @@ function renderizar() {
     let totalNovos = 0;
     let totalRevisao = 0;
     const agora = Date.now();
+    const assinante = localStorage.getItem('arion_assinante') === 'true';
     mostrandoArquivados = localStorage.getItem('arion_ver_arquivados') === 'true';
-    const baseFiltro = baralhos.map((b, i) => ({ b, i })).filter(({ b }) => (!b.premium || b.cards.some(c => c.liberado === true)) && (mostrandoArquivados ? (b.arquivado === true) : (b.arquivado !== true)));
+    const premiumLiberado = (b) => b.premium && assinante && b.cards.some(c => c.liberado === true);
+    const baseFiltro = baralhos.map((b, i) => ({ b, i })).filter(({ b }) => (!b.premium || premiumLiberado(b)) && (mostrandoArquivados ? (b.arquivado === true) : (b.arquivado !== true)));
 
     baralhos.forEach((b) => {
         if (b.arquivado || b.nome === TUTORIAL_DECK_NOME) return;
-        if (b.premium && !b.cards.some(c => c.liberado === true)) return;
-        totalNovos += b.cards.filter(c => c.state === 'new' && (b.premium ? c.liberado : true)).length;
-        totalRevisao += b.cards.filter(c => c.state !== 'new' && c.rev <= agora && (b.premium ? c.liberado : true)).length;
+        if (b.premium && (!assinante || !b.cards.some(c => c.liberado === true))) return;
+        totalNovos += b.cards.filter(c => c.state === 'new' && (b.premium ? (assinante && c.liberado) : true)).length;
+        totalRevisao += b.cards.filter(c => c.state !== 'new' && c.rev <= agora && (b.premium ? (assinante && c.liberado) : true)).length;
     });
 
-    const numArquivados = baralhos.filter(b => b.arquivado === true && (!b.premium || b.cards.some(c => c.liberado === true))).length;
+    const numArquivados = baralhos.filter(b => b.arquivado === true && (!b.premium || premiumLiberado(b))).length;
     const filtroEl = document.getElementById('deck-filter-archived');
     if (filtroEl) {
         if (numArquivados > 0 || mostrandoArquivados) {
@@ -35,8 +37,8 @@ function renderizar() {
     var lblRevisoes = typeof t === 'function' ? t('study_revisar') : 'revisões';
     const ordenados = [...baseFiltro].sort((x, y) => (y.b.fixado ? 1 : 0) - (x.b.fixado ? 1 : 0));
     const listaHtml = ordenados.map(({ b, i }) => {
-        const n = b.cards.filter(c => c.state === 'new' && (b.premium ? c.liberado : true)).length;
-        const r = b.cards.filter(c => c.state !== 'new' && c.rev <= agora && (b.premium ? c.liberado : true)).length;
+        const n = b.cards.filter(c => c.state === 'new' && (b.premium ? (assinante && c.liberado) : true)).length;
+        const r = b.cards.filter(c => c.state !== 'new' && c.rev <= agora && (b.premium ? (assinante && c.liberado) : true)).length;
         const estaFixado = b.fixado === true;
         const labelArquivar = b.arquivado ? 'DESARQ.' : 'ARQUIVAR';
         return `

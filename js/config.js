@@ -13,3 +13,5 @@ const AVATAR_PLACEHOLDER = "data:image/svg+xml," + encodeURIComponent('<svg xmln
 
 // Paleta de cores sólidas que combinam com emojis (estilo WhatsApp)
 const PALETA_CORES_EMOJI = ['#FFE4B5', '#FFDAB9', '#E6E6FA', '#B0E0E6', '#98FB98', '#F0E68C', '#FFB6C1', '#DDA0DD', '#87CEEB', '#F5DEB3', '#D8BFD8', '#FFA07A', '#AFEEEE', '#E0BBE4', '#F7DC6F', '#D5F5E3', '#FADBD8', '#D6EAF8'];
+// Paleta para cor do texto nos cards (inclui cores escuras + iguais ao emoji para consistência)
+const PALETA_CORES_TEXTO = ['#000000', '#333333', '#c62828', '#1565c0', '#2e7d32', '#6a1b9a', '#ef6c00', '#FFE4B5', '#E6E6FA', '#B0E0E6', '#98FB98', '#FFB6C1', '#87CEEB', '#DDA0DD', '#F0E68C'];

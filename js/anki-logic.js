@@ -14,12 +14,13 @@ const ANKI = {
 
 function abrirDetalhesEstudarTudo() {
     const h = Date.now();
+    const assinante = typeof localStorage !== 'undefined' && localStorage.getItem('arion_assinante') === 'true';
     let novos = 0, revisao = 0;
     baralhos.forEach(b => {
         if (b.nome === TUTORIAL_DECK_NOME || b.arquivado) return;
         b.cards.forEach(c => {
             const pendente = c.state === 'new' || c.rev <= h;
-            const liberado = !b.premium || c.liberado === true;
+            const liberado = !b.premium || (assinante && c.liberado === true);
             if (pendente && liberado) {
                 if (c.state === 'new') novos++; else revisao++;
             }
@@ -50,9 +51,10 @@ function abrirDetalhes(i, finalizou = false) {
     dIdx = i;
     const b = baralhos[i];
     const h = Date.now();
-    fila = b.cards.filter(c => (c.state === 'new' || c.rev <= h) && (!b.premium || c.liberado === true));
-    const novos = b.cards.filter(c => c.state === 'new' && (!b.premium || c.liberado)).length;
-    const revisao = b.cards.filter(c => c.state !== 'new' && c.rev <= h && (!b.premium || c.liberado)).length;
+    const assinante = typeof localStorage !== 'undefined' && localStorage.getItem('arion_assinante') === 'true';
+    fila = b.cards.filter(c => (c.state === 'new' || c.rev <= h) && (!b.premium || (assinante && c.liberado === true)));
+    const novos = b.cards.filter(c => c.state === 'new' && (!b.premium || (assinante && c.liberado))).length;
+    const revisao = b.cards.filter(c => c.state !== 'new' && c.rev <= h && (!b.premium || (assinante && c.liberado))).length;
 
     mudarTela('details-screen');
     document.getElementById('details-deck-name').innerText = b.nome;
@@ -93,11 +95,12 @@ function sairEstudo() {
 function estudarTudo() {
     let filaGeral = [];
     const agora = Date.now();
+    const assinante = typeof localStorage !== 'undefined' && localStorage.getItem('arion_assinante') === 'true';
     baralhos.forEach((b, deckIdx) => {
         if (b.nome === TUTORIAL_DECK_NOME || b.arquivado) return;
         b.cards.forEach((c, cardIdx) => {
             const isPendente = c.state === 'new' || c.rev <= agora;
-            const isLiberado = b.premium ? c.liberado : true;
+            const isLiberado = b.premium ? (assinante && c.liberado) : true;
             if (isPendente && isLiberado) filaGeral.push({ ...c, _deckNome: b.nome, _deckIdx: deckIdx, _cardIdx: cardIdx });
         });
     });
@@ -123,7 +126,8 @@ function iniciarEstudo(i) {
     if (document.getElementById('finish-area')) document.getElementById('finish-area').style.display = 'none';
     const b = baralhos[dIdx];
     const agora = Date.now();
-    fila = b.cards.filter(c => (c.state === 'new' || c.rev <= agora) && (!b.premium || c.liberado));
+    const assinante = typeof localStorage !== 'undefined' && localStorage.getItem('arion_assinante') === 'true';
+    fila = b.cards.filter(c => (c.state === 'new' || c.rev <= agora) && (!b.premium || (assinante && c.liberado)));
     if (fila.length === 0) {
         mostrarParabens();
         return;

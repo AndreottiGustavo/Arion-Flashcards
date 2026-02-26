@@ -155,8 +155,9 @@ function renderEstatisticas() {
     baralhos.forEach(b => {
         if (b.nome === TUTORIAL_DECK_NOME) return;
         b.cards.forEach(c => {
+            const assinante = typeof localStorage !== 'undefined' && localStorage.getItem('arion_assinante') === 'true';
             const pendente = c.state === 'new' || c.rev <= agora;
-            const liberado = !b.premium || c.liberado === true;
+            const liberado = !b.premium || (assinante && c.liberado === true);
             if (pendente && liberado) restantesAgora++;
         });
     });

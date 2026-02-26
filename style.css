@@ -886,15 +886,73 @@ input[type="date"] {
 
 
 /* PAINEL / BROWSE */
-.tabs-container { display: flex; gap: 10px; margin-bottom: 15px; }
-.tab-btn { flex: 1; padding: 10px; border-radius: 10px; border: 1px solid var(--accent-gold); background: none; color: var(--accent-gold); font-weight: bold; cursor: pointer; font-size: 0.8rem; }
+.browse-tabs { display: flex; gap: 10px; margin-bottom: 15px; }
+.tab-btn { flex: 1; padding: 12px; border-radius: 12px; border: 2px solid var(--accent-gold); background: transparent; color: var(--accent-gold); font-weight: bold; cursor: pointer; font-size: 0.85rem; transition: background 0.2s, color 0.2s; }
 .tab-btn.active-tab { background: var(--accent-gold); color: var(--primary-green); }
+.tab-btn.tab-premium { border-color: var(--premium-gold); color: var(--premium-gold); }
+.tab-btn.tab-premium.active-tab { background: var(--premium-gold); color: var(--primary-green); }
 
-.search-container { margin-bottom: 15px; }
-.search-input { width: 100%; padding: 12px 15px; border-radius: 10px; border: none; font-size: 0.9rem; outline: none; box-sizing: border-box; }
-.browse-table { width: 100%; border-collapse: collapse; background: white; color: var(--text-dark); border-radius: 15px; overflow: hidden; font-size: 0.85rem; }
-.browse-table th, .browse-table td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
-.browse-table th { background: #f5f5f5; color: #666; text-transform: uppercase; font-size: 0.7rem; }
+/* Painel: scroll normal; filtros sobem; cabeçalho cinza e FAB 🔍 ficam sticky no topo */
+.browse-filters { display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px; }
+.browse-filter-row { display: flex; flex-direction: column; gap: 6px; }
+.browse-filter-label { font-size: 0.8rem; color: var(--accent-gold); font-weight: 600; }
+.browse-deck-select { width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid rgba(244,233,193,0.5); background: rgba(255,255,255,0.95); color: var(--text-dark); font-size: 0.95rem; outline: none; cursor: pointer; }
+.search-input { width: 100%; padding: 12px 15px; border-radius: 12px; border: 1px solid rgba(244,233,193,0.5); background: rgba(255,255,255,0.95); font-size: 0.9rem; outline: none; box-sizing: border-box; }
+
+/* Retângulo do cabeçalho (Frente, Verso, Baralho, A revisar, Ações): mesma largura da tabela, colado acima; ao rolar não passa do topo. Botão 🔍 acompanha (está dentro do bloco sticky). */
+.browse-table-header-box { position: sticky; top: 0; z-index: 2; width: 100%; border-radius: 16px 16px 0 0; overflow: visible; box-shadow: 0 4px 12px rgba(0,0,0,0.15); background: #f5f5f5; margin-bottom: -1px; }
+.browse-table-header-box::before { content: ''; position: absolute; left: 0; right: 0; bottom: 100%; height: 4px; background: #f5f5f5; pointer-events: none; }
+.theme-night .browse-table-header-box { background: #2c2c2e; box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
+.theme-night .browse-table-header-box::before { background: #2c2c2e; }
+/* FAB 🔍: sticky no topo (como o cabeçalho); aparece quando "Pesquisar" sai da tela, some quando volta */
+.browse-fab-pesquisar-wrap { position: sticky; top: 50px; z-index: 997; height: 0; overflow: visible; pointer-events: none; margin: 0; padding: 0; }
+#browse-screen.browse-fab-pesquisar-visible .browse-fab-pesquisar-wrap { pointer-events: auto; }
+#browse-screen:not(.active) .browse-fab-pesquisar-wrap { display: none !important; }
+.browse-fab-pesquisar-wrap .browse-fab-pesquisar { position: absolute; top: 8px; right: 20px; opacity: 0; transition: opacity 0.3s ease, transform 0.3s ease; transform: scale(0.9); }
+#browse-screen.browse-fab-pesquisar-visible .browse-fab-pesquisar-wrap .browse-fab-pesquisar { opacity: 1; transform: scale(1); }
+.browse-fab-pesquisar { width: 44px; height: 44px; padding: 0; border-radius: 50%; border: none; font-size: 1.2rem; cursor: pointer; box-shadow: 0 4px 16px rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; background: var(--accent-gold); color: var(--primary-green); transition: transform 0.2s, box-shadow 0.2s; line-height: 1; }
+.browse-fab-pesquisar:hover { transform: scale(1.08); box-shadow: 0 6px 20px rgba(0,0,0,0.45); }
+.browse-fab-pesquisar:active { transform: scale(0.98); }
+.theme-night .browse-fab-pesquisar { box-shadow: 0 4px 16px rgba(0,0,0,0.5); }
+
+.browse-table-header-box .browse-table { margin: 0; border-radius: 0; box-shadow: none; background: transparent; }
+.browse-table-header-box .browse-table th { padding: 10px 12px; text-align: left; border: none; border-bottom: 1px solid #e8e8e8; background: #f5f5f5; color: #555; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.5px; }
+.theme-night .browse-table-header-box .browse-table th { background: #2c2c2e; color: #e5e5e7; border-bottom-color: #333; }
+.browse-table-header-box .browse-th-frente, .browse-table-header-box .browse-th-verso { width: 22%; max-width: 120px; }
+.browse-table-header-box .browse-th-deck { width: 16%; max-width: 90px; }
+.browse-table-header-box .browse-th-revisao { width: 18%; min-width: 88px; }
+.browse-table-header-box .browse-th-actions { width: 56px; min-width: 56px; text-align: center; }
+
+.browse-table-wrap { border-radius: 0 0 16px 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.15); background: #fff; margin-top: -1px; }
+.theme-night .browse-table-wrap { background: #1c1c1e; box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
+.browse-table { width: 100%; border-collapse: collapse; background: white; color: var(--text-dark); font-size: 0.85rem; table-layout: fixed; }
+.theme-night .browse-table { background: #1c1c1e; color: #e5e5e7; }
+.browse-table th, .browse-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #eee; }
+.theme-night .browse-table th, .theme-night .browse-table td { border-bottom-color: #333; }
+.browse-table .browse-th-actions { width: 56px; min-width: 56px; text-align: center; }
+.browse-table tbody tr.card-row { cursor: pointer; transition: background 0.15s; }
+.browse-table tbody tr.card-row:nth-child(odd) { background: #fff; }
+.browse-table tbody tr.card-row:nth-child(even) { background: #f5f5f5; }
+.browse-table tbody tr.card-row:hover { background: #ebebeb !important; }
+.theme-night .browse-table tbody tr.card-row:nth-child(odd) { background: #1c1c1e; }
+.theme-night .browse-table tbody tr.card-row:nth-child(even) { background: #242426; }
+.theme-night .browse-table tbody tr.card-row:hover { background: #2c2c2e !important; }
+.browse-cell-frente, .browse-cell-verso { width: 22%; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.browse-cell-deck { width: 16%; color: #666; font-size: 0.8rem; max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.theme-night .browse-cell-deck { color: #aaa; }
+.browse-cell-revisao { width: 18%; font-size: 0.8rem; white-space: nowrap; color: #555; min-width: 88px; }
+.theme-night .browse-cell-revisao { color: #aaa; }
+.browse-actions-cell { text-align: center; vertical-align: middle; width: 56px; min-width: 56px; }
+.browse-actions-cell .browse-btn-wrap { display: flex; justify-content: center; align-items: center; }
+.browse-btn { width: 36px; height: 36px; border: none; border-radius: 10px; cursor: pointer; font-size: 1rem; display: inline-flex; align-items: center; justify-content: center; transition: transform 0.15s, opacity 0.15s; background: #f0f0f0; color: #555; flex-shrink: 0; }
+.browse-btn:hover { transform: scale(1.08); opacity: 0.9; }
+.browse-btn-delete { background: #ffebee; color: #c62828; }
+.browse-btn-apagar-card:hover { filter: brightness(1.05); }
+
+.modal-confirm-btn { width: 100%; padding: 10px 16px; font-size: 0.9rem !important; border-radius: 10px; box-sizing: border-box; }
+.browse-btn-apagar-card { width: 100%; box-sizing: border-box; font-size: 0.9rem; }
+.btn-apagar-confirm { background: #c62828 !important; color: #fff !important; font-size: 0.9rem !important; }
+.modal-aviso-apagar { color: #666; margin: 0 0 16px; line-height: 1.5; text-align: center; }
 
 /* GERENCIADOR PREMIUM ESTILIZADO */
 .premium-manager-container { display: flex; flex-direction: column; gap: 10px; position: relative; }
@@ -980,6 +1038,12 @@ input[type="date"] {
 .color-main-btn { border: none; background: white; padding: 0 8px; cursor: pointer; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
 .color-select-btn { border: none; background: #fafafa; border-left: 1px solid #ddd; padding: 0 4px; cursor: pointer; height: 100%; font-size: 10px; }
 .color-indicator { width: 16px; height: 3px; background: red; margin-top: 1px; }
+
+/* Toolbar no modal de editar card (A + seletor de cor igual à criação / emoji perfil) */
+.edit-card-toolbar { align-items: center; }
+.edit-card-color-wrap.color-split-btn { display: flex; }
+.edit-card-toolbar .emoji-picker-input-cor-hidden,
+input#edit-colorPicker.emoji-picker-input-cor-hidden { position: absolute; opacity: 0; width: 1px; height: 1px; left: -9999px; }
 
 /* STATS */
 .anki-stats-card {
@@ -1092,6 +1156,80 @@ box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     box-shadow: 0 10px 30px rgba(0,0,0,0.18);
     font-weight: 400 !important;
     /* Cartão cresce para baixo com o conteúdo; nada fixo que esconda texto */
+}
+
+/* Modo noturno: mesmas cores do painel (cartões estudo + criar flashcards) */
+.theme-night .card-box,
+.theme-night #study-container .card-box,
+.theme-night #create-screen .card-box {
+    background: #1c1c1e;
+    color: #e5e5e7;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+.theme-night #create-screen .card-box .main-input {
+    background: #242426;
+    color: #e5e5e7;
+}
+.theme-night #create-screen .card-box .main-input::placeholder,
+.theme-night #create-screen .card-box .main-input[data-placeholder]:empty::before {
+    color: #888;
+}
+.theme-night .divider,
+.theme-night #study-container .divider {
+    background: #333;
+}
+.theme-night #display-front,
+.theme-night #display-back {
+    color: #e5e5e7;
+}
+.theme-night #display-back {
+    color: var(--accent-gold);
+}
+
+/* Modo noturno: todo fundo branco/claro → cinza escuro (usar #1c1c1e, #242426, #2c2c2e). Manter para novos blocos. */
+.theme-night .anki-stats-card {
+    background: #1c1c1e;
+    color: #e5e5e7;
+}
+.theme-night .modal-box {
+    background: #1c1c1e;
+    color: #e5e5e7;
+}
+.theme-night .modal-box input,
+.theme-night .modal-box textarea,
+.theme-night .modal-box .main-input {
+    background: #242426 !important;
+    color: #e5e5e7;
+    border-color: #444;
+}
+.theme-night .modal-box label {
+    color: #aaa;
+}
+.theme-night .toolbar,
+.theme-night .edit-card-toolbar {
+    background: #2c2c2e;
+}
+.theme-night .tool-btn {
+    background: #242426;
+    border-color: #444;
+    color: #e5e5e7;
+}
+.theme-night .color-split-btn {
+    background: #242426;
+    border-color: #444;
+}
+.theme-night .color-main-btn,
+.theme-night .color-select-btn {
+    background: #242426;
+    border-color: #444;
+    color: #e5e5e7;
+}
+.theme-night #create-screen .card-box .divider {
+    background: #333 !important;
+}
+.theme-night .btn-anki {
+    background: #2c2c2e;
+    color: #e5e5e7;
 }
 
 #display-front, #display-back {

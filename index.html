@@ -58,9 +58,9 @@
                         </div>
                     </div>
                     <button class="nav-btn" id="nav-decks" onclick="mudarTela('deck-screen'); atualizarNav('nav-decks')">🃏 <span data-i18n="nav_decks">Baralhos</span></button>
-                    <button class="nav-btn" onclick="abrirVestibulares()">📅 <span data-i18n="nav_vestibulares">Meus Vestibulares</span></button>
-                    <button class="nav-btn" id="nav-stats" onclick="abrirEstatisticas(); atualizarNav('nav-stats')">📊 <span data-i18n="nav_stats">Estatísticas</span></button>
                     <button class="nav-btn" id="nav-browse" onclick="abrirPainel(); atualizarNav('nav-browse')">📁 <span data-i18n="nav_browse">Painel (Cards)</span></button>
+                    <button class="nav-btn" id="nav-stats" onclick="abrirEstatisticas(); atualizarNav('nav-stats')">📊 <span data-i18n="nav_stats">Estatísticas</span></button>
+                    <button class="nav-btn" onclick="abrirVestibulares()">📅 <span data-i18n="nav_vestibulares">Meus Vestibulares</span></button>
                     <button class="nav-btn efeito brilho" id="nav-store" onclick="mudarTela('store-screen'); atualizarNav('nav-store')" style="color:var(--premium-gold); border-color:var(--premium-gold)">✨ <span data-i18n="nav_store">Baralhos Prontos</span></button>
                     <button class="nav-btn" onclick="mudarTela('perfil-screen'); var m=document.getElementById('main-nav'); if(m) m.classList.remove('show');">⚙️ <span data-i18n="nav_config">Configurações</span></button>
                     <button class="nav-btn" id="nav-sair" onclick="deslogar()" style="color: #ff4d4d; font-weight: bold;"><span data-i18n="nav_sair">Sair</span></button>
@@ -177,8 +177,8 @@
         <div class="modal-box" id="custom-modal">
             <h3 id="modal-title">Título</h3>
             <div id="modal-content"></div>
-            <button class="btn-gold" id="modal-confirm-btn" style="margin-top:10px">CONFIRMAR</button>
-            <button onclick="fecharModal()" style="background:none; border:none; margin-top:15px; color:gray; cursor:pointer; font-size:0.9rem">Cancelar</button>
+            <button class="btn-gold modal-confirm-btn" id="modal-confirm-btn" style="margin-top:10px">CONFIRMAR</button>
+            <button id="modal-cancel-btn" onclick="fecharModal()" style="background:none; border:none; margin-top:15px; color:gray; cursor:pointer; font-size:0.9rem">Cancelar</button>
         </div>
     </div>
 
@@ -335,21 +335,36 @@
     </section>
 
     <div id="browse-screen" class="screen">
-        <header><h1>Painel de Cards</h1></header>
-        <div class="tabs-container">
+        <header><h1 data-i18n="screen_painel">Painel de Cards</h1></header>
+        <div class="tabs-container browse-tabs">
             <button class="tab-btn active-tab" id="tab-all" onclick="alternarAbasPainel('all')">Todos</button>
-            <button class="tab-btn" id="tab-premium" onclick="alternarAbasPainel('premium')">Gerenciar Premium</button>
+            <button class="tab-btn tab-premium" id="tab-premium" onclick="alternarAbasPainel('premium')">Gerenciar Premium</button>
         </div>
         
-        <div id="browse-all-section">
-            <div class="search-container">
-                <input type="text" id="browse-search" class="search-input" placeholder="Pesquisar nos flashcards..." oninput="filtrarPainel()">
+        <div id="browse-all-section" class="browse-all-wrap">
+            <div id="browse-filters" class="browse-filters">
+                <div class="browse-filter-row">
+                    <label class="browse-filter-label" for="browse-deck-filter">Baralho</label>
+                    <select id="browse-deck-filter" class="browse-deck-select" onchange="filtrarPainel()">
+                        <option value="">Todos os baralhos</option>
+                    </select>
+                </div>
+                <div class="browse-filter-row">
+                    <input type="text" id="browse-search" class="search-input" placeholder="Pesquisar nos flashcards..." oninput="filtrarPainel()" data-i18n="search_placeholder" data-i18n-placeholder>
+                </div>
             </div>
-            <div style="overflow-y: auto; flex-grow: 1;">
-                <table class="browse-table">
+            <div id="browse-table-header-box" class="browse-table-header-box">
+                <table class="browse-table browse-table-head" aria-hidden="true">
                     <thead>
-                        <tr><th>Frente</th><th>Verso</th><th>Baralho</th></tr>
+                        <tr><th class="browse-th-frente">Frente</th><th class="browse-th-verso">Verso</th><th class="browse-th-deck">Baralho</th><th class="browse-th-revisao">A revisar</th><th class="browse-th-actions">Ações</th></tr>
                     </thead>
+                </table>
+            </div>
+            <div id="browse-fab-pesquisar-wrap" class="browse-fab-pesquisar-wrap" aria-hidden="true">
+                <button type="button" class="browse-fab-pesquisar" onclick="browseFabPesquisar()" title="Pesquisar">🔍</button>
+            </div>
+            <div class="browse-table-wrap">
+                <table class="browse-table">
                     <tbody id="browse-list"></tbody>
                 </table>
             </div>
@@ -427,12 +442,12 @@
             <button class="color-main-btn" onclick="aplicarCorPadrao()">
                 <span>A</span><div class="color-indicator" id="current-color"></div>
             </button>
-            <button class="color-select-btn" onclick="document.getElementById('colorPicker').click()">▼</button>
+            <label for="colorPicker" class="color-select-btn" style="cursor:pointer;margin:0;display:flex;align-items:center;justify-content:center;user-select:none">▼</label>
         </div>
-        <input type="color" id="colorPicker" style="display:none" onchange="atualizarCorPadrao(this.value)">
+        <input type="color" id="colorPicker" class="emoji-picker-input-cor-hidden" onchange="atualizarCorPadrao(this.value)">
     </div>
 
-    <div class="card-box" style="height: auto; min-height: 350px; background: white; border-radius: 15px; padding: 20px;">
+    <div class="card-box create-screen-card-box" style="height: auto; min-height: 350px; border-radius: 15px; padding: 20px;">
         <div id="front" class="main-input" contenteditable="true" data-placeholder="Pergunta (Frente)"></div>
         <div class="divider" style="display:block; height: 1px; background: #eee; margin: 20px 0;"></div>
         <div id="back" class="main-input" contenteditable="true" data-placeholder="Resposta (Verso)"></div>

@@ -96,6 +96,9 @@ async function sincronizarComNuvem() {
 
         if (docSnap.exists) {
             const dados = docSnap.data();
+            const assinante = dados.assinante === true;
+            localStorage.setItem('arion_assinante', assinante ? 'true' : 'false');
+            if (typeof atualizarPerfilMenu === 'function') atualizarPerfilMenu(usuarioLogado, assinante);
             const baralhosDoDoc = Array.isArray(dados.baralhos) ? dados.baralhos : [];
             const baralhosPessoais = baralhosDoDoc.filter(b => b.premium !== true);
             const baralhosPremiumDoDoc = baralhosDoDoc.filter(b => b.premium === true);
